@@ -1,4 +1,4 @@
-// Firebase Config - ClinicRC
+// Firebase Config - ClinicRC (SOMENTE AUTH, sem Firestore no client)
 const firebaseConfig = {
   apiKey: "AIzaSyCFR9jmFYTuvdDRj9p8AK7rXTRZEbUGIo8",
   authDomain: "clinicrc-8ba64.firebaseapp.com",
@@ -9,22 +9,14 @@ const firebaseConfig = {
   measurementId: "G-TYFQ5WE761"
 };
 
-// Initialize Firebase
 firebase.initializeApp(firebaseConfig);
-
-// Services
 const auth = firebase.auth();
-const db = firebase.firestore();
 
 // Auth state listener
 auth.onAuthStateChanged(user => {
   const path = window.location.pathname;
   const isAppPage = path.includes("app.html");
-  const isLoginPage = path === "/" || path.includes("index.html");
 
-  if (user && isLoginPage) {
-    window.location.href = "/app.html";
-  }
   if (!user && isAppPage) {
     window.location.href = "/";
   }

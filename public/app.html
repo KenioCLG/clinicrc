@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ClinicRC - Retorno de Pacientes</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <style>
+    :root {
+      --cp: #EC6726;
+      --cpd: #c45420;
+      --chbg: #292D36;
+      --cbg: #F0F0F0;
+      --cs: #FFFFFF;
+      --ct: #333333;
+      --cts: rgba(0,0,0,.54);
+      --cag: #66BB6A;
+      --cop: #039BE5;
+      --cfu: #FFB74D;
+      --cre: #F44336;
+      --csu: #4CAF50;
+      --cdiv: #E0E0E0;
+      --cibg: #EAEAEB;
+      --scard: 0 4px 10px rgba(0,0,0,.15);
+      --ssm: 0 2px 4px rgba(0,0,0,.12);
+      --font: "Roboto", Helvetica, Arial, sans-serif;
+      --hh: 50px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden; }
+    body { font-family: var(--font); font-size: 14px; color: var(--ct); background: var(--cbg); }
+    button, input, textarea, select { font-family: var(--font); }
+    button { cursor: pointer; }
+    .mi { font-family: "Material Icons"; font-size: 20px; line-height: 1; vertical-align: middle; }
+
+    .hdr { position: fixed; inset: 0 0 auto 0; height: var(--hh); background: var(--chbg); display: flex; align-items: center; z-index: 1000; box-shadow: var(--ssm); }
+    .hdr-menu { width: 50px; height: 50px; border: 0; background: rgba(189,190,193,.9); color: #fff; display: grid; place-items: center; flex-shrink: 0; }
+    .hdr-tabs { height: 100%; display: flex; align-items: flex-end; padding-left: 6px; }
+    .tab-btn { height: 100%; padding: 0 18px; display: flex; align-items: center; gap: 6px; border: 0; background: transparent; color: rgba(255,255,255,.55); font-size: 13px; font-weight: 500; border-bottom: 3px solid transparent; white-space: nowrap; }
+    .tab-btn.on { color: #fff; border-bottom-color: var(--cp); }
+    .hdr-r { margin-left: auto; display: flex; align-items: center; gap: 8px; padding-right: 12px; }
+    .sync-badge { display: flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 500; padding: 4px 9px; border-radius: 20px; background: rgba(255,255,255,.1); color: rgba(255,255,255,.7); }
+    .sync-badge.ok { background: rgba(102,187,106,.25); color: #A5D6A7; }
+    .sync-badge.err { background: rgba(244,67,54,.25); color: #EF9A9A; }
+    .sync-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+    .ava { width: 30px; height: 30px; display: inline-grid; place-items: center; border-radius: 50%; background: #D4C9F1; color: rgba(0,0,0,.87); font-weight: 700; font-size: 13px; }
+    .logout { height: 30px; border: 0; border-radius: 4px; padding: 0 10px; background: #fff; color: #333; font-size: 12px; font-weight: 500; }
+
+    .body { padding-top: var(--hh); height: 100vh; display: flex; overflow: hidden; }
+    .pg { display: none; width: 100%; height: 100%; }
+    .pg.on { display: flex; }
+
+    .sp { width: 38%; min-width: 380px; background: var(--cs); border-right: 1px solid var(--cdiv); display: flex; flex-direction: column; overflow: hidden; flex-shrink: 0; }
+    .sp-hd { background: var(--chbg); color: #fff; padding: 10px 14px; display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+    .sp-hd h2 { font-size: 13px; font-weight: 500; }
+    .sp-hd p { font-size: 11px; opacity: .6; margin-top: 1px; }
+    .tbar { display: flex; gap: 5px; padding: 9px 12px; background: #F5F5F5; border-bottom: 1px solid var(--cdiv); flex-shrink: 0; align-items: center; }
+    .tlbl { font-size: 10px; font-weight: 700; color: var(--cts); text-transform: uppercase; letter-spacing: .5px; margin-right: 3px; }
+    .tbtn { flex: 1; height: 30px; border: 1.5px solid rgba(0,0,0,.15); background: #fff; color: var(--cts); border-radius: 4px; font-size: 12px; font-weight: 500; transition: all .15s; }
+    .tbtn.on { background: var(--cp); border-color: var(--cp); color: #fff; }
+    .pbar { padding: 9px 13px; background: #FFF8F4; border-bottom: 2px solid var(--cdiv); display: flex; align-items: center; gap: 9px; min-height: 48px; flex-shrink: 0; }
+    .pbar strong { font-size: 12px; font-weight: 700; display: block; }
+    .pbar span { font-size: 11px; color: var(--cts); }
+    .pbar.empty { color: var(--cts); font-style: italic; font-size: 12px; }
+    .sbody { flex: 1; overflow-y: auto; padding: 12px; }
+    .rt { font-size: 13px; font-weight: 700; color: var(--cp); padding: 7px 11px; background: #FFF3EE; border-radius: 4px; margin-bottom: 11px; border-left: 4px solid var(--cp); }
+    .blk { margin-bottom: 10px; border-radius: 4px; overflow: hidden; border: 1px solid var(--cdiv); }
+    .blk-l { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .7px; padding: 4px 11px; background: #F5F5F5; color: var(--cts); border-bottom: 1px solid var(--cdiv); }
+    .blk.or .blk-l { background: #FFF3EE; color: var(--cp); border-bottom-color: #FDDCC9; }
+    .blk.gr .blk-l { background: #F1F8F2; color: #2E7D32; border-bottom-color: #C8E6CA; }
+    .blk.bl .blk-l { background: #E3F0F8; color: #01579B; border-bottom-color: #B3D9F0; }
+    .blk.ye .blk-l { background: #FFFDE7; color: #E65100; border-bottom-color: #FFF59D; }
+    .blk-b { padding: 9px 11px; background: #fff; font-size: 13px; line-height: 1.72; }
+    .fala { background: #F9FBE7; border-left: 3px solid #AFB42B; border-radius: 0 4px 4px 0; padding: 8px 12px; font-size: 13.5px; font-weight: 500; line-height: 1.75; color: #1A2332; margin: 5px 0; }
+    .fala.alt { background: #FFF8F4; border-left-color: var(--cp); }
+    .dbox { background: #FFFDE7; border: 1.5px solid #FDD835; border-radius: 4px; padding: 8px 11px; font-weight: 700; font-size: 13px; margin: 5px 0; }
+    .pbox { background: linear-gradient(135deg,#F1F8F2,#E8F5E9); border: 1.5px solid var(--csu); border-radius: 4px; padding: 8px 11px; font-weight: 700; font-size: 13.5px; margin: 5px 0; color: #2E7D32; text-align: center; }
+
+    .kp { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+    .ktb { background: var(--cs); border-bottom: 1px solid var(--cdiv); padding: 8px 12px; display: flex; align-items: center; gap: 10px; flex-shrink: 0; box-shadow: var(--ssm); }
+    .ktb h2 { font-size: 13px; font-weight: 500; white-space: nowrap; }
+    .ksrch { height: 30px; background: var(--cibg); border: .8px solid rgba(0,0,0,.1); border-radius: 4px; padding: 0 10px; font-size: 13px; color: var(--ct); outline: none; flex: 1; max-width: 220px; }
+    .kmini { display: flex; gap: 6px; margin-left: auto; }
+    .kchip { display: flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 20px; font-size: 11px; font-weight: 700; color: #fff; }
+    .upload { display: flex; align-items: center; gap: 7px; border-left: 1px solid var(--cdiv); padding-left: 10px; }
+    .upload input { max-width: 170px; font-size: 11px; }
+    .small-btn { height: 30px; border: 1px solid var(--cdiv); border-radius: 4px; background: #fff; padding: 0 10px; font-size: 12px; font-weight: 500; color: #333; white-space: nowrap; }
+    .small-btn.primary { background: var(--cp); color: #fff; border-color: var(--cp); }
+
+    .cols { flex: 1; display: flex; overflow: hidden; }
+    .col { flex: 1; display: flex; flex-direction: column; border-right: 1px solid var(--cdiv); overflow: hidden; }
+    .col:last-child { border-right: 0; }
+    .col-hd { padding: 7px 9px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+    .col-hd .bg { display: inline-flex; align-items: center; justify-content: center; width: 19px; height: 19px; border-radius: 50%; font-size: 10px; font-weight: 700; color: #fff; }
+    .cl1 .col-hd { background: #EDE7F6; color: #4527A0; border-bottom: 3px solid #7E57C2; } .cl1 .bg { background: #7E57C2; }
+    .cl2 .col-hd { background: #FFF8E1; color: #E65100; border-bottom: 3px solid var(--cfu); } .cl2 .bg { background: var(--cfu); color: #333; }
+    .cl3 .col-hd { background: #E8F5E9; color: #1B5E20; border-bottom: 3px solid var(--cag); } .cl3 .bg { background: var(--cag); }
+    .cl4 .col-hd { background: #F5F5F5; color: #424242; border-bottom: 3px solid #9E9E9E; } .cl4 .bg { background: #9E9E9E; }
+    .col-cards { flex: 1; overflow-y: auto; padding: 7px; display: flex; flex-direction: column; gap: 5px; }
+    .card { background: var(--cs); border-radius: 4px; border: 1px solid var(--cdiv); padding: 8px 10px; cursor: pointer; transition: box-shadow .15s,border-color .15s; box-shadow: var(--ssm); }
+    .card:hover { box-shadow: var(--scard); }
+    .card.sel { border-color: var(--cp); box-shadow: 0 0 0 2px rgba(236,103,38,.18); }
+    .cn { font-size: 12px; font-weight: 700; line-height: 1.3; margin-bottom: 2px; }
+    .ctxt { font-size: 11px; color: var(--cts); margin-bottom: 2px; }
+    .cp2 { display: inline-block; font-size: 10px; font-weight: 500; padding: 2px 6px; background: #E3F2FD; color: #0277BD; border-radius: 3px; margin-bottom: 4px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .cv { font-size: 12px; font-weight: 700; color: var(--csu); margin-bottom: 6px; }
+    .trow { display: flex; align-items: center; gap: 3px; margin-bottom: 6px; }
+    .tlb { font-size: 10px; font-weight: 700; color: var(--cts); margin-right: 2px; text-transform: uppercase; }
+    .dot { width: 21px; height: 21px; border-radius: 50%; border: 1.5px solid var(--cdiv); background: #fff; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: var(--cts); transition: all .12s; flex-shrink: 0; }
+    .dot:hover { border-color: var(--cp); color: var(--cp); transform: scale(1.1); }
+    .dot.dn { background: var(--cop); border-color: var(--cop); color: #fff; }
+    .dot.nx { border-color: var(--cp); color: var(--cp); font-weight: 900; }
+    .cobs { width: 100%; border: .8px solid rgba(0,0,0,.1); border-radius: 4px; padding: 4px 7px; font-size: 11px; background: var(--cibg); resize: none; height: 32px; outline: none; color: var(--ct); margin-bottom: 6px; }
+    .cobs:focus { border-color: var(--cp); background: #fff; }
+    .cbtns { display: flex; gap: 4px; flex-wrap: wrap; }
+    .cb { flex: 1; height: 26px; border: 1px solid transparent; border-radius: 4px; font-size: 11px; font-weight: 500; min-width: 42px; white-space: nowrap; }
+    .cbo { background: #FFF3EE; color: var(--cp); border-color: #FDDCC9; }
+    .cbg { background: #F1F8F2; color: #2E7D32; border-color: #C8E6CA; }
+    .cbgr { background: #F5F5F5; color: #424242; border-color: #E0E0E0; }
+    .cbb { background: #E3F0F8; color: #0277BD; border-color: #B3D9F0; }
+    .bdg { display: inline-block; padding: 2px 6px; border-radius: 3px; font-size: 10px; font-weight: 700; margin-bottom: 4px; }
+    .bag { background: var(--cag); color: #fff; }
+    .bpr { background: var(--cop); color: #fff; }
+    .bsi { background: var(--cre); color: #fff; }
+    .bsr { background: #9E9E9E; color: #fff; }
+    .empty-c { text-align: center; padding: 14px 8px; color: #CCC; font-size: 12px; border: 1.5px dashed #E0E0E0; border-radius: 4px; }
+
+    .rp { flex: 1; overflow-y: auto; padding: 20px; background: var(--cbg); }
+    .rh { font-size: 20px; font-weight: 500; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+    .kgrid { display: grid; grid-template-columns: repeat(auto-fill,minmax(148px,1fr)); gap: 12px; margin-bottom: 20px; }
+    .kcard { border-radius: 20px; padding: 10px 13px 13px; color: #fff; display: flex; flex-direction: column; gap: 2px; }
+    .kcard .kl { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; }
+    .kcard .kv { font-size: 34px; font-weight: 700; line-height: 1.1; }
+    .kcard .ks { font-size: 11px; font-weight: 500; opacity: .9; }
+    .kcdb { background: #0066FF; } .kcye { background: var(--cfu); color: #333; } .kcgr { background: var(--cag); } .kcy { background: #78909C; } .kcbl { background: var(--cop); }
+    .ccard { background: var(--cs); border-radius: 5px; box-shadow: var(--scard); overflow: hidden; margin-bottom: 18px; }
+    .ccard-hd { padding: 11px 15px; border-bottom: 2px solid var(--cp); display: flex; align-items: center; justify-content: space-between; }
+    .brow { display: flex; align-items: center; gap: 10px; padding: 7px 15px; border-bottom: 1px solid #F5F5F5; }
+    .brow span:first-child { width: 175px; font-size: 12px; font-weight: 500; flex-shrink: 0; }
+    .btrack { flex: 1; background: #F0F0F0; border-radius: 20px; height: 11px; overflow: hidden; }
+    .bfill { height: 100%; border-radius: 20px; transition: width .5s; }
+    .bnum { font-size: 12px; font-weight: 700; width: 26px; text-align: right; }
+    .twrap { background: var(--cs); border-radius: 5px; box-shadow: var(--scard); overflow: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead tr { border-bottom: 2px solid var(--cp); }
+    th, td { padding: 7px 8px; border-bottom: 1px solid rgba(0,0,0,.04); text-align: left; font-size: 12px; }
+    tbody tr:nth-child(even) { background: rgba(0,0,0,.025); }
+    tbody tr:hover { background: rgba(236,103,38,.05); }
+
+    .modal { display: none; position: fixed; inset: 0; z-index: 2000; background: rgba(0,0,0,.4); align-items: center; justify-content: center; padding: 16px; }
+    .modal.on { display: flex; }
+    .mbox { width: min(520px, 100%); background: #fff; border-radius: 5px; padding: 18px; box-shadow: 0 8px 32px rgba(0,0,0,.22); }
+    .mbox h3 { font-size: 15px; font-weight: 500; margin-bottom: 12px; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .mbox input, .mbox textarea { width: 100%; border: 1px solid var(--cdiv); border-radius: 4px; padding: 8px; font-size: 13px; outline: none; }
+    .mbox textarea { margin-top: 8px; resize: vertical; }
+    .mopts { display: flex; flex-direction: column; gap: 6px; }
+    .mopt { padding: 9px 13px; border: 1px solid var(--cdiv); border-radius: 4px; background: #fff; font-size: 13px; font-weight: 500; text-align: left; display: flex; align-items: center; gap: 10px; transition: all .13s; }
+    .mopt:hover { border-color: var(--cp); background: #FFF8F4; }
+    .mopt small { display: block; font-size: 11px; color: var(--cts); font-weight: 400; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
+    .toast { position: fixed; right: 20px; bottom: 20px; background: #333; color: #fff; padding: 10px 16px; border-radius: 6px; font-size: 12px; font-weight: 500; z-index: 9999; opacity: 0; transform: translateY(10px); transition: all .25s; pointer-events: none; }
+    .toast.on { opacity: 1; transform: translateY(0); }
+    .toast.ok { background: #2E7D32; }
+    .toast.er { background: #B71C1C; }
+
+    @media (max-width: 980px) {
+      html, body { overflow: auto; }
+      .body, .pg.on { height: auto; min-height: 100vh; display: block; overflow: visible; }
+      .sp { width: 100%; min-width: 0; height: 48vh; }
+      .kp { height: 80vh; }
+      .cols { min-width: 980px; }
+      .kp { overflow-x: auto; }
+      .hdr-tabs .tab-btn { padding: 0 10px; font-size: 12px; }
+      .sync-badge { display: none; }
+      .upload { flex-wrap: wrap; }
+    }
+  </style>
+</head>
+<body>
+  <header class="hdr">
+    <button class="hdr-menu" type="button"><span class="mi">menu</span></button>
+    <div class="hdr-tabs">
+      <button class="tab-btn on" data-page="0" type="button"><span class="mi">phone_callback</span> Retorno de Pacientes</button>
+      <button class="tab-btn" data-page="1" type="button"><span class="mi">bar_chart</span> Relatorio da Diva</button>
+    </div>
+    <div class="hdr-r">
+      <div class="sync-badge" id="syncBadge"><div class="sync-dot"></div><span id="syncTxt">Conectando...</span></div>
+      <span id="clinicNameTop" style="color:#fff;font-size:12px;font-weight:500">Diva</span>
+      <span class="ava">D</span>
+      <button class="logout" id="logout" type="button">Sair</button>
+    </div>
+  </header>
+
+  <div class="body">
+    <section class="pg on" id="pg0">
+      <aside class="sp">
+        <div class="sp-hd">
+          <span class="mi" style="color:var(--cp)">record_voice_over</span>
+          <div><h2>Roteiro de Ligacao</h2><p>Selecione a tentativa e clique no paciente</p></div>
+        </div>
+        <div class="tbar">
+          <span class="tlbl">Tentativa:</span>
+          <button class="tbtn on" data-attempt="1" type="button">1a</button>
+          <button class="tbtn" data-attempt="2" type="button">2a</button>
+          <button class="tbtn" data-attempt="3" type="button">3a</button>
+          <button class="tbtn" data-attempt="4" type="button">4a</button>
+          <button class="tbtn" data-attempt="5" type="button">5a</button>
+        </div>
+        <div class="pbar empty" id="pbar">
+          <span class="mi" style="color:var(--cp)">touch_app</span>
+          <div><strong>Nenhum paciente selecionado</strong><span>Clique em um cartao ao lado</span></div>
+        </div>
+        <div class="sbody" id="scriptBody"></div>
+      </aside>
+
+      <main class="kp">
+        <div class="ktb">
+          <h2>Pacientes em Aberto - Retorno Ativo</h2>
+          <input class="ksrch" id="search" placeholder="Buscar paciente...">
+          <button class="small-btn primary" id="newPatientBtn" type="button">Novo paciente</button>
+          <div class="upload">
+            <input type="file" id="file" accept=".xml,.csv,.xls,.xlsx">
+            <button class="small-btn" id="importBtn" type="button">Importar</button>
+          </div>
+          <div class="kmini" id="miniStats"></div>
+        </div>
+        <div class="cols" id="columns"></div>
+      </main>
+    </section>
+
+    <section class="pg" id="pg1">
+      <main class="rp" id="report"></main>
+    </section>
+  </div>
+
+  <div class="modal" id="patientModal">
+    <div class="mbox">
+      <h3>Novo paciente</h3>
+      <div class="form-grid">
+        <input id="name" placeholder="Nome">
+        <input id="phone" placeholder="Telefone">
+        <input id="procedure" placeholder="Procedimento">
+        <input id="value" type="number" min="0" step="0.01" placeholder="Valor">
+      </div>
+      <textarea id="notes" rows="3" placeholder="Observacoes"></textarea>
+      <div class="modal-actions">
+        <button class="small-btn" id="cancelModal" type="button">Cancelar</button>
+        <button class="small-btn primary" id="createBtn" type="button">Adicionar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="finishModal">
+    <div class="mbox">
+      <h3>Finalizar paciente</h3>
+      <p id="finishPatientName" style="font-size:12px;color:var(--cts);margin-bottom:13px"></p>
+      <div class="mopts">
+        <button class="mopt" data-result="agendou" type="button"><span class="bdg bag">Agendou</span><span>Paciente marcou consulta<small>Move para Finalizado e conta como conversao</small></span></button>
+        <button class="mopt" data-result="procedimento" type="button"><span class="bdg bpr">Ja realizou</span><span>Fez o procedimento em outro local<small>Mantem historico para oferta futura</small></span></button>
+        <button class="mopt" data-result="sem-interesse" type="button"><span class="bdg bsi">Sem interesse</span><span>Recusou continuar o tratamento<small>Encerra sem insistencia</small></span></button>
+        <button class="mopt" data-result="sem-resposta" type="button"><span class="bdg bsr">Sem resposta</span><span>Nao respondeu apos tentativas<small>Encerra o ciclo atual</small></span></button>
+      </div>
+      <div class="modal-actions">
+        <button class="small-btn" id="cancelFinish" type="button">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/api.js"></script>
+  <script>
+    const columns = [
+      { id: "para_ligar", key: "cl1", title: "Para ligar", color: "#7E57C2" },
+      { id: "em_contato", key: "cl2", title: "Em contato", color: "#FFB74D" },
+      { id: "agendado", key: "cl3", title: "Agendado", color: "#66BB6A" },
+      { id: "finalizado", key: "cl4", title: "Finalizado", color: "#9E9E9E" }
+    ];
+    const scripts = {
+      1: {
+        title: "1a Ligacao - Primeiro Contato (Rapport + Situacao)",
+        blocks: [
+          ["or", "Tecnica: Rapport empatico (PNL)", "Tom de voz preocupado e genuino, como quem liga para um amigo. Fale devagar. Sorria enquanto fala."],
+          ["bl", "Abertura", "<div class='fala'>Ola! Aqui quem fala e a Diva, da Clinica Andreza Paz.<br><br>Estou entrando em contato para saber se esta tudo bem com o(a) senhor(a), <strong>[NOME]</strong>.<br><br>Fiquei preocupada ao ver que o procedimento <strong>[PROCEDIMENTO]</strong> esta em aberto por aqui.</div>"],
+          ["", "Escutar ativamente", "Faca uma pausa. Deixe o paciente falar. Nao interrompa. Use as proximas respostas para conduzir."],
+          ["gr", "Caminho A - Paciente abre para reagendar", "<div class='pbox'>Certo, compreendo perfeitamente.<br><br>Vamos refazer sua avaliacao de forma totalmente gratuita. Quando podemos agendar?</div>"],
+          ["ye", "Caminho B - Paciente recusa", "<div class='dbox'>Entendo o que o(a) senhor(a) esta me falando. Quero reforcar: podemos fazer uma reavaliacao gratuita, sem custo nenhum.</div>"]
+        ]
+      },
+      2: {
+        title: "2a Ligacao - Segundo Contato (Rapport + Problema)",
+        blocks: [
+          ["or", "Tecnica: Continuidade + Problema (SPIN)", "Retome como se fosse uma conversa interrompida. Use novamente para criar familiaridade."],
+          ["bl", "Abertura", "<div class='fala'>Ola, <strong>[NOME]</strong>! Aqui e a Diva novamente, da Clinica Andreza Paz.<br><br>Liguei outro dia e fiquei com o(a) senhor(a) no pensamento.</div>"],
+          ["gr", "Paciente abre para reagendar", "<div class='pbox'>Vamos agendar a reavaliacao gratuita. Amanha ou na proxima semana funciona melhor?</div>"],
+          ["ye", "Paciente recusa", "<div class='dbox'>A reavaliacao gratuita continua disponivel. O dentista examina e tira as duvidas sem compromisso.</div>"]
+        ]
+      },
+      3: {
+        title: "3a Ligacao - Terceira Tentativa (Implicacao)",
+        blocks: [
+          ["or", "Tecnica: Implicacao suave", "Traga consciencia das consequencias de nao tratar, sem assustar."],
+          ["bl", "Abertura", "<div class='fala'>Boa tarde, <strong>[NOME]</strong>. Estou entrando em contato mais uma vez porque realmente me preocupo com o(a) senhor(a).</div>"],
+          ["gr", "Reagendamento", "<div class='pbox'>Fico feliz em ouvir isso. Vou agendar a reavaliacao gratuita agora mesmo.</div>"],
+          ["ye", "Resistencia", "<div class='dbox'>Cada pessoa tem seu tempo. Vou deixar duas portas abertas: reavaliacao gratuita e limpeza promocional.</div>"]
+        ]
+      },
+      4: {
+        title: "4a Ligacao - Quarta Tentativa (Need-Payoff)",
+        blocks: [
+          ["or", "Tecnica: Beneficio real", "Valide a hesitacao antes de oferecer a solucao."],
+          ["bl", "Abertura", "<div class='fala'>Sei que ja liguei algumas vezes e peco desculpa pelo incomodo. Nao queria deixar essa oportunidade passar.</div>"],
+          ["gr", "Agendar", "<div class='pbox'>A reavaliacao e gratuita. O dentista examina sem compromisso e o(a) senhor(a) decide depois.</div>"],
+          ["ye", "Objecao de valor", "<div class='dbox'>Temos reavaliacao gratuita e possibilidade de parcelamento caso decida fazer algo.</div>"]
+        ]
+      },
+      5: {
+        title: "5a Ligacao - Ultima Tentativa",
+        blocks: [
+          ["or", "Tecnica: Porta aberta", "Encerre sem pressao e deixe uma boa lembranca."],
+          ["bl", "Abertura", "<div class='fala'>Esta e minha ultima ligacao sobre o tratamento, mas queria conversar uma ultima vez. Esta tudo bem?</div>"],
+          ["gr", "Ultima abertura", "<div class='pbox'>Que bom saber disso. Vamos agendar a reavaliacao gratuita?</div>"],
+          ["ye", "Encerramento", "<div class='fala alt'>As portas da Clinica Andreza Paz continuam abertas. Se mudar de ideia, e so chamar.</div>"]
+        ]
+      }
+    };
+
+    let patients = [];
+    let selectedPatientId = null;
+    let selectedAttempt = 1;
+    let finishPatientId = null;
+    const noteTimers = new Map();
+    const resultLabels = {
+      agendou: ["bag", "Agendou"],
+      procedimento: ["bpr", "Ja Realizou"],
+      "sem-interesse": ["bsi", "Sem Interesse"],
+      "sem-resposta": ["bsr", "Sem Resposta"]
+    };
+
+    const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[char]));
+    const money = (value) => Number(value || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+    function toast(type, text) {
+      const el = document.getElementById("toast");
+      el.className = "toast on " + type;
+      el.textContent = text;
+      setTimeout(() => el.className = "toast", 4200);
+    }
+
+    function setSync(type, text) {
+      const badge = document.getElementById("syncBadge");
+      badge.className = "sync-badge " + (type || "");
+      document.getElementById("syncTxt").textContent = text;
+    }
+
+    function selectedPatient() {
+      return patients.find(patient => patient.id === selectedPatientId);
+    }
+
+    function renderScript() {
+      const patient = selectedPatient();
+      const name = patient ? escapeHtml(String(patient.name).split(" ")[0]) : "[NOME]";
+      const procedure = patient ? escapeHtml(patient.procedure || "procedimento") : "[PROCEDIMENTO]";
+      const script = scripts[selectedAttempt];
+      document.getElementById("scriptBody").innerHTML = `
+        <div class="rt">${script.title}</div>
+        ${script.blocks.map(([type, label, html]) => `
+          <div class="blk ${type}">
+            <div class="blk-l">${label}</div>
+            <div class="blk-b">${html.replaceAll("[NOME]", name).replaceAll("[PROCEDIMENTO]", procedure)}</div>
+          </div>
+        `).join("")}
+      `;
+
+      const pbar = document.getElementById("pbar");
+      if (!patient) {
+        pbar.className = "pbar empty";
+        pbar.innerHTML = '<span class="mi" style="color:var(--cp)">touch_app</span><div><strong>Nenhum paciente selecionado</strong><span>Clique em um cartao ao lado</span></div>';
+        return;
+      }
+      pbar.className = "pbar";
+      pbar.innerHTML = `<span class="mi" style="color:var(--cp)">person</span><div><strong>${escapeHtml(patient.name)}</strong><span>${escapeHtml(patient.procedure || "Sem procedimento")} - ${money(patient.value)} - ${patient.attempts || 0} tentativa(s)</span></div>`;
+    }
+
+    function renderMiniStats() {
+      const counts = Object.fromEntries(columns.map(col => [col.id, patients.filter(p => p.status === col.id).length]));
+      document.getElementById("miniStats").innerHTML = `
+        <div class="kchip" style="background:#039BE5">${counts.em_contato} em contato</div>
+        <div class="kchip" style="background:#66BB6A">${counts.agendado} agendados</div>
+        <div class="kchip" style="background:#9E9E9E">${counts.finalizado} finalizados</div>
+      `;
+    }
+
+    function patientCard(patient) {
+      const attempts = Number(patient.attempts || 0);
+      const dots = Array.from({ length: 5 }, (_, index) => {
+        const n = index + 1;
+        const state = n <= attempts ? "dn" : n === attempts + 1 ? "nx" : "";
+        return `<button class="dot ${state}" data-action="attempt" data-id="${patient.id}" data-attempt="${n}" type="button">${n}</button>`;
+      }).join("");
+      const selected = patient.id === selectedPatientId ? "sel" : "";
+      const result = resultLabels[patient.result];
+      const resultBadge = result ? `<span class="bdg ${result[0]}">${result[1]}</span><br>` : "";
+      return `
+        <article class="card ${selected}" data-action="select" data-id="${patient.id}">
+          <div class="cn">${escapeHtml(patient.name)}</div>
+          <div class="ctxt">phone ${escapeHtml(patient.phone)}</div>
+          <span class="cp2">${escapeHtml(patient.procedure || "Sem procedimento")}</span>
+          <div class="cv">${money(patient.value)}</div>
+          <div class="trow"><span class="tlb">Tent.:</span>${dots}</div>
+          ${resultBadge}
+          <textarea class="cobs" data-action="notes" data-id="${patient.id}" placeholder="Anotacoes...">${escapeHtml(patient.notes || "")}</textarea>
+          <div class="cbtns">
+            ${patient.status !== "em_contato" ? `<button class="cb cbo" data-action="status" data-status="em_contato" data-id="${patient.id}" type="button">Em Contato</button>` : ""}
+            ${patient.status !== "agendado" ? `<button class="cb cbg" data-action="status" data-status="agendado" data-id="${patient.id}" type="button">Agendar</button>` : ""}
+            ${patient.status !== "finalizado" ? `<button class="cb cbgr" data-action="finish" data-id="${patient.id}" type="button">Finalizar</button>` : `<button class="cb cbb" data-action="status" data-status="para_ligar" data-id="${patient.id}" type="button">Reabrir</button>`}
+          </div>
+        </article>
+      `;
+    }
+
+    function renderBoard() {
+      const query = document.getElementById("search").value.trim().toLowerCase();
+      document.getElementById("columns").innerHTML = columns.map((column) => {
+        const items = patients.filter(patient => patient.status === column.id && (!query || String(patient.name).toLowerCase().includes(query)));
+        return `
+          <section class="col ${column.key}">
+            <div class="col-hd"><span>${column.title}</span><span class="bg">${patients.filter(p => p.status === column.id).length}</span></div>
+            <div class="col-cards">${items.length ? items.map(patientCard).join("") : '<div class="empty-c">Nenhum paciente aqui</div>'}</div>
+          </section>
+        `;
+      }).join("");
+      renderMiniStats();
+      renderScript();
+    }
+
+    function renderReport() {
+      const total = patients.length;
+      const count = (status) => patients.filter(p => p.status === status).length;
+      const countResult = (result) => patients.filter(p => p.result === result).length;
+      const finalized = count("finalizado");
+      const conversion = finalized ? Math.round((countResult("agendou") / finalized) * 100) : 0;
+      const pct = (n) => total ? Math.round((n / total) * 100) : 0;
+      const bar = (label, n, color) => `<div class="brow"><span>${label}</span><div class="btrack"><div class="bfill" style="width:${pct(n)}%;background:${color}"></div></div><span class="bnum">${n}</span></div>`;
+      const order = { finalizado: 0, agendado: 1, em_contato: 2, para_ligar: 3 };
+      const rows = [...patients].sort((a, b) => (order[a.status] ?? 9) - (order[b.status] ?? 9)).map(patient => `
+        <tr>
+          <td><strong>${escapeHtml(patient.name)}</strong></td>
+          <td>${escapeHtml(patient.procedure || "-")}</td>
+          <td style="font-weight:700;color:var(--csu)">${money(patient.value)}</td>
+          <td>${patient.attempts || 0}</td>
+          <td>${patient.result && resultLabels[patient.result] ? `<span class="bdg ${resultLabels[patient.result][0]}">${resultLabels[patient.result][1]}</span>` : (columns.find(col => col.id === patient.status)?.title || patient.status)}</td>
+          <td>${escapeHtml(patient.finalizedAtText || "-")}</td>
+        </tr>
+      `).join("");
+      document.getElementById("report").innerHTML = `
+        <div class="rh"><span class="mi" style="color:var(--cp)">bar_chart</span> Relatorio da Diva - Retorno de Pacientes</div>
+        <div class="kgrid">
+          <div class="kcard kcdb"><span class="kl">Total</span><span class="kv">${total}</span><span class="ks">Pacientes</span></div>
+          <div class="kcard kcye"><span class="kl">Em andamento</span><span class="kv">${count("para_ligar") + count("em_contato")}</span><span class="ks">Pacientes</span></div>
+          <div class="kcard kcgr"><span class="kl">Agendaram</span><span class="kv">${countResult("agendou")}</span><span class="ks">Pacientes</span></div>
+          <div class="kcard kcy"><span class="kl">Finalizados</span><span class="kv">${count("finalizado")}</span><span class="ks">Contatos</span></div>
+          <div class="kcard kcgr"><span class="kl">Conversao</span><span class="kv">${conversion}%</span><span class="ks">dos finalizados</span></div>
+          <div class="kcard kcbl"><span class="kl">Tentativas</span><span class="kv">${patients.reduce((sum, p) => sum + Number(p.attempts || 0), 0)}</span><span class="ks">Total feitas</span></div>
+        </div>
+        <div class="ccard">
+          <div class="ccard-hd"><h3>Distribuicao dos Pacientes</h3></div>
+          ${bar("Para Ligar", count("para_ligar"), "#7E57C2")}
+          ${bar("Em Contato", count("em_contato"), "var(--cfu)")}
+          ${bar("Agendados", count("agendado"), "var(--cag)")}
+          ${bar("Agendou", countResult("agendou"), "var(--cag)")}
+          ${bar("Ja Realizou", countResult("procedimento"), "var(--cop)")}
+          ${bar("Sem Interesse", countResult("sem-interesse"), "var(--cre)")}
+          ${bar("Sem Resposta", countResult("sem-resposta"), "#9E9E9E")}
+        </div>
+        <div class="twrap">
+          <table><thead><tr><th>Paciente</th><th>Procedimento</th><th>Valor</th><th>Tentativas</th><th>Status</th><th>Data</th></tr></thead><tbody>${rows}</tbody></table>
+        </div>
+      `;
+    }
+
+    async function loadData() {
+      setSync("", "Sincronizando...");
+      const clinic = await API.getClinic();
+      document.getElementById("clinicNameTop").textContent = clinic.name || "ClinicRC";
+      patients = await API.listPatients();
+      renderBoard();
+      renderReport();
+      setSync("ok", "Sincronizado");
+    }
+
+    async function updatePatient(id, data) {
+      await API.updatePatient(id, data);
+      const patient = patients.find(item => item.id === id);
+      if (patient) Object.assign(patient, data);
+      renderBoard();
+      renderReport();
+      setSync("ok", "Salvo");
+    }
+
+    document.querySelectorAll(".tbtn").forEach(btn => btn.addEventListener("click", () => {
+      selectedAttempt = Number(btn.dataset.attempt);
+      document.querySelectorAll(".tbtn").forEach(item => item.classList.toggle("on", item === btn));
+      renderScript();
+    }));
+
+    document.querySelectorAll(".tab-btn").forEach(btn => btn.addEventListener("click", () => {
+      document.querySelectorAll(".tab-btn").forEach(item => item.classList.toggle("on", item === btn));
+      document.querySelectorAll(".pg").forEach((page, index) => page.classList.toggle("on", String(index) === btn.dataset.page));
+      if (btn.dataset.page === "1") renderReport();
+    }));
+
+    document.getElementById("columns").addEventListener("click", async (event) => {
+      const actionEl = event.target.closest("[data-action]");
+      if (!actionEl) return;
+      const id = actionEl.dataset.id;
+      const patient = patients.find(item => item.id === id);
+      if (!patient) return;
+
+      if (actionEl.dataset.action === "select") {
+        selectedPatientId = id;
+        selectedAttempt = Math.min(5, Number(patient.attempts || 0) + 1);
+        document.querySelectorAll(".tbtn").forEach(item => item.classList.toggle("on", Number(item.dataset.attempt) === selectedAttempt));
+        renderBoard();
+        return;
+      }
+
+      event.stopPropagation();
+      try {
+        if (actionEl.dataset.action === "status") {
+          await updatePatient(id, { status: actionEl.dataset.status });
+        }
+        if (actionEl.dataset.action === "finish") {
+          finishPatientId = id;
+          document.getElementById("finishPatientName").textContent = "Paciente: " + patient.name;
+          document.getElementById("finishModal").classList.add("on");
+        }
+        if (actionEl.dataset.action === "attempt") {
+          const attempt = Number(actionEl.dataset.attempt);
+          const nextAttempts = attempt === Number(patient.attempts || 0) ? attempt - 1 : attempt;
+          await updatePatient(id, { attempts: nextAttempts, status: patient.status === "para_ligar" ? "em_contato" : patient.status });
+        }
+      } catch (err) {
+        setSync("err", "Erro");
+        toast("er", err.message);
+      }
+    });
+
+    document.getElementById("columns").addEventListener("input", async (event) => {
+      if (event.target.dataset.action !== "notes") return;
+      const id = event.target.dataset.id;
+      const value = event.target.value;
+      const patient = patients.find(item => item.id === id);
+      if (patient) patient.notes = value;
+      clearTimeout(noteTimers.get(id));
+      noteTimers.set(id, setTimeout(async () => {
+        try {
+          await updatePatient(id, { notes: value });
+        } catch (err) {
+          setSync("err", "Erro");
+          toast("er", err.message);
+        }
+      }, 800));
+    });
+
+    document.getElementById("search").addEventListener("input", renderBoard);
+    document.getElementById("newPatientBtn").addEventListener("click", () => document.getElementById("patientModal").classList.add("on"));
+    document.getElementById("cancelModal").addEventListener("click", () => document.getElementById("patientModal").classList.remove("on"));
+    document.getElementById("cancelFinish").addEventListener("click", () => {
+      finishPatientId = null;
+      document.getElementById("finishModal").classList.remove("on");
+    });
+    document.getElementById("finishModal").addEventListener("click", async (event) => {
+      const resultBtn = event.target.closest("[data-result]");
+      if (!resultBtn || !finishPatientId) return;
+      try {
+        await updatePatient(finishPatientId, {
+          status: "finalizado",
+          result: resultBtn.dataset.result
+        });
+        document.getElementById("finishModal").classList.remove("on");
+        finishPatientId = null;
+        toast("ok", "Paciente finalizado.");
+      } catch (err) {
+        toast("er", err.message);
+      }
+    });
+    document.getElementById("createBtn").addEventListener("click", async () => {
+      try {
+        await API.createPatient({
+          name: document.getElementById("name").value,
+          phone: document.getElementById("phone").value,
+          procedure: document.getElementById("procedure").value,
+          value: document.getElementById("value").value,
+          notes: document.getElementById("notes").value,
+          status: "para_ligar"
+        });
+        ["name", "phone", "procedure", "value", "notes"].forEach(id => document.getElementById(id).value = "");
+        document.getElementById("patientModal").classList.remove("on");
+        await loadData();
+        toast("ok", "Paciente criado.");
+      } catch (err) {
+        toast("er", err.message);
+      }
+    });
+
+    document.getElementById("importBtn").addEventListener("click", async () => {
+      const file = document.getElementById("file").files[0];
+      if (!file) return toast("er", "Selecione um arquivo XML, CSV ou planilha.");
+      try {
+        setSync("", "Importando...");
+        const result = await API.importFile(file);
+        await loadData();
+        toast("ok", result.message || "Importacao concluida.");
+      } catch (err) {
+        setSync("err", "Erro");
+        toast("er", err.message);
+      }
+    });
+
+    document.getElementById("logout").addEventListener("click", () => auth.signOut());
+    auth.onAuthStateChanged(async (user) => {
+      if (!user) return;
+      try {
+        await loadData();
+      } catch (err) {
+        setSync("err", "Erro");
+        toast("er", err.message);
+      }
+    });
+
+    renderScript();
+  </script>
+</body>
+</html>

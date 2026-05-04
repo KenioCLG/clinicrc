@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ClinicRC - Acesso</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <style>
+    :root {
+      --cp: #EC6726;
+      --cpd: #c45420;
+      --chbg: #292D36;
+      --cbg: #F0F0F0;
+      --cs: #FFFFFF;
+      --ct: #333333;
+      --cts: rgba(0,0,0,.54);
+      --cdiv: #E0E0E0;
+      --cibg: #EAEAEB;
+      --cre: #F44336;
+      --font: "Roboto", Helvetica, Arial, sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      font-family: var(--font);
+      color: var(--ct);
+      background:
+        radial-gradient(circle at 20% 10%, rgba(236,103,38,.08), transparent 30%),
+        radial-gradient(circle at 80% 90%, rgba(41,45,54,.08), transparent 28%),
+        var(--cbg);
+    }
+    .mi { font-family: "Material Icons"; font-size: 20px; line-height: 1; vertical-align: middle; }
+    .login-card {
+      width: min(760px, 100%);
+      background: var(--cs);
+      border: 1px solid var(--cdiv);
+      border-radius: 6px;
+      box-shadow: 0 18px 46px rgba(0,0,0,.14);
+      overflow: hidden;
+    }
+    .login-top {
+      background: var(--chbg);
+      color: #fff;
+      padding: 26px 32px;
+      border-bottom: 4px solid var(--cp);
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+    .brand-mark {
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      background: #D4C9F1;
+      color: rgba(0,0,0,.87);
+      display: grid;
+      place-items: center;
+      font-size: 24px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .login-top h1 { font-size: 25px; font-weight: 700; line-height: 1.15; }
+    .login-top p { margin-top: 5px; color: rgba(255,255,255,.66); font-size: 15px; }
+    .login-body { padding: 40px; }
+    .product { margin-bottom: 28px; }
+    .product h2 {
+      color: #1A2332;
+      font-size: clamp(34px, 5vw, 46px);
+      font-weight: 700;
+      letter-spacing: -.02em;
+      line-height: 1.05;
+    }
+    .product p {
+      margin-top: 12px;
+      max-width: 600px;
+      color: var(--cts);
+      font-size: 22px;
+      line-height: 1.45;
+    }
+    .error, .status {
+      display: none;
+      padding: 12px 14px;
+      border-radius: 4px;
+      margin-bottom: 16px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .error { background: #FFEBEE; color: #B71C1C; border: 1px solid #FFCDD2; }
+    .status { background: #E8F5E9; color: #2E7D32; border: 1px solid #C8E6CA; }
+    label {
+      display: block;
+      margin: 18px 0 9px;
+      color: var(--cts);
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+    input {
+      width: 100%;
+      height: 66px;
+      border: 1px solid rgba(0,0,0,.15);
+      border-radius: 6px;
+      background: var(--cibg);
+      padding: 0 18px;
+      color: var(--ct);
+      font-size: 22px;
+      outline: none;
+    }
+    input:focus {
+      border-color: var(--cp);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(236,103,38,.12);
+    }
+    .btn {
+      width: 100%;
+      height: 66px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 22px;
+      font-weight: 700;
+      transition: all .15s;
+    }
+    .btn-primary {
+      margin-top: 24px;
+      border: 0;
+      background: var(--cp);
+      color: #fff;
+    }
+    .btn-primary:hover { background: var(--cpd); }
+    .btn-primary:disabled { opacity: .65; cursor: not-allowed; }
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      color: var(--cts);
+      font-size: 16px;
+      margin: 34px 0 24px;
+    }
+    .divider:before, .divider:after {
+      content: "";
+      height: 1px;
+      background: var(--cdiv);
+      flex: 1;
+    }
+    .btn-google {
+      border: 1px solid var(--cdiv);
+      background: #fff;
+      color: var(--ct);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    .btn-google:hover { border-color: var(--cp); background: #FFF8F4; }
+    .switch {
+      margin-top: 28px;
+      color: var(--cts);
+      text-align: center;
+      font-size: 20px;
+    }
+    .switch a {
+      color: var(--cp);
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .security {
+      margin-top: 28px;
+      padding: 16px 18px;
+      border-radius: 6px;
+      background: #F7F7F7;
+      border: 1px solid var(--cdiv);
+      color: var(--cts);
+      font-size: 16px;
+      line-height: 1.45;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+    .security .mi { color: var(--cp); font-size: 22px; margin-top: 1px; }
+    @media (max-width: 640px) {
+      body { padding: 14px; }
+      .login-top { padding: 22px; }
+      .login-body { padding: 26px; }
+      .product h2 { font-size: 34px; }
+      .product p, .btn, input { font-size: 18px; }
+      .btn, input { height: 56px; }
+      .switch { font-size: 16px; }
+      .security { font-size: 14px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="login-card">
+    <header class="login-top">
+      <div class="brand-mark">D</div>
+      <div>
+        <h1 id="form-title">Acessar ClinicRC</h1>
+        <p>Micro SaaS de retorno ativo para clinicas</p>
+      </div>
+    </header>
+
+    <section class="login-body">
+      <div class="product">
+        <h2>Retorno de pacientes</h2>
+        <p>Entre para operar o Kanban, importar planilhas e acompanhar as tentativas da Diva.</p>
+      </div>
+
+      <div class="error" id="error"></div>
+      <div class="status" id="status"></div>
+
+      <form id="auth-form">
+        <div id="clinic-field" style="display:none;">
+          <label for="clinic-name">Nome da clinica</label>
+          <input id="clinic-name" type="text" placeholder="Ex: Clinica Andreza Paz">
+        </div>
+
+        <label for="email">Email</label>
+        <input id="email" type="email" required placeholder="voce@clinica.com">
+
+        <label for="password">Senha</label>
+        <input id="password" type="password" required minlength="6" placeholder="Minimo 6 caracteres">
+
+        <button class="btn btn-primary" id="submit-btn" type="submit">Entrar</button>
+      </form>
+
+      <div class="divider">ou</div>
+
+      <button class="btn btn-google" id="google-btn" type="button">
+        <span class="mi">account_circle</span>
+        Entrar com Google
+      </button>
+
+      <p class="switch">
+        <span id="switch-text">Nao tem conta?</span>
+        <a id="switch-btn">Criar conta</a>
+      </p>
+
+      <div class="security">
+        <span class="mi">lock</span>
+        <span>Firestore bloqueado no navegador. Dados passam pelo backend validado em Cloud Functions.</span>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/api.js"></script>
+  <script>
+    let isLogin = true;
+    const errorEl = document.getElementById("error");
+    const statusEl = document.getElementById("status");
+    const submitBtn = document.getElementById("submit-btn");
+
+    function setMessage(type, message) {
+      errorEl.style.display = "none";
+      statusEl.style.display = "none";
+      if (!message) return;
+      const el = type === "error" ? errorEl : statusEl;
+      el.textContent = message;
+      el.style.display = "block";
+    }
+
+    function toggleMode() {
+      isLogin = !isLogin;
+      document.getElementById("clinic-field").style.display = isLogin ? "none" : "block";
+      document.getElementById("form-title").textContent = isLogin ? "Acessar ClinicRC" : "Criar clinica";
+      submitBtn.textContent = isLogin ? "Entrar" : "Cadastrar";
+      document.getElementById("switch-text").textContent = isLogin ? "Nao tem conta?" : "Ja tem conta?";
+      document.getElementById("switch-btn").textContent = isLogin ? "Criar conta" : "Entrar";
+      setMessage();
+    }
+
+    async function ensureClinic(defaultName) {
+      try {
+        await API.getClinic();
+      } catch (err) {
+        if (!String(err.message).includes("nao encontrada")) throw err;
+        await API.createClinic(defaultName);
+      }
+    }
+
+    function authErrorMessage(err) {
+      const messages = {
+        "auth/email-already-in-use": "Email ja cadastrado.",
+        "auth/invalid-credential": "Email ou senha incorretos.",
+        "auth/invalid-email": "Email invalido.",
+        "auth/operation-not-allowed": "Google ou Email/Senha nao esta habilitado em Firebase Console > Authentication > Sign-in method.",
+        "auth/popup-blocked": "O navegador bloqueou o popup. Vou tentar o login por redirecionamento.",
+        "auth/unauthorized-domain": "Dominio nao autorizado. Adicione clinicrc-8ba64.web.app em Firebase Console > Authentication > Settings > Authorized domains.",
+        "auth/weak-password": "Senha deve ter pelo menos 6 caracteres.",
+        "auth/internal-error": "Erro interno do Firebase Auth. Verifique se Google esta habilitado e se clinicrc-8ba64.web.app esta em Authorized domains."
+      };
+      return messages[err.code] || err.message;
+    }
+
+    document.getElementById("switch-btn").addEventListener("click", toggleMode);
+
+    document.getElementById("auth-form").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      setMessage();
+      submitBtn.disabled = true;
+
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+      const clinicName = document.getElementById("clinic-name").value.trim();
+
+      try {
+        if (isLogin) {
+          await auth.signInWithEmailAndPassword(email, password);
+        } else {
+          if (clinicName.length < 2) throw new Error("Informe o nome da clinica.");
+          await auth.createUserWithEmailAndPassword(email, password);
+          await ensureClinic(clinicName);
+        }
+        setMessage("status", "Acesso confirmado. Abrindo sistema...");
+        window.location.href = "/app.html";
+      } catch (err) {
+        setMessage("error", authErrorMessage(err));
+      } finally {
+        submitBtn.disabled = false;
+      }
+    });
+
+    document.getElementById("google-btn").addEventListener("click", async () => {
+      try {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        provider.setCustomParameters({ prompt: "select_account" });
+        const result = await auth.signInWithPopup(provider);
+        await ensureClinic((result.user.displayName || "Nova clinica") + " - ClinicRC");
+        window.location.href = "/app.html";
+      } catch (err) {
+        if (err.code === "auth/popup-blocked" || err.code === "auth/cancelled-popup-request") {
+          const provider = new firebase.auth.GoogleAuthProvider();
+          provider.setCustomParameters({ prompt: "select_account" });
+          await auth.signInWithRedirect(provider);
+          return;
+        }
+        if (err.code !== "auth/popup-closed-by-user") setMessage("error", authErrorMessage(err));
+      }
+    });
+
+    auth.getRedirectResult().then(async (result) => {
+      if (!result.user) return;
+      await ensureClinic((result.user.displayName || "Nova clinica") + " - ClinicRC");
+      window.location.href = "/app.html";
+    }).catch((err) => {
+      setMessage("error", authErrorMessage(err));
+    });
+
+    auth.onAuthStateChanged(async (user) => {
+      if (!user) return;
+      if (document.visibilityState === "hidden") return;
+      try {
+        await ensureClinic((user.displayName || "Nova clinica") + " - ClinicRC");
+        window.location.href = "/app.html";
+      } catch (err) {
+        setMessage("error", authErrorMessage(err));
+      }
+    });
+  </script>
+</body>
+</html>
