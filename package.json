@@ -1,0 +1,10 @@
+{
+  "name": "clinicrc",
+  "version": "1.0.0",
+  "description": "Sistema de retorno de pacientes para clinicas - Micro SaaS v1",
+  "private": true,
+  "scripts": {
+    "dev": "firebase emulators:start",
+    "deploy": "firebase deploy"
+  }
+}
