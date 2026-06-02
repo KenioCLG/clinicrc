@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Upload de Planilhas — ClinicRC</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --cp:#EC6726;--cpd:#c45420;
+    --chbg:#292D36;--cbg:#F0F0F0;--cs:#FFFFFF;
+    --ct:#333333;--cts:rgba(0,0,0,.54);
+    --cdiv:#E0E0E0;--cibg:#EAEAEB;
+    --cag:#66BB6A;--cre:#F44336;--cop:#039BE5;
+    --hh:50px;
+  }
+  body{font-family:'Roboto',Helvetica,Arial,sans-serif;background:var(--cbg);color:var(--ct);}
+  .mi{font-family:'Material Icons';font-style:normal;font-size:20px;
+    line-height:1;user-select:none;vertical-align:middle;}
+
+  /* HEADER */
+  .hdr{
+    height:var(--hh);background:var(--chbg);
+    display:flex;align-items:center;justify-content:space-between;
+    padding:0 16px;position:sticky;top:0;z-index:100;
+  }
+  .hdr-left{display:flex;align-items:center;gap:12px;}
+  .hdr-left .logo{color:#fff;font-size:16px;font-weight:700;}
+  .hdr-left .logo span{color:var(--cp);}
+  .hdr-back{
+    color:rgba(255,255,255,.7);background:none;border:none;cursor:pointer;
+    font-family:inherit;font-size:13px;display:flex;align-items:center;gap:6px;
+    padding:6px 10px;border-radius:4px;transition:background .2s;
+  }
+  .hdr-back:hover{background:rgba(255,255,255,.1);}
+  .hdr-right{display:flex;align-items:center;gap:10px;}
+  .clinic-label{color:rgba(255,255,255,.6);font-size:12px;}
+  .clinic-name{color:#fff;font-size:13px;font-weight:500;}
+  .btn-logout{
+    color:rgba(255,255,255,.6);background:none;border:none;
+    cursor:pointer;font-family:inherit;font-size:13px;
+    display:flex;align-items:center;gap:4px;
+    padding:4px 8px;border-radius:4px;transition:all .2s;
+  }
+  .btn-logout:hover{color:#fff;background:rgba(255,255,255,.1);}
+
+  /* MAIN */
+  .main{max-width:800px;margin:0 auto;padding:32px 20px;}
+  .page-title{font-size:22px;font-weight:700;margin-bottom:4px;}
+  .page-sub{color:var(--cts);font-size:14px;margin-bottom:32px;}
+
+  /* SOURCE SELECTOR */
+  .source-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:28px;}
+  .source-card{
+    background:var(--cs);border-radius:10px;padding:20px;
+    border:2px solid var(--cdiv);cursor:pointer;
+    transition:border-color .2s,box-shadow .2s;
+    display:flex;flex-direction:column;gap:8px;
+  }
+  .source-card:hover{border-color:var(--cp);box-shadow:0 4px 15px rgba(236,103,38,.15);}
+  .source-card.selected{border-color:var(--cp);box-shadow:0 4px 15px rgba(236,103,38,.2);}
+  .source-card .sc-icon{
+    width:40px;height:40px;border-radius:8px;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .source-card .sc-icon.cc{background:#E3F2FD;}
+  .source-card .sc-icon.sd{background:#E8F5E9;}
+  .source-card .sc-icon .mi.cc{color:#0277BD;}
+  .source-card .sc-icon .mi.sd{color:#2E7D32;}
+  .source-card h3{font-size:14px;font-weight:600;}
+  .source-card p{font-size:12px;color:var(--cts);}
+  .source-card .sc-badge{
+    display:inline-flex;align-items:center;gap:4px;
+    font-size:11px;padding:2px 8px;border-radius:10px;
+    background:var(--cibg);color:var(--cts);width:fit-content;
+  }
+
+  /* DROPZONE */
+  .dropzone{
+    background:var(--cs);border-radius:10px;
+    border:2px dashed var(--cdiv);padding:40px;
+    text-align:center;cursor:pointer;
+    transition:border-color .2s,background .2s;
+    margin-bottom:20px;
+  }
+  .dropzone:hover,.dropzone.drag{
+    border-color:var(--cp);background:#FFF8F4;
+  }
+  .dropzone .dz-icon .mi{font-size:48px;color:var(--cp);}
+  .dropzone h3{font-size:15px;font-weight:600;margin:12px 0 6px;}
+  .dropzone p{font-size:13px;color:var(--cts);}
+  .dropzone .dz-hint{
+    margin-top:12px;font-size:12px;color:var(--cts);
+    background:var(--cibg);padding:6px 14px;border-radius:20px;
+    display:inline-block;
+  }
+  #fileInput{display:none;}
+  .file-selected{
+    margin-top:12px;display:flex;align-items:center;justify-content:center;
+    gap:8px;color:var(--cp);font-size:13px;font-weight:500;
+  }
+
+  /* HISTORY */
+  .section-title{
+    font-size:13px;font-weight:600;text-transform:uppercase;
+    letter-spacing:.5px;color:var(--cts);margin-bottom:12px;
+    display:flex;align-items:center;gap:6px;
+  }
+
+  /* BTN UPLOAD */
+  .btn-upload{
+    width:100%;padding:14px;
+    background:var(--cp);color:#fff;
+    border:none;border-radius:8px;
+    font-family:inherit;font-size:15px;font-weight:600;
+    cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;
+    transition:background .2s,transform .1s;
+    box-shadow:0 4px 15px rgba(236,103,38,.3);
+    margin-bottom:28px;
+  }
+  .btn-upload:hover{background:var(--cpd);}
+  .btn-upload:disabled{background:#bbb;box-shadow:none;cursor:not-allowed;}
+
+  /* RESULT CARD */
+  .result{
+    background:var(--cs);border-radius:10px;padding:20px;
+    border-left:4px solid var(--cag);
+    display:none;margin-bottom:24px;
+    animation:fadeIn .3s ease;
+  }
+  .result.show{display:block;}
+  .result.error{border-color:var(--cre);}
+  .result h4{font-size:15px;font-weight:600;margin-bottom:12px;}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+  .stat{
+    text-align:center;background:var(--cbg);
+    border-radius:8px;padding:12px;
+  }
+  .stat .num{font-size:22px;font-weight:700;color:var(--ct);}
+  .stat .num.new{color:var(--cag);}
+  .stat .num.updated{color:var(--cop);}
+  .stat .lbl{font-size:11px;color:var(--cts);margin-top:2px;}
+
+  /* HISTORY TABLE */
+  .hist-card{background:var(--cs);border-radius:10px;overflow:hidden;}
+  .hist-card table{width:100%;border-collapse:collapse;font-size:13px;}
+  .hist-card th{
+    background:var(--cbg);font-weight:500;font-size:11px;
+    text-transform:uppercase;letter-spacing:.5px;color:var(--cts);
+    padding:10px 16px;text-align:left;
+  }
+  .hist-card td{padding:12px 16px;border-top:1px solid var(--cdiv);}
+  .hist-card tr:hover td{background:#FAFAFA;}
+  .badge-src{
+    display:inline-flex;align-items:center;gap:4px;
+    font-size:11px;padding:2px 8px;border-radius:10px;
+  }
+  .badge-src.cc{background:#E3F2FD;color:#0277BD;}
+  .badge-src.sd{background:#E8F5E9;color:#2E7D32;}
+  .empty-hist{text-align:center;padding:24px;color:var(--cts);font-size:13px;}
+
+  @keyframes fadeIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="hdr">
+  <div class="hdr-left">
+    <div class="logo">Clinic<span>RC</span></div>
+    <button class="hdr-back" onclick="window.location.href='app.html'">
+      <span class="mi">arrow_back</span> Voltar ao Kanban
+    </button>
+  </div>
+  <div class="hdr-right">
+    <span class="clinic-label">Logado como</span>
+    <span class="clinic-name" id="clinicLabel">—</span>
+    <button class="btn-logout" onclick="logout()">
+      <span class="mi">logout</span> Sair
+    </button>
+  </div>
+</header>
+
+<!-- MAIN -->
+<div class="main">
+  <h1 class="page-title">📊 Upload de Planilhas</h1>
+  <p class="page-sub">Importe orçamentos em aberto do ClinicCorp ou Simples Dental. Pacientes já existentes terão seus dados atualizados sem perder o progresso no Kanban.</p>
+
+  <!-- SELEÇÃO DA FONTE -->
+  <div class="section-title"><span class="mi">tune</span> 1. Selecione o sistema de origem</div>
+  <div class="source-grid">
+    <div class="source-card selected" id="card-cc" onclick="selectSource('cliniccorp')">
+      <div class="sc-icon cc"><span class="mi cc">business</span></div>
+      <h3>ClinicCorp</h3>
+      <p>Relatório de orçamentos exportado do ClinicCorp</p>
+      <span class="sc-badge"><span class="mi" style="font-size:14px">check_circle</span> Status: OPEN</span>
+    </div>
+    <div class="source-card" id="card-sd" onclick="selectSource('simples_dental')">
+      <div class="sc-icon sd"><span class="mi sd">healing</span></div>
+      <h3>Simples Dental</h3>
+      <p>Relatório de orçamentos por status do Simples Dental</p>
+      <span class="sc-badge"><span class="mi" style="font-size:14px">check_circle</span> Status: Em aberto</span>
+    </div>
+  </div>
+
+  <!-- DROPZONE -->
+  <div class="section-title"><span class="mi">upload_file</span> 2. Selecione o arquivo</div>
+  <div class="dropzone" id="dropzone" onclick="document.getElementById('fileInput').click()"
+       ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">
+    <div class="dz-icon"><span class="mi">table_chart</span></div>
+    <h3>Arraste a planilha aqui ou clique para selecionar</h3>
+    <p>Arquivo exportado do sistema (.xlsx)</p>
+    <span class="dz-hint">.xlsx — máximo 50MB</span>
+    <div class="file-selected" id="fileSelected" style="display:none">
+      <span class="mi">description</span>
+      <span id="fileName">—</span>
+    </div>
+  </div>
+  <input type="file" id="fileInput" accept=".xlsx" onchange="onFileSelected(this)"/>
+
+  <!-- BOTÃO DE UPLOAD -->
+  <button class="btn-upload" id="btnUpload" onclick="doUpload()" disabled>
+    <span class="mi">cloud_upload</span>
+    <span id="btnTxt">Processar Planilha</span>
+  </button>
+
+  <!-- RESULTADO -->
+  <div class="result" id="result">
+    <h4 id="resultTitle">✅ Planilha processada com sucesso!</h4>
+    <div class="stats">
+      <div class="stat"><div class="num" id="sTotal">0</div><div class="lbl">Total lido</div></div>
+      <div class="stat"><div class="num new" id="sNew">0</div><div class="lbl">Novos</div></div>
+      <div class="stat"><div class="num updated" id="sUpdated">0</div><div class="lbl">Atualizados</div></div>
+      <div class="stat"><div class="num" id="sSkipped">0</div><div class="lbl">Sem mudança</div></div>
+    </div>
+  </div>
+
+  <!-- HISTÓRICO -->
+  <div class="section-title" style="margin-top:8px"><span class="mi">history</span> Histórico de uploads</div>
+  <div class="hist-card">
+    <table>
+      <thead>
+        <tr>
+          <th>Data/Hora</th>
+          <th>Arquivo</th>
+          <th>Sistema</th>
+          <th>Total</th>
+          <th>Novos</th>
+          <th>Atualizados</th>
+        </tr>
+      </thead>
+      <tbody id="histBody">
+        <tr><td colspan="6" class="empty-hist">Carregando histórico...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  // ── AUTH ──────────────────────────────────────────────
+  const TOKEN = localStorage.getItem('clinicrc_token');
+  if (!TOKEN) window.location.href = 'index.html';
+
+  document.getElementById('clinicLabel').textContent =
+    localStorage.getItem('clinicrc_clinic') || '—';
+
+  function logout() {
+    localStorage.clear();
+    window.location.href = 'index.html';
+  }
+
+  const API = window.location.origin;
+
+  // ── ESTADO ──────────────────────────────────────────
+  let selectedSource = 'cliniccorp';
+  let selectedFile = null;
+
+  // ── SELEÇÃO DA FONTE ────────────────────────────────
+  function selectSource(src) {
+    selectedSource = src;
+    document.getElementById('card-cc').classList.toggle('selected', src === 'cliniccorp');
+    document.getElementById('card-sd').classList.toggle('selected', src === 'simples_dental');
+    checkReady();
+  }
+
+  // ── DRAG AND DROP ───────────────────────────────────
+  function onDragOver(e) {
+    e.preventDefault();
+    document.getElementById('dropzone').classList.add('drag');
+  }
+  function onDragLeave(e) {
+    document.getElementById('dropzone').classList.remove('drag');
+  }
+  function onDrop(e) {
+    e.preventDefault();
+    document.getElementById('dropzone').classList.remove('drag');
+    const file = e.dataTransfer.files[0];
+    if (file) setFile(file);
+  }
+  function onFileSelected(input) {
+    if (input.files[0]) setFile(input.files[0]);
+  }
+  function setFile(file) {
+    selectedFile = file;
+    document.getElementById('fileName').textContent = file.name;
+    document.getElementById('fileSelected').style.display = 'flex';
+    checkReady();
+  }
+
+  function checkReady() {
+    document.getElementById('btnUpload').disabled = !selectedFile;
+  }
+
+  // ── UPLOAD ──────────────────────────────────────────
+  async function doUpload() {
+    if (!selectedFile) return;
+
+    const btn = document.getElementById('btnUpload');
+    const txt = document.getElementById('btnTxt');
+    btn.disabled = true;
+    txt.textContent = 'Processando...';
+
+    const form = new FormData();
+    form.append('source', selectedSource);
+    form.append('file', selectedFile);
+
+    try {
+      const res = await fetch(`${API}/upload`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${TOKEN}` },
+        body: form,
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        showResult(null, data.error || 'Erro no servidor.');
+        return;
+      }
+
+      showResult(data.summary);
+      loadHistory();
+
+    } catch (err) {
+      showResult(null, 'Falha ao conectar ao servidor.');
+    } finally {
+      btn.disabled = false;
+      txt.textContent = 'Processar Planilha';
+    }
+  }
+
+  function showResult(summary, error) {
+    const el = document.getElementById('result');
+    el.classList.add('show');
+
+    if (error) {
+      el.classList.add('error');
+      document.getElementById('resultTitle').textContent = '❌ ' + error;
+      return;
+    }
+
+    el.classList.remove('error');
+    document.getElementById('resultTitle').textContent = '✅ Planilha processada com sucesso!';
+    document.getElementById('sTotal').textContent = summary.total;
+    document.getElementById('sNew').textContent = summary.new;
+    document.getElementById('sUpdated').textContent = summary.updated;
+    document.getElementById('sSkipped').textContent = summary.unchanged;
+  }
+
+  // ── HISTÓRICO ───────────────────────────────────────
+  async function loadHistory() {
+    try {
+      const res = await fetch(`${API}/upload/history`, {
+        headers: { Authorization: `Bearer ${TOKEN}` },
+      });
+      const history = await res.json();
+      const tbody = document.getElementById('histBody');
+
+      if (!history.length) {
+        tbody.innerHTML = '<tr><td colspan="6" class="empty-hist">Nenhum upload ainda.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = history.map(h => {
+        const srcClass = h.source === 'cliniccorp' ? 'cc' : 'sd';
+        const srcLabel = h.source === 'cliniccorp' ? 'ClinicCorp' : 'Simples Dental';
+        const dt = new Date(h.uploaded_at).toLocaleString('pt-BR');
+        const short = h.filename.length > 30 ? '...' + h.filename.slice(-27) : h.filename;
+        return `<tr>
+          <td>${dt}</td>
+          <td title="${h.filename}">${short}</td>
+          <td><span class="badge-src ${srcClass}">${srcLabel}</span></td>
+          <td>${h.total_rows}</td>
+          <td style="color:var(--cag);font-weight:500">${h.new_rows}</td>
+          <td style="color:var(--cop);font-weight:500">${h.updated_rows}</td>
+        </tr>`;
+      }).join('');
+
+    } catch {
+      document.getElementById('histBody').innerHTML =
+        '<tr><td colspan="6" class="empty-hist">Erro ao carregar histórico.</td></tr>';
+    }
+  }
+
+  loadHistory();
+</script>
+</body>
+</html>

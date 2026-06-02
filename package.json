@@ -1,0 +1,13 @@
+{
+  "name": "clinicrc",
+  "version": "1.0.0",
+  "description": "Plataforma de retorno ativo de pacientes — ClinicRC",
+  "private": true,
+  "scripts": {
+    "start": "node backend/src/server.js",
+    "dev": "node --watch backend/src/server.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

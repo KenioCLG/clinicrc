@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>ClinicRC — Acesso</title>
+<meta name="description" content="Plataforma de retorno ativo de pacientes para clínicas odontológicas."/>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --cp:#EC6726;--cpd:#c45420;
+    --chbg:#292D36;--cbg:#F0F0F0;--cs:#FFFFFF;
+    --ct:#333333;--cts:rgba(0,0,0,.54);
+    --cdiv:#E0E0E0;--cibg:#EAEAEB;
+    --cag:#66BB6A;--cre:#F44336;
+  }
+  body{
+    font-family:'Roboto',Helvetica,Arial,sans-serif;
+    background:var(--chbg);
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+  }
+
+  /* ── BACKGROUND PATTERN ── */
+  body::before{
+    content:'';position:fixed;inset:0;
+    background:
+      radial-gradient(circle at 20% 80%, rgba(236,103,38,.15) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba(236,103,38,.10) 0%, transparent 50%);
+    pointer-events:none;
+  }
+
+  /* ── CARD ── */
+  .card{
+    background:var(--cs);
+    border-radius:12px;
+    box-shadow:0 20px 60px rgba(0,0,0,.4);
+    width:100%;max-width:400px;
+    padding:40px 36px;
+    position:relative;
+    z-index:1;
+  }
+
+  /* ── LOGO / HEADER ── */
+  .logo{
+    display:flex;align-items:center;gap:12px;
+    margin-bottom:8px;
+  }
+  .logo-icon{
+    width:48px;height:48px;border-radius:12px;
+    background:var(--cp);
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 4px 15px rgba(236,103,38,.4);
+  }
+  .logo-icon .mi{color:#fff;font-size:26px;}
+  .logo h1{font-size:22px;font-weight:700;color:var(--ct);}
+  .logo h1 span{color:var(--cp);}
+  .subtitle{color:var(--cts);font-size:13px;margin-bottom:32px;}
+
+  /* ── FORM ── */
+  .field{margin-bottom:20px;}
+  .field label{
+    display:block;font-size:12px;font-weight:500;
+    color:var(--cts);text-transform:uppercase;
+    letter-spacing:.5px;margin-bottom:6px;
+  }
+  .input-wrap{position:relative;}
+  .input-wrap .mi{
+    position:absolute;left:12px;top:50%;transform:translateY(-50%);
+    font-size:20px;color:var(--cts);pointer-events:none;
+  }
+  .field input{
+    width:100%;padding:12px 14px 12px 42px;
+    border:1.5px solid var(--cdiv);
+    border-radius:8px;
+    background:var(--cibg);
+    font-family:inherit;font-size:14px;color:var(--ct);
+    outline:none;transition:border-color .2s,box-shadow .2s;
+  }
+  .field input:focus{
+    border-color:var(--cp);
+    box-shadow:0 0 0 3px rgba(236,103,38,.12);
+    background:#fff;
+  }
+
+  /* ── BUTTON ── */
+  .btn-login{
+    width:100%;padding:14px;
+    background:var(--cp);
+    color:#fff;border:none;border-radius:8px;
+    font-family:inherit;font-size:15px;font-weight:600;
+    cursor:pointer;
+    display:flex;align-items:center;justify-content:center;gap:8px;
+    transition:background .2s,box-shadow .2s,transform .1s;
+    box-shadow:0 4px 15px rgba(236,103,38,.3);
+  }
+  .btn-login:hover{background:var(--cpd);box-shadow:0 6px 20px rgba(236,103,38,.4);}
+  .btn-login:active{transform:scale(.98);}
+  .btn-login:disabled{background:#bbb;box-shadow:none;cursor:not-allowed;}
+  .btn-login .mi{font-size:20px;}
+
+  /* ── SPINNER ── */
+  .spinner{
+    width:20px;height:20px;
+    border:2px solid rgba(255,255,255,.4);
+    border-top-color:#fff;
+    border-radius:50%;
+    animation:spin .7s linear infinite;
+    display:none;
+  }
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* ── ERROR / INFO ── */
+  .msg{
+    margin-top:16px;padding:12px 16px;
+    border-radius:8px;font-size:13px;
+    display:none;align-items:flex-start;gap:10px;
+  }
+  .msg.error{background:#FFEBEE;border:1px solid #FFCDD2;color:#C62828;}
+  .msg.error .mi{color:#C62828;font-size:18px;flex-shrink:0;}
+  .msg.show{display:flex;}
+  .msg a{color:var(--cp);font-weight:500;}
+
+  /* ── FOOTER ── */
+  .footer{
+    margin-top:24px;text-align:center;
+    color:rgba(255,255,255,.4);font-size:12px;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="logo">
+    <div class="logo-icon"><span class="mi">medical_services</span></div>
+    <h1>Clinic<span>RC</span></h1>
+  </div>
+  <p class="subtitle">Retorno ativo de pacientes — Acesse sua conta</p>
+
+  <form id="loginForm" onsubmit="handleLogin(event)">
+    <div class="field">
+      <label>Usuário</label>
+      <div class="input-wrap">
+        <span class="mi">person</span>
+        <input type="text" id="username" placeholder="Seu usuário" autocomplete="username" required/>
+      </div>
+    </div>
+    <div class="field">
+      <label>Senha</label>
+      <div class="input-wrap">
+        <span class="mi">lock</span>
+        <input type="password" id="password" placeholder="Sua senha" autocomplete="current-password" required/>
+      </div>
+    </div>
+
+    <button class="btn-login" type="submit" id="btnLogin">
+      <span class="mi btn-icon">login</span>
+      <div class="spinner" id="spinner"></div>
+      <span id="btnTxt">Entrar</span>
+    </button>
+
+    <div class="msg error" id="errMsg">
+      <span class="mi">error_outline</span>
+      <div id="errTxt">Usuário ou senha incorretos.</div>
+    </div>
+  </form>
+</div>
+
+<p class="footer">ClinicRC © 2024 — Plataforma de Retorno Ativo</p>
+
+<script>
+  // Se já estiver logado, vai direto pro app
+  (function() {
+    const token = localStorage.getItem('clinicrc_token');
+    if (token) {
+      window.location.href = 'app.html';
+    }
+  })();
+
+  async function handleLogin(e) {
+    e.preventDefault();
+
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value;
+    const btn = document.getElementById('btnLogin');
+    const spinner = document.getElementById('spinner');
+    const icon = document.querySelector('.btn-icon');
+    const btnTxt = document.getElementById('btnTxt');
+    const errMsg = document.getElementById('errMsg');
+    const errTxt = document.getElementById('errTxt');
+
+    // Estado: carregando
+    btn.disabled = true;
+    spinner.style.display = 'block';
+    icon.style.display = 'none';
+    btnTxt.textContent = 'Entrando...';
+    errMsg.classList.remove('show');
+
+    try {
+      const API = window.location.origin;
+      const res = await fetch(`${API}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        // Mostra erro com link de suporte se disponível
+        let html = data.error || 'Erro ao conectar.';
+        if (data.support) {
+          html += ` <a href="${data.support}" target="_blank">Precisa de ajuda?</a>`;
+        }
+        errTxt.innerHTML = html;
+        errMsg.classList.add('show');
+        return;
+      }
+
+      // Salva token e dados da clínica
+      localStorage.setItem('clinicrc_token', data.token);
+      localStorage.setItem('clinicrc_clinic', data.clinic_name);
+      localStorage.setItem('clinicrc_user', data.username);
+
+      // Redireciona para o app
+      window.location.href = 'app.html';
+
+    } catch (err) {
+      errTxt.innerHTML = 'Não foi possível conectar ao servidor. Verifique sua internet.';
+      errMsg.classList.add('show');
+    } finally {
+      btn.disabled = false;
+      spinner.style.display = 'none';
+      icon.style.display = '';
+      btnTxt.textContent = 'Entrar';
+    }
+  }
+</script>
+</body>
+</html>

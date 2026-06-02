@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Retorno de Pacientes — Clínica Andreza Paz</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<link rel="stylesheet" href="css/styles.css"/>
+</head>
+<body>
+
+<!-- LOADING -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <p>Conectando ao banco de dados...</p>
+</div>
+
+<!-- HEADER -->
+<header class="hdr">
+  <button class="hdr-menu"><span class="mi">menu</span></button>
+  <div class="hdr-tabs">
+    <button class="tab-btn on" onclick="window.trocarAba(0,this)"><span class="mi">phone_callback</span> Retorno de Pacientes</button>
+    <button class="tab-btn" onclick="window.trocarAba(1,this)"><span class="mi">bar_chart</span> Relatório da Diva</button>
+  </div>
+  <div class="hdr-r">
+    <div class="sync-badge" id="syncBadge">
+      <div class="sync-dot"></div>
+      <span id="syncTxt">Conectando...</span>
+    </div>
+    <a href="upload.html" style="margin-left:8px;display:flex;align-items:center;gap:4px;color:rgba(255,255,255,.7);font-size:12px;text-decoration:none;padding:4px 8px;border-radius:4px;transition:background .2s;" onmouseover="this.style.background='rgba(255,255,255,.1)'" onmouseout="this.style.background='transparent'">
+      <span class="mi" style="font-size:18px">upload_file</span> Upload
+    </a>
+    <span id="clinicNameDisplay" style="margin-left:8px;color:rgba(255,255,255,.6);font-size:12px;"></span>
+    <span class="ava" style="margin-left:6px">D</span>
+    <button onclick="window.doLogout()" style="margin-left:6px;background:none;border:none;cursor:pointer;color:rgba(255,255,255,.5);display:flex;align-items:center;padding:4px;border-radius:4px;transition:all .2s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,.5)'" title="Sair">
+      <span class="mi" style="font-size:18px">logout</span>
+    </button>
+  </div>
+</header>
+
+<!-- MAIN CONTAINER -->
+<div class="body">
+  <!-- ABA 0: KANBAN & ROTEIROS -->
+  <div class="pg on" id="pg0">
+    <!-- ROTEIRO -->
+    <div class="sp">
+      <div class="sp-hd">
+        <span class="mi" style="color:var(--cp)">record_voice_over</span>
+        <div><h2>Roteiro de Ligação</h2><p>Selecione a tentativa e clique no paciente</p></div>
+      </div>
+      <div class="tbar">
+        <span class="tlbl">Tentativa:</span>
+        <button class="tbtn on" onclick="window.selT(1)">1ª</button>
+        <button class="tbtn" onclick="window.selT(2)">2ª</button>
+        <button class="tbtn" onclick="window.selT(3)">3ª</button>
+        <button class="tbtn" onclick="window.selT(4)">4ª</button>
+        <button class="tbtn" onclick="window.selT(5)">5ª</button>
+      </div>
+      <div class="pbar empty" id="pbar">
+        <span class="mi" style="color:var(--cp)">touch_app</span>
+        <div><strong>Nenhum paciente selecionado</strong><span>Clique em um cartão ao lado</span></div>
+      </div>
+      <div class="sbody" id="sbody"></div>
+    </div>
+
+    <!-- KANBAN -->
+    <div class="kp">
+      <div class="ktb">
+        <h2>Pacientes em Aberto — Retorno Ativo</h2>
+        <input class="ksrch" type="text" placeholder="Buscar paciente..." oninput="window.render()">
+        <div class="kmini">
+          <span class="kchip" style="background:var(--cop)"><span class="mi" style="font-size:14px">people</span>&nbsp;<span id="ki1">0</span> em contato</span>
+          <span class="kchip" style="background:var(--cag)"><span class="mi" style="font-size:14px">event_available</span>&nbsp;<span id="ki2">0</span> agendados</span>
+          <span class="kchip" style="background:var(--cp)"><span class="mi" style="font-size:14px">check_circle</span>&nbsp;<span id="ki3">0</span> finalizados</span>
+        </div>
+      </div>
+      <div class="cols">
+        <div class="col cl1"><div class="col-hd">Para Ligar<span class="bg" id="c1">0</span></div><div class="col-cards" id="col-ligar"></div></div>
+        <div class="col cl2"><div class="col-hd">Em Contato<span class="bg" id="c2">0</span></div><div class="col-cards" id="col-contato"></div></div>
+        <div class="col cl3"><div class="col-hd">Agendado<span class="bg" id="c3">0</span></div><div class="col-cards" id="col-agendado"></div></div>
+        <div class="col cl4"><div class="col-hd">Finalizado<span class="bg" id="c4">0</span></div><div class="col-cards" id="col-final"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ABA 1: RELATÓRIOS -->
+  <div class="pg" id="pg1">
+    <div class="rp" id="rbody"></div>
+  </div>
+</div>
+
+<!-- MODAL DE FINALIZAÇÃO -->
+<div class="mbg" id="modal">
+  <div class="mbox">
+    <h3>Finalizar Contato</h3>
+    <p id="mp">Qual foi o resultado?</p>
+    <div class="mopts">
+      <button class="mopt" onclick="window.conf('agendou')"><span class="mi" style="color:var(--cag)">event_available</span><div><strong>Agendou o procedimento</strong><small>Paciente confirmou data de atendimento</small></div></button>
+      <button class="mopt" onclick="window.conf('procedimento')"><span class="mi" style="color:var(--cop)">check_circle</span><div><strong>Já realizou / não precisa mais</strong><small>Procedimento já foi concluído</small></div></button>
+      <button class="mopt" onclick="window.conf('sem-interesse')"><span class="mi" style="color:var(--cre)">cancel</span><div><strong>Sem interesse</strong><small>Paciente recusou o tratamento</small></div></button>
+      <button class="mopt" onclick="window.conf('sem-resposta')"><span class="mi" style="color:#9E9E9E">phone_disabled</span><div><strong>Sem resposta — 5 tentativas</strong><small>Não foi possível estabelecer contato</small></div></button>
+    </div>
+    <button class="mcanc" onclick="window.fModal()">Cancelar</button>
+  </div>
+</div>
+
+<!-- TOAST NOTIFICATION -->
+<div class="toast" id="toast"></div>
+
+<!-- JS ENTRYPOINT -->
+<script type="module" src="js/app.js"></script>
+
+</body>
+</html>
