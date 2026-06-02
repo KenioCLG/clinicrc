@@ -1,74 +1,113 @@
 # ClinicRC — Plataforma Multi-Clínica
 
-## Instruções Persistentes de Design e Desenvolvimento
+> **Documento de contexto vivo.** Atualizado em: 02/06/2026
+> Sempre consulte este arquivo antes de continuar o desenvolvimento.
 
 ---
 
-## 📋 Sobre o Projeto
+## 📋 Visão Geral do Produto
 
-**App:** ClinicRC — Plataforma de Gestão de Orçamentos em Aberto
-**Função:** Sistema multi-tenant para gestão estratégica de leads odontológicos via importação de planilhas XLSX
-**Versão:** 2.0 — Multi-Clínica (em construção)
+**App:** ClinicRC — Plataforma de Retorno Ativo de Pacientes  
+**Dono:** Kenio (dev + gestor)  
+**Contato/Suporte:** WhatsApp `(81) 98654-4577` → `https://wa.me/5581986544577`  
+**Função:** Sistema multi-tenant SaaS para clínicas odontológicas gerenciarem orçamentos em aberto via importação de planilhas XLSX e CRM Kanban  
+**Versão atual:** 1.0 — Funcional local, aguardando deploy Railway
 
-> Esta é uma **evolução** do projeto original "Diva Page" (single-client, Firebase).
-> O contexto da Diva Page está preservado na seção legada ao final deste arquivo.
+> **Origem:** Evolução do projeto "Diva Page" (single-client, Firebase).
+> Firebase foi abandonado. O backend agora é 100% Node.js + SQLite.
 
 ---
 
-## 🏗️ Arquitetura da Nova Plataforma
+## 🗂️ Estrutura de Arquivos
 
 ```
 clinicrc/
-├── backend/              ← Node.js (Express) — NEW
+├── backend/
 │   ├── src/
-│   │   ├── server.js         ← Entry point Express
-│   │   ├── db.js             ← SQLite (Better-SQLite3) + schema
-│   │   ├── auth.js           ← Login + JWT
+│   │   ├── server.js              ← Entry point Express (porta 3000)
+│   │   ├── db.js                  ← SQLite (better-sqlite3) + schema completo
+│   │   ├── auth.js                ← createUser, login, verifyToken, getSupportLink
 │   │   ├── middleware/
-│   │   │   └── auth.middleware.js  ← Proteção de rotas
+│   │   │   └── auth.middleware.js ← Valida JWT em rotas protegidas
 │   │   ├── parsers/
-│   │   │   ├── cliniccorp.parser.js    ← Parser ClinicCorp XLSX
-│   │   │   └── simples_dental.parser.js ← Parser Simples Dental XLSX
+│   │   │   ├── cliniccorp.parser.js      ← Parser planilha ClinicCorp
+│   │   │   └── simples_dental.parser.js  ← Parser planilha Simples Dental
 │   │   ├── routes/
-│   │   │   ├── auth.routes.js      ← POST /login
-│   │   │   ├── patient.routes.js   ← CRUD pacientes (multi-tenant)
-│   │   │   └── upload.routes.js    ← POST /upload (xlsx)
-│   │   └── ...
+│   │   │   ├── auth.routes.js     ← POST /auth/login, GET /auth/support
+│   │   │   ├── patient.routes.js  ← CRUD pacientes (multi-tenant)
+│   │   │   └── upload.routes.js   ← POST /upload, GET /upload/history
+│   │   └── use-cases/
 │   ├── data/
-│   │   └── clinicrc.db       ← SQLite database (gitignore)
+│   │   └── clinicrc.db            ← Banco SQLite (gitignored)
+│   ├── .env                       ← Variáveis locais (gitignored)
 │   └── package.json
 ├── frontend/
 │   └── public/
-│       ├── index.html        ← Redireciona para login.html
-│       ├── login.html        ← Tela de login (NOVA)
-│       ├── app.html          ← Kanban principal (adaptado)
-│       ├── upload.html       ← Upload de planilhas (NOVA)
+│       ├── index.html             ← Tela de login (design dark glassmorphism)
+│       ├── app.html               ← Kanban CRM principal
+│       ├── upload.html            ← Upload de planilhas XLSX
+│       ├── css/
+│       │   └── styles.css         ← Design system do app
 │       └── js/
-│           ├── api-client.js     ← HTTP client (Bearer token)
-│           └── app.js            ← Lógica Kanban
-├── clinicorp_sample.xlsx     ← Amostra real para referência
-├── simples_dental_sample.xlsx
-├── context.md                ← Este arquivo
-└── package.json
+│           ├── api-client.js      ← HTTP client (Bearer JWT)
+│           └── app.js             ← Lógica Kanban + roteiros
+├── seed-clientes.js               ← Script para criar contas (rodar do /backend)
+├── railway.json                   ← Config de deploy Railway
+├── .env.example                   ← Template de variáveis
+├── .gitignore                     ← node_modules, .env, *.xlsx, data/
+├── context.md                     ← Este arquivo
+└── package.json                   ← root: start → node backend/src/server.js
 ```
 
 ---
 
-## 🔥 Backend — Node.js + SQLite
+## 👥 Usuários no Sistema
 
-### Stack Técnica
+| ID | Clínica | Usuário | Senha | Tipo |
+|---|---|---|---|---|
+| 1 | Administrador | `admin` | `admin123` | Admin (Kenio) |
+| 2 | Clínica Andreza Paz | `andreza` | `Andreza@2025` | Cliente |
+| 3 | COP — Thames Bruno | `thames` | `Thames@2025` | Cliente |
+
+> **Regra:** Cada clínica acessa **apenas seus próprios pacientes** (isolamento por `clinic_id` via JWT).
+> Não existe auto-cadastro. O admin (Kenio) cria as contas manualmente.
+
+---
+
+## 🔐 Autenticação
+
+- **Modelo:** username + senha → JWT 24h
+- **Header:** `Authorization: Bearer <token>`
+- **Suporte:** Link direto para WhatsApp do Kenio quando login falha
+- **Endpoint:** `POST /auth/login` → `{ token, clinic_name, username }`
+- **Suporte API:** `GET /auth/support` → `{ whatsapp: "https://wa.me/5581986544577" }`
+
+### Fluxo JWT:
+```
+Login → JWT assinado com clinic_id, username, clinic_name
+Qualquer rota protegida → middleware extrai clinic_id do JWT
+Queries no banco → sempre filtram por clinic_id (multi-tenant)
+```
+
+---
+
+## 🏗️ Stack Técnica
 
 | Componente | Tecnologia |
 |---|---|
 | Runtime | Node.js v24+ |
-| Framework | Express |
-| Banco de Dados | Better-SQLite3 (SQLite local) |
-| Autenticação | bcryptjs + jsonwebtoken (JWT) |
+| Framework | Express v5 |
+| Banco de Dados | better-sqlite3 (SQLite local) |
+| Auth | bcryptjs + jsonwebtoken |
 | Upload | multer |
-| XLSX | xlsx |
-| Deploy | Railway.app (20 dias para ir ao ar) |
+| XLSX parse | xlsx |
+| Deploy alvo | Railway.app |
+| Frontend | HTML + Vanilla JS + CSS (sem framework) |
+| Fontes | Inter (login) + Roboto (app) + Material Icons/Symbols |
 
-### Schema do Banco de Dados
+---
+
+## 🗄️ Schema do Banco de Dados
 
 ```sql
 -- Usuários (1 por clínica)
@@ -86,18 +125,22 @@ CREATE TABLE IF NOT EXISTS patients (
   id              TEXT NOT NULL,
   clinic_id       INTEGER NOT NULL REFERENCES users(id),
   nome            TEXT NOT NULL,
-  tel             TEXT NOT NULL,         -- CHAVE DE MERGE — apenas dígitos
+  tel             TEXT NOT NULL,         -- CHAVE DE MERGE (só dígitos)
   proc            TEXT NOT NULL DEFAULT '',
   valor           TEXT NOT NULL DEFAULT 'R$ 0,00',
-  col             TEXT NOT NULL DEFAULT 'ligar',
-  tent            INTEGER NOT NULL DEFAULT 0,
+  col             TEXT NOT NULL DEFAULT 'ligar',   -- kanban column
+  tent            INTEGER NOT NULL DEFAULT 0,       -- tentativas (0-5)
   obs             TEXT DEFAULT '',
-  res             TEXT DEFAULT NULL,
-  dt              TEXT DEFAULT NULL,
-  origem          TEXT NOT NULL DEFAULT 'manual',   -- 'cliniccorp' | 'simples_dental' | 'manual'
-  status_origem   TEXT DEFAULT NULL,                -- status original da planilha
-  upload_date     TEXT DEFAULT NULL,                -- data do último upload
-  PRIMARY KEY (id, clinic_id)
+  res             TEXT DEFAULT NULL,     -- resultado final
+  dt              TEXT DEFAULT NULL,     -- data do fechamento
+  source          TEXT DEFAULT 'manual', -- 'cliniccorp' | 'simples_dental' | 'manual'
+  source_status   TEXT DEFAULT NULL,
+  profissional    TEXT DEFAULT NULL,
+  data_orcamento  TEXT DEFAULT NULL,
+  created_at      DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at      DATETIME DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id, clinic_id),
+  UNIQUE(clinic_id, tel)               -- mesmo tel = mesmo paciente na clínica
 );
 
 -- Histórico de uploads
@@ -105,307 +148,180 @@ CREATE TABLE IF NOT EXISTS uploads (
   id           INTEGER PRIMARY KEY AUTOINCREMENT,
   clinic_id    INTEGER NOT NULL REFERENCES users(id),
   filename     TEXT NOT NULL,
-  source       TEXT NOT NULL,            -- 'cliniccorp' | 'simples_dental'
+  source       TEXT NOT NULL,
   total_rows   INTEGER DEFAULT 0,
   new_rows     INTEGER DEFAULT 0,
   updated_rows INTEGER DEFAULT 0,
+  skipped_rows INTEGER DEFAULT 0,
   uploaded_at  DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 ```
 
-### Campos `col` possíveis (Kanban):
-`ligar` | `contato` | `agendado` | `final`
-
-### Campos `res` possíveis (resultado):
-`agendou` | `procedimento` | `sem-interesse` | `sem-resposta` | `null`
-
----
-
-## 🔐 Autenticação
-
-- **Modelo:** Nome de usuário + senha simples (sem Firebase Auth)
-- **Token:** JWT com validade de 24h
-- **Header:** `Authorization: Bearer <token>`
-- **Suporte:** Se não conseguir logar, link direto para WhatsApp do admin (Kenio)
-- **Admin controla** criação de usuários — não existe auto-cadastro
-
-### Endpoint de Login:
-
-```http
-POST /api/auth/login
-Content-Type: application/json
-
-{ "username": "andreza", "password": "senha123" }
-
-→ 200 OK
-{ "token": "eyJ...", "clinic_name": "Clínica Andreza Paz", "username": "andreza" }
-
-→ 401 Unauthorized
-{ "error": "Usuário ou senha incorretos.", "support_link": "https://wa.me/55819..." }
-```
+**Valores de `col`:** `ligar` | `contato` | `agendado` | `final`  
+**Valores de `res`:** `agendou` | `procedimento` | `sem-interesse` | `sem-resposta` | `null`
 
 ---
 
 ## 📊 Mapeamento das Planilhas XLSX
 
-### ClinicCorp (244 linhas encontradas nos samples)
+### ClinicCorp
 
 ```
 Sheet: 'Relatório'
-
-Col 0: Data Criação
-Col 1: Data
-Col 2: Status           ← "OPEN" (em aberto) | "APPROVED" (aprovado)
-Col 3: Motivo
-Col 4: Profissional
-Col 5: Paciente         ← nome completo (vem com espaço à esquerda)
+Col 5: Paciente         ← nome completo (pode ter espaço à esquerda)
 Col 6: Telefone         ← sem formatação (ex: 81986848035)
-Col 7: Procedimentos    ← texto livre, múltiplos itens separados por vírgula
-Col 8: Valor
-Col 9: Valor Total Com Desconto
-Col 10: Observações
-Col 11: Como conheceu?
-Col 12: Desconto-Porcentagem
-Col 13: Desconto-Reais
-Col 14: Valor Total
-Col 15: Ticket Médio
+Col 7: Procedimentos    ← texto livre
+Col 8: Valor            ← valor com desconto
+Col 2: Status           ← filtrar apenas "OPEN"
+Col 4: Profissional
+Col 0: Data Criação
 ```
 
-**Filtro de importação:** Apenas status `OPEN` (orçamentos em aberto)
-**Chave de merge:** `tel` normalizado (somente dígitos)
+Profissionais mapeados: `Yuri`, `Mykael`, `Mário Sousa`, `andreza alexandre da paz de souza`, `Thames Bruno`, `Viviane Andrade`
 
-Profissionais encontrados: `Yuri`, `Mykael`, `Mário Sousa`, `andreza alexandre da paz de souza`, `Thames Bruno`, `Viviane Andrade`
-
-### Simples Dental (125 linhas encontradas nos samples)
+### Simples Dental
 
 ```
 Sheet: 'Relatorio_orcamentos_por_status'
-
-Col 0: Data
-Col 1: Paciente         ← nome completo em maiúsculas
-Col 2: Documento        ← CPF
-Col 3: Celular Paciente ← sem formatação (ex: 81999396615)
-Col 4: E-mail
-Col 5: Celular Responsável
+Col 1: Paciente         ← maiúsculas
+Col 3: Celular          ← sem formatação
 Col 6: Descrição        ← "Plano tratamento de <NOME>"
-Col 7: Status do orçamento ← "Em aberto" | "Reprovado"
+Col 7: Status           ← filtrar apenas "Em aberto"
 Col 8: Valor            ← número puro (ex: 5200)
+Col 0: Data
 ```
-
-**Filtro de importação:** Apenas status `Em aberto`
-**Chave de merge:** `tel` normalizado (somente dígitos)
 
 ---
 
-## 🔄 Lógica de Merge de Planilhas
+## 🔄 Lógica de Merge (Upload)
 
 ```
-ENTRADA: Nova planilha xlsx (Dia 2)
+Nova planilha uploadada
     ↓
-Para cada paciente na planilha:
+Para cada paciente:
     ├── Normaliza telefone (só dígitos)
-    ├── Busca no DB por (tel + clinic_id)
-    │   ├── ENCONTROU → Atualiza apenas: proc, valor, status_origem, upload_date
-    │   │                Preserva: col, tent, obs, res, dt  ← progresso do Kanban
-    │   └── NÃO ENCONTROU → INSERT novo paciente (col='ligar', tent=0)
+    ├── Busca por (tel + clinic_id)
+    │   ├── ENCONTROU → Atualiza: proc, valor, source_status, data_orcamento
+    │   │                Preserva: col, tent, obs, res, dt  ← progresso CRM intacto
+    │   └── NÃO ENCONTROU → INSERT (col='ligar', tent=0)
     ↓
-SAÍDA: Relatório { novos: N, atualizados: M, total: N+M }
+Retorna: { total, new, updated, unchanged }
 ```
 
-**Regra de ouro:** O progresso de atendimento (coluna Kanban, tentativas, observações) **nunca é sobrescrito** por um re-upload.
+> **Regra de ouro:** O progresso de atendimento no Kanban **nunca é sobrescrito** por um re-upload.
 
 ---
 
-## 🚀 Deploy — Railway.app
+## 🎨 Design System
 
-**Prazo:** 20 dias a partir de 01/06/2026
+### Login (index.html)
+- **Fundo:** Dark `#0d1117` com orbs animados e grid sutil
+- **Card:** Glassmorphism — `backdrop-filter: blur(24px)`, border translúcida
+- **Cor primária:** `#EC6726` (laranja)
+- **Fontes:** Inter + Material Symbols Rounded
+- **Features:** toggle mostrar/ocultar senha, shake animation no erro, feedback verde no sucesso
 
-```
-Semana 1: Código local rodando (Node.js + SQLite)
-Semana 2: GitHub + Railway configurado (1 clique = no ar)
-Semana 3: Testes com clientes reais + ajustes
-```
+### App (app.html + styles.css)
+- **Header:** `#292D36` escuro
+- **Background:** `#F0F0F0` cinza claro
+- **Cards:** brancos com sombra suave
+- **Fontes:** Roboto + Material Icons
 
-- Push no GitHub → deploy automático em ~2 minutos
-- HTTPS automático (link público seguro)
-- SQLite persiste no volume do Railway
-- Plano gratuito tem $5/mês em créditos (suficiente no início)
-
----
-
-## 🎨 Design System (Mantido da Diva Page)
-
-### Paleta de Cores (CSS Variables)
-
+### Variáveis CSS principais (app):
 ```css
-:root {
-  /* Primária */
-  --cp: #EC6726;        /* Laranja principal — botões, destaques */
-  --cpd: #c45420;       /* Laranja escuro — hover */
-
-  /* Interface */
-  --chbg: #292D36;      /* Header/sidebar — cinza escuro */
-  --cbg: #F0F0F0;       /* Background geral */
-  --cs: #FFFFFF;        /* Cards e superfícies */
-  --ct: #333333;        /* Texto principal */
-  --cts: rgba(0,0,0,0.54); /* Texto secundário */
-  --cdiv: #E0E0E0;      /* Divisores */
-  --cibg: #EAEAEB;      /* Inputs background */
-
-  /* Status / Semânticas */
-  --cag: #66BB6A;       /* Verde — agendado/sucesso */
-  --cop: #039BE5;       /* Azul — em progresso */
-  --cfu: #FFB74D;       /* Âmbar — atenção/em contato */
-  --cre: #F44336;       /* Vermelho — erro/sem interesse */
-  --csu: #4CAF50;       /* Verde valor monetário */
-}
-```
-
-### Tipografia
-
-- **Família:** `'Roboto', Helvetica, Arial, sans-serif`
-- **Ícones:** Material Icons (Google Fonts)
-- Classe `.mi` → `font-family: 'Material Icons'; font-size: 20px;`
-
----
-
-## 🧩 Componentes Principais
-
-### Kanban — 4 Colunas
-
-| Coluna     | Cor header               | Cor borda   | Badge cor                  |
-| ---------- | ------------------------ | ----------- | -------------------------- |
-| Para Ligar | `#EDE7F6` roxo claro   | `#7E57C2` | `#7E57C2`                |
-| Em Contato | `#FFF8E1` âmbar claro | `--cfu`   | `--cfu` + texto `#333` |
-| Agendado   | `#E8F5E9` verde claro  | `--cag`   | `--cag`                  |
-| Finalizado | `#F5F5F5` cinza        | `#9E9E9E` | `#9E9E9E`                |
-
-### Cards de Paciente
-
-- Background branco, border `--cdiv`, border-radius `4px`
-- Selecionado: `border-color: --cp`, box-shadow laranja suave
-- Nome em bold 12px, telefone em cinza 11px
-- Badge procedimento: fundo `#E3F2FD`, texto `#0277BD`
-- Valor: bold 12px, cor `--csu`
-- Dots de tentativa (1-5): azul preenchido = feito, laranja borda = próximo
-- Textarea de obs: fundo `--cibg`, border `rgba(0,0,0,.1)`
-
----
-
-## 🔄 Lógica de Negócio — Kanban
-
-### Fluxo
-
-```
-Para Ligar → Em Contato → Agendado → Finalizado
-     ↑_____________↑         ↑
-          (pode voltar)    (pode voltar para Em Contato)
-```
-
-### Tentativas (1 a 5)
-
-- Cada dot clicado incrementa/decrementa `tent`
-- Ao incrementar tent enquanto `col === 'ligar'`, move automaticamente para `col === 'contato'`
-- O roteiro exibido corresponde ao número da tentativa atual
-
-### Finalização
-
-Ao clicar "Finalizar", abre modal com 4 opções:
-
-1. **Agendou** → `res: 'agendou'`
-2. **Já realizou** → `res: 'procedimento'`
-3. **Sem interesse** → `res: 'sem-interesse'`
-4. **Sem resposta** → `res: 'sem-resposta'`
-
-Todas movem para `col: 'final'` e registram `dt` (data BR).
-
----
-
-## 📝 Roteiros de Ligação (5 Tentativas)
-
-1. **1ª** — Rapport Empático (PNL) — Primeiro contato
-2. **2ª** — Continuidade + Problema (SPIN) — Segundo contato
-3. **3ª** — Implicação Suave (SPIN) — Terceira tentativa
-4. **4ª** — Need-Payoff + Acolhimento (SPIN+PNL) — Quarta tentativa
-5. **5ª** — Último Contato + Porta Aberta (PNL) — Encerramento positivo
-
-Cada roteiro tem 3 caminhos:
-
-- **A** → Paciente abre para reagendar → oferecer reavaliação gratuita
-- **B** → Recusa → oferecer reavaliação grátis + limpeza R$ 180,00
-- **C** → Já fez em outro local → oferecer limpeza R$ 180,00
-
----
-
-## 📦 Dependências Instaladas
-
-### Root (`/clinicrc/package.json`)
-
-```json
-"xlsx": "^0.18.5"
-```
-
-### Backend (`/clinicrc/backend/package.json`)
-
-```json
-"express": "^4.x",
-"better-sqlite3": "^x.x",
-"bcryptjs": "^x.x",
-"jsonwebtoken": "^x.x",
-"multer": "^x.x",
-"cors": "^x.x",
-"dotenv": "^x.x"
+--cp: #EC6726;    /* laranja principal */
+--chbg: #292D36;  /* header */
+--cbg: #F0F0F0;   /* background */
+--cag: #66BB6A;   /* verde agendado */
+--cop: #039BE5;   /* azul em progresso */
+--cfu: #FFB74D;   /* âmbar atenção */
+--cre: #F44336;   /* vermelho erro */
 ```
 
 ---
 
-## 📋 Status da Implementação
+## 📝 Roteiros de Ligação (5 tentativas)
 
-| Passo | Módulo | Status |
+Cada tentativa tem roteiro PNL/SPIN com 3 caminhos:
+
+| Tentativa | Técnica | Caminhos |
 |---|---|---|
-| 1 | `backend/src/server.js` (Express básico) | ⏳ Em andamento |
-| 2 | `backend/src/db.js` (SQLite + schema) | ✅ Criado |
-| 3 | `backend/src/auth.js` (login + JWT) | ✅ Criado |
-| 3.1 | `backend/src/middleware/auth.middleware.js` | ✅ Criado |
-| 4 | `backend/src/parsers/cliniccorp.parser.js` | ✅ Criado |
-| 4.1 | `backend/src/parsers/simples_dental.parser.js` | ⏳ Em andamento |
-| 5 | Rotas de pacientes (CRUD multi-tenant) | ❌ Pendente |
-| 6 | Rota de upload xlsx | ❌ Pendente |
-| 7 | Frontend: tela de login | ❌ Pendente |
-| 8 | Frontend: upload de planilhas | ❌ Pendente |
-| 9 | Adaptar Kanban para usar API (não Firebase) | ❌ Pendente |
-| 10 | Configurar Railway.app (deploy) | ❌ Pendente |
+| 1ª | Rapport Empático (PNL) | A: Reagendar \| B: Recusa \| C: Outro local |
+| 2ª | Continuidade + Problema (SPIN) | A: Reagendar \| B: Recusa \| C: Outro local |
+| 3ª | Implicação Suave (SPIN) | A: Reagendar \| B: Recusa \| C: Outro local |
+| 4ª | Need-Payoff + Acolhimento (SPIN+PNL) | A: Reagendar \| B: Custo \| C: Outro local |
+| 5ª | Último Contato + Porta Aberta (PNL) | A: Reagendar \| B: Recusa \| C: Outro local |
+
+**Oferta padrão:** Reavaliação gratuita + Limpeza R$ 180,00
 
 ---
 
-## ⚠️ Notas Importantes da Nova Arquitetura
+## ✅ Status de Implementação
 
-1. **Multi-tenant por `clinic_id`** — toda query filtra por `clinic_id` extraído do JWT
-2. **Chave de merge é o telefone normalizado** (só dígitos) — funciona para ambas as planilhas
-3. **SQLite na produção** com Railway volume — não usar em memória
-4. **JWT no localStorage** do frontend → enviado como `Bearer` em toda requisição à API
-5. **Firebase foi abandonado** nesta versão — o novo backend é Node.js + SQLite
-6. **Arquivos sample** `clinicorp_sample.xlsx` e `simples_dental_sample.xlsx` estão no root para referência dos parsers
+| Módulo | Status | Observação |
+|---|---|---|
+| `server.js` — Express + rotas | ✅ Funcional | Serve frontend estático + API |
+| `db.js` — SQLite + schema | ✅ Funcional | WAL mode, foreign keys ON |
+| `auth.js` — JWT + bcrypt | ✅ Funcional | 24h token |
+| `auth.routes.js` — login + support | ✅ Funcional | GET /auth/support adicionado |
+| `patient.routes.js` — CRUD | ✅ Funcional | Multi-tenant por clinic_id |
+| `upload.routes.js` — xlsx | ✅ Funcional | ClinicCorp + Simples Dental |
+| `cliniccorp.parser.js` | ✅ Funcional | Filtro OPEN |
+| `simples_dental.parser.js` | ✅ Funcional | Filtro Em aberto |
+| `index.html` — Login | ✅ Funcional | Dark glassmorphism, Material Symbols |
+| `app.html` — Kanban CRM | ✅ Funcional | Botão Suporte no header |
+| `upload.html` — Upload xlsx | ✅ Funcional | Histórico de uploads |
+| `api-client.js` — HTTP client | ✅ Funcional | Bearer token automático |
+| Criação de usuários clientes | ✅ Feito | andreza + thames criados |
+| WhatsApp suporte | ✅ Configurado | (81) 98654-4577 em todo o sistema |
+| Git / GitHub | ⏳ Pendente | Repositório ainda não criado |
+| Deploy Railway | ⏳ Pendente | Aguardando push GitHub |
+| Variáveis env Railway | ⏳ Pendente | Definidas no .env.example |
 
 ---
 
-## 🏛️ Legado — Diva Page (Referência)
+## 🚀 Próximos Passos (Deploy)
 
-> O app original (Firebase + HTML único) ainda existe nos arquivos:
-> - `Diva_Page_-_Andreza_Paz.html` (versão completa)
+```
+1. gh auth status                        ← verificar login GitHub CLI
+2. gh repo create clinicrc --private     ← criar repo privado
+3. git init && git add . && git commit   ← primeiro commit
+4. git push -u origin main               ← push
+5. railway login                         ← autenticar Railway
+6. railway init && railway up            ← criar projeto + deploy
+7. railway variables set JWT_SECRET=...  ← configurar env vars
+8. Testar URL pública /health            ← confirmar deploy
+```
+
+### Variáveis necessárias no Railway:
+```
+JWT_SECRET=<string longa e aleatória — gerar nova para produção>
+ADMIN_USER=admin
+ADMIN_PASS=<senha forte>
+WHATSAPP_SUPPORT=https://wa.me/5581986544577
+NODE_ENV=production
+```
+
+> ⚠️ Após o deploy, rodar o seed de usuários clientes novamente (o banco Railway começa vazio).
+
+---
+
+## ⚠️ Notas Técnicas Importantes
+
+1. **Multi-tenant:** toda query filtra por `clinic_id` do JWT — nunca mistura dados
+2. **Chave de merge é o telefone normalizado** (só dígitos) — funciona para ambas planilhas
+3. **SQLite no Railway:** usar volume persistente, não memória
+4. **Frontend servido pelo Express** em `express.static()` — não é SPA separada
+5. **CORS:** `*` em dev, configurar `CORS_ORIGIN` com domínio Railway em produção
+6. **O seed de usuários** deve ser re-executado após o primeiro deploy (banco novo)
+7. **Arquivos sample** `clinicorp_sample.xlsx` e `simples_dental_sample.xlsx` são gitignored (dados sensíveis)
+
+---
+
+## 🏛️ Legado — Referência
+
+> Arquivos originais da Diva Page preservados na raiz:
+> - `Diva_Page_-_Andreza_Paz.html` (versão Firebase completa)
 > - `diva-page (1).html` (versão alternativa)
-> - `frontend/public/app.html` (versão Cloudflare D1)
 >
-> Firebase config do projeto original:
-> ```js
-> const firebaseConfig = {
->   apiKey: "AIzaSyCFR9jmFYTuvdDRj9p8AK7rXTRZEbUGIo8",
->   authDomain: "clinicrc-8ba64.firebaseapp.com",
->   projectId: "clinicrc-8ba64",
->   storageBucket: "clinicrc-8ba64.firebasestorage.app",
->   messagingSenderId: "325046795760",
->   appId: "1:325046795760:web:f5b67f94b13b03f41c3135",
->   measurementId: "G-TYFQ5WE761"
-> };
-> ```
-> Coleção Firestore: `pacientes_andreza_paz`
+> Firebase foi **abandonado** — toda a lógica migrada para Node.js + SQLite.

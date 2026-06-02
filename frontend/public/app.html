@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Retorno de Pacientes — Clínica Andreza Paz</title>
+<title>Retorno de Pacientes — ClinicRC</title>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
 <link rel="stylesheet" href="css/styles.css"/>
@@ -30,6 +30,12 @@
     </div>
     <a href="upload.html" style="margin-left:8px;display:flex;align-items:center;gap:4px;color:rgba(255,255,255,.7);font-size:12px;text-decoration:none;padding:4px 8px;border-radius:4px;transition:background .2s;" onmouseover="this.style.background='rgba(255,255,255,.1)'" onmouseout="this.style.background='transparent'">
       <span class="mi" style="font-size:18px">upload_file</span> Upload
+    </a>
+    <a href="https://wa.me/5581986544577" id="supportBtn" target="_blank" rel="noopener"
+       style="margin-left:4px;display:flex;align-items:center;gap:4px;color:rgba(255,255,255,.7);font-size:12px;text-decoration:none;padding:4px 8px;border-radius:4px;transition:background .2s;"
+       onmouseover="this.style.background='rgba(255,255,255,.1)'" onmouseout="this.style.background='transparent'"
+       title="Falar com suporte via WhatsApp">
+      <span class="mi" style="font-size:18px">support_agent</span> Suporte
     </a>
     <span id="clinicNameDisplay" style="margin-left:8px;color:rgba(255,255,255,.6);font-size:12px;"></span>
     <span class="ava" style="margin-left:6px">D</span>
@@ -107,6 +113,22 @@
 
 <!-- TOAST NOTIFICATION -->
 <div class="toast" id="toast"></div>
+
+<!-- Carrega link de suporte dinamicamente do backend -->
+<script>
+  (async function() {
+    try {
+      const res = await fetch(window.location.origin + '/auth/support');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.whatsapp) {
+          const btn = document.getElementById('supportBtn');
+          if (btn) btn.href = data.whatsapp;
+        }
+      }
+    } catch (_) {}
+  })();
+</script>
 
 <!-- JS ENTRYPOINT -->
 <script type="module" src="js/app.js"></script>

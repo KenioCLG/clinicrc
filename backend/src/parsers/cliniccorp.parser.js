@@ -43,7 +43,7 @@ function formatValor(raw) {
   }
   // É número puro
   const num = parseFloat(str);
-  if (isNaN(num)) return 'R$ 0,00';
+  if (Number.isNaN(num)) return 'R$ 0,00';
   return `R$ ${num.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
 }
 
@@ -65,6 +65,11 @@ function parseClinicCorp(filepath) {
 
     // Ignora linhas completamente vazias
     if (!row[5] && !row[6]) continue;
+
+    if (row.length < 10) {
+      console.warn(`⚠️  ClinicCorp: Linha ${i+1} tem apenas ${row.length} colunas (esperadas: 10). Pulando.`);
+      continue;
+    }
 
     const tel = normalizeTel(row[6]);
 

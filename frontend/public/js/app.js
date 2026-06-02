@@ -72,6 +72,10 @@ window.doLogout = () => {
  * Inicializar a aplicação
  */
 async function init() {
+  // Título dinâmico baseado na clínica logada
+  const clinicName = localStorage.getItem('clinicrc_clinic') || 'ClinicRC';
+  document.title = `Retorno de Pacientes — ${clinicName}`;
+
   try {
     setSyncStatus('ok', 'Carregando dados...');
     E = await api.getPatients();
@@ -206,7 +210,10 @@ window._mT = (id, n, e) => {
   const p = E.find(x => x.id === id);
   if (!p) return;
   let newTent = p.tent, newCol = p.col;
-  if (n === p.tent) newTent = p.tent - 1;
+  if (n === p.tent) {
+    if (!confirm('Desfazer última tentativa?')) return;
+    newTent = p.tent - 1;
+  }
   else if (n === p.tent + 1) { newTent = n; if (p.col === 'ligar') newCol = 'contato'; }
   tN = Math.max(1, newTent + 1);
   document.querySelectorAll('.tbtn').forEach((b, i) => b.classList.toggle('on', i + 1 === tN));
@@ -317,7 +324,6 @@ function rel() {
 
   document.getElementById('rbody').innerHTML = `
     <div class="rh"><span class="mi" style="color:var(--cp)">bar_chart</span> Relatório da Diva — Retorno de Pacientes</div>
-    <button class="breset" onclick="window._resetar()"><span class="mi" style="font-size:15px">warning</span> Resetar todos os dados</button>
     <div class="kgrid">
       <div class="kcard kcdb"><span class="kl">Total</span><span class="kv">${tot}</span><span class="ks">Pacientes</span></div>
       <div class="kcard kcye"><span class="kl">Em Andamento</span><span class="kv">${andamento}</span><span class="ks">Pacientes</span></div>
@@ -341,22 +347,6 @@ function rel() {
       <tbody>${rows}</tbody></table>
     </div>`;
 }
-
-window._resetar = async () => {
-  if (!confirm('Apagar todo o progresso de TODOS os usuários? Esta ação é irreversível.')) return;
-  try {
-    setSyncStatus('ok', 'Resetando...');
-    const result = await api.resetDatabase();
-    E = result.patients;
-    setSyncStatus('ok', 'Conectado via Worker API');
-    showToast('Dados resetados com sucesso!', 'ok');
-  } catch (err) {
-    setSyncStatus('err', 'Erro ao resetar');
-    showToast('Erro ao redefinir base online', 'er');
-  }
-  pA = null;
-  render();
-};
 
 // ─── INÍCIO ────────────────────────────────────────────────────────────────
 updS();

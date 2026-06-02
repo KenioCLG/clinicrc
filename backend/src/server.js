@@ -15,7 +15,10 @@ const authRoutes = require('./routes/auth.routes');
 const patientRoutes = require('./routes/patient.routes');
 const uploadRoutes = require('./routes/upload.routes');
 const { createUser } = require('./auth');
-const db = require('./db');
+
+// Inicializa o banco (SQLite ou PostgreSQL via db.js)
+require('./db');
+
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -50,7 +53,7 @@ app.get('/health', (req, res) => {
 });
 
 // Qualquer outra rota → serve o frontend (SPA fallback)
-app.get('/{*path}', (req, res) => {
+app.use((req, res) => {
   res.sendFile(path.join(__dirname, '..', '..', 'frontend', 'public', 'index.html'));
 });
 
@@ -59,17 +62,18 @@ app.get('/{*path}', (req, res) => {
 // ─────────────────────────────────────────────
 
 // Cria usuário admin padrão se o banco estiver vazio
-function seedAdminUser() {
-  const count = db.prepare('SELECT COUNT(*) as cnt FROM users').get();
-  if (count.cnt === 0) {
-    createUser(
+async function seedAdminUser() {
+  const { queryOne } = require('./db-helpers');
+  const count = await queryOne('SELECT COUNT(*) as cnt FROM users', []);
+  const cnt = parseInt(count?.cnt || count?.count || 0);
+  if (cnt === 0) {
+    await createUser(
       'Administrador',
       process.env.ADMIN_USER || 'admin',
       process.env.ADMIN_PASS || 'admin123',
       process.env.WHATSAPP_SUPPORT || ''
     );
-    console.log('👤 Usuário admin criado: admin / admin123');
-    console.log('⚠️  Altere a senha em produção via /auth/login');
+    console.log('👤 Usuário admin criado: ' + (process.env.ADMIN_USER || 'admin'));
   }
 }
 

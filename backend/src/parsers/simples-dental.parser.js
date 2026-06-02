@@ -26,7 +26,7 @@ function normalizeTel(raw) {
 function formatValor(raw) {
   if (!raw && raw !== 0) return 'R$ 0,00';
   const num = typeof raw === 'number' ? raw : parseFloat(String(raw).replace(/[^\d,.]/g, '').replace(',', '.'));
-  if (isNaN(num)) return 'R$ 0,00';
+  if (Number.isNaN(num)) return 'R$ 0,00';
   return `R$ ${num.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
 }
 
@@ -46,6 +46,11 @@ function parseSimplesDental(filepath) {
     const row = rows[i];
 
     if (!row[1] && !row[3]) continue;
+
+    if (row.length < 9) {
+      console.warn(`⚠️  Simples Dental: Linha ${i+1} tem apenas ${row.length} colunas (esperadas: 9). Pulando.`);
+      continue;
+    }
 
     const tel = normalizeTel(row[3]);
 

@@ -1,14 +1,5 @@
 /**
- * upload.routes.js — Rota de Upload de Planilhas XLSX
- *
- * ANALOGIA: É a "doca de carga" do sistema.
- * Recebe o arquivo xlsx, chama o parser correto (ClinicCorp ou Simples Dental),
- * e executa a lógica de merge: novos entram, existentes são atualizados se necessário.
- *
- * POST /upload — Envia a planilha xlsx
- *   Form-data:
- *     file   → o arquivo .xlsx
- *     source → 'cliniccorp' | 'simples_dental'
+ * upload.routes.js — Upload de Planilhas XLSX (async, multi-banco)
  */
 
 const express = require('express');
@@ -18,51 +9,39 @@ const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
 
-const db = require('../db');
+const { queryOne, queryAll, run, transaction } = require('../db-helpers');
 const authMiddleware = require('../middleware/auth.middleware');
 const { parseClinicCorp } = require('../parsers/cliniccorp.parser');
 const { parseSimplesDental } = require('../parsers/simples-dental.parser');
 
-// Pasta temporária para uploads
 const UPLOAD_DIR = path.join(__dirname, '..', '..', 'data', 'uploads');
-if (!fs.existsSync(UPLOAD_DIR)) {
-  fs.mkdirSync(UPLOAD_DIR, { recursive: true });
-}
+if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 
-// Configuração do Multer (aceita apenas .xlsx)
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, UPLOAD_DIR),
-  filename: (req, file, cb) => {
-    const unique = Date.now() + '-' + Math.round(Math.random() * 1e6);
-    cb(null, unique + path.extname(file.originalname));
-  },
+  filename: (req, file, cb) => cb(null, Date.now() + '-' + Math.round(Math.random() * 1e6) + path.extname(file.originalname)),
 });
 
 const upload = multer({
   storage,
   fileFilter: (req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase();
-    if (ext !== '.xlsx') {
+    if (path.extname(file.originalname).toLowerCase() !== '.xlsx') {
       return cb(new Error('Apenas arquivos .xlsx são aceitos.'));
     }
     cb(null, true);
   },
-  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB máximo
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
 });
 
 router.use(authMiddleware);
 
-// ─────────────────────────────────────────────
-// POST /upload — Processa a planilha
-// ─────────────────────────────────────────────
-router.post('/', upload.single('file'), (req, res) => {
-  if (!req.file) {
-    return res.status(400).json({ error: 'Nenhum arquivo enviado.' });
-  }
+// POST /upload — Processa planilha xlsx
+router.post('/', upload.single('file'), async (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'Nenhum arquivo enviado.' });
 
   const source = req.body.source;
   if (!['cliniccorp', 'simples_dental'].includes(source)) {
-    return res.status(400).json({ error: 'source deve ser "cliniccorp" ou "simples_dental".' });
+    return res.status(400).json({ error: 'source inválido.' });
   }
 
   const clinicId = req.clinic.id;
@@ -70,95 +49,90 @@ router.post('/', upload.single('file'), (req, res) => {
   const filename = req.file.originalname;
 
   let patients = [];
-
   try {
-    // Chama o parser correto baseado na origem
-    if (source === 'cliniccorp') {
-      patients = parseClinicCorp(filepath);
-    } else {
-      patients = parseSimplesDental(filepath);
-    }
+    patients = source === 'cliniccorp'
+      ? parseClinicCorp(filepath)
+      : parseSimplesDental(filepath);
   } catch (err) {
     return res.status(422).json({ error: `Erro ao ler planilha: ${err.message}` });
   }
 
-  // ─── LÓGICA DE MERGE ───────────────────────────────────────────────
-  // Para cada paciente da planilha:
-  //   - Se NÃO existe no banco (pelo telefone) → INSERE
-  //   - Se JÁ existe → ATUALIZA apenas proc, valor e source_status
-  //     mantendo o progresso do Kanban (col, tent, obs, res, dt)
-  // ───────────────────────────────────────────────────────────────────
+  const MAX_ROWS = 10000;
+  if (patients.length > MAX_ROWS) {
+    return res.status(422).json({
+      error: `Planilha excede o limite de ${MAX_ROWS} pacientes (encontrados: ${patients.length}).`
+    });
+  }
 
-  let newRows = 0;
-  let updatedRows = 0;
-  let skippedRows = 0;
+  let newRows = 0, updatedRows = 0, skippedRows = 0;
 
-  // Usa uma transação para performance (tudo ou nada)
-  const mergeTransaction = db.transaction((patientList) => {
-    for (const p of patientList) {
-      const existing = db.prepare(`
-        SELECT id, proc, valor, source_status FROM patients
-        WHERE clinic_id = ? AND tel = ?
-      `).get(clinicId, p.tel);
+  try {
+    // ── MERGE TRANSACTION ────────────────────────────────────────────────────
+    await transaction(async (tx) => {
+      for (const p of patients) {
+        const existing = await tx.queryOne(
+          'SELECT id, proc, valor, source_status FROM patients WHERE clinic_id = ? AND tel = ?',
+          [clinicId, p.tel]
+        );
 
-      if (!existing) {
-        // NOVO paciente — insere com status inicial
-        const newId = crypto.randomUUID().split('-')[0].toUpperCase();
-        db.prepare(`
-          INSERT INTO patients (id, clinic_id, nome, tel, proc, valor, source, source_status, profissional, data_orcamento)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `).run(newId, clinicId, p.nome, p.tel, p.proc, p.valor, p.source, p.source_status, p.profissional, p.data_orcamento);
-        newRows++;
-      } else {
-        // EXISTENTE — atualiza dados do orçamento, preserva Kanban
-        const changed = existing.proc !== p.proc ||
-                        existing.valor !== p.valor ||
-                        existing.source_status !== p.source_status;
-
-        if (changed) {
-          db.prepare(`
-            UPDATE patients
-            SET proc = ?, valor = ?, source_status = ?, updated_at = CURRENT_TIMESTAMP
-            WHERE clinic_id = ? AND tel = ?
-          `).run(p.proc, p.valor, p.source_status, clinicId, p.tel);
-          updatedRows++;
+        if (!existing) {
+          const newId = crypto.randomUUID();
+          await tx.run(
+            `INSERT INTO patients (id, clinic_id, nome, tel, proc, valor, source, source_status, profissional, data_orcamento)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [newId, clinicId, p.nome, p.tel, p.proc, p.valor, p.source, p.source_status, p.profissional, p.data_orcamento]
+          );
+          newRows++;
         } else {
-          skippedRows++;
+          const changed = existing.proc !== p.proc || existing.valor !== p.valor || existing.source_status !== p.source_status;
+          if (changed) {
+            await tx.run(
+              `UPDATE patients SET proc = ?, valor = ?, source_status = ?, updated_at = CURRENT_TIMESTAMP
+               WHERE clinic_id = ? AND tel = ?`,
+              [p.proc, p.valor, p.source_status, clinicId, p.tel]
+            );
+            updatedRows++;
+          } else {
+            skippedRows++;
+          }
         }
       }
-    }
-  });
+    });
 
-  mergeTransaction(patients);
+    // Registra no histórico
+    await run(
+      `INSERT INTO uploads (clinic_id, filename, source, total_rows, new_rows, updated_rows, skipped_rows)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [clinicId, filename, source, patients.length, newRows, updatedRows, skippedRows]
+    );
 
-  // Registra o upload no histórico
-  db.prepare(`
-    INSERT INTO uploads (clinic_id, filename, source, total_rows, new_rows, updated_rows, skipped_rows)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
-  `).run(clinicId, filename, source, patients.length, newRows, updatedRows, skippedRows);
+    // Remove arquivo temporário
+    fs.unlink(filepath, (err) => {
+      if (err) console.error('⚠️  Falha ao limpar upload temporário:', err.message);
+    });
 
-  // Remove arquivo temporário
-  fs.unlink(filepath, () => {});
-
-  return res.json({
-    success: true,
-    summary: {
-      total: patients.length,
-      new: newRows,
-      updated: updatedRows,
-      unchanged: skippedRows,
-    },
-    message: `✅ ${newRows} novos, ${updatedRows} atualizados, ${skippedRows} sem mudança.`,
-  });
+    return res.json({
+      success: true,
+      summary: { total: patients.length, new: newRows, updated: updatedRows, unchanged: skippedRows },
+      message: `✅ ${newRows} novos, ${updatedRows} atualizados, ${skippedRows} sem mudança.`,
+    });
+  } catch (err) {
+    console.error('Upload erro:', err);
+    return res.status(500).json({ error: 'Erro ao processar planilha: ' + err.message });
+  }
 });
 
-// GET /upload/history — Histórico de uploads da clínica
-router.get('/history', (req, res) => {
-  const clinicId = req.clinic.id;
-  const history = db.prepare(`
-    SELECT * FROM uploads WHERE clinic_id = ? ORDER BY uploaded_at DESC LIMIT 20
-  `).all(clinicId);
-  return res.json(history);
+// GET /upload/history
+router.get('/history', async (req, res) => {
+  try {
+    const history = await queryAll(
+      'SELECT * FROM uploads WHERE clinic_id = ? ORDER BY uploaded_at DESC LIMIT 20',
+      [req.clinic.id]
+    );
+    return res.json(history);
+  } catch (err) {
+    return res.status(500).json({ error: 'Erro ao buscar histórico.' });
+  }
 });
 
 module.exports = router;

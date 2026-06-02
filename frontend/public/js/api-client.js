@@ -5,7 +5,7 @@
  * Sempre que o Kanban precisa salvar ou buscar dados,
  * ele usa este módulo para ligar para o servidor (backend).
  *
- * Agora usa nossa API Node.js + JWT ao invés do Firebase/Cloudflare.
+ * Agora usa nossa API Node.js + JWT para a versão multi-clínica.
  */
 
 export default class ClinicrcApiClient {
@@ -36,7 +36,10 @@ export default class ClinicrcApiClient {
    * Busca todos os pacientes da clínica logada
    */
   async getPatients() {
-    const res = await fetch(`${this.base}/patients`, { headers: this.headers });
+    const res = await fetch(`${this.base}/patients`, {
+      headers: this.headers,
+      signal: AbortSignal.timeout(15000)
+    });
 
     if (res.status === 401) {
       // Token expirado — volta para login
@@ -64,6 +67,7 @@ export default class ClinicrcApiClient {
       method: 'PUT',
       headers: this.headers,
       body: JSON.stringify(updates),
+      signal: AbortSignal.timeout(15000)
     });
 
     if (res.status === 401) {
@@ -77,13 +81,5 @@ export default class ClinicrcApiClient {
     }
 
     return await res.json();
-  }
-
-  /**
-   * Reset de pacientes — remove todos e mantém apenas os da planilha inicial
-   * (Agora não faz mais seed automático, apenas avisa)
-   */
-  async resetDatabase() {
-    throw new Error('Reset desabilitado. Use a página de upload para reimportar a planilha.');
   }
 }
