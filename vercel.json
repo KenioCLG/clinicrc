@@ -6,7 +6,7 @@
       "use": "@vercel/node"
     },
     {
-      "src": "frontend/public/**/*",
+      "src": "frontend/public/**",
       "use": "@vercel/static"
     }
   ],
@@ -16,6 +16,19 @@
     { "src": "/patients/(.*)",             "dest": "backend/src/server.js" },
     { "src": "/upload/(.*)",               "dest": "backend/src/server.js" },
     { "src": "/api/(.*)",                  "dest": "backend/src/server.js" },
+
+    { "src": "/sw.js",                     "dest": "frontend/public/sw.js" },
+    { "src": "/manifest.json",             "dest": "frontend/public/manifest.json" },
+    { "src": "/favicon.ico",               "dest": "frontend/public/favicon.ico" },
+    { "src": "/icon-(.*)",                 "dest": "frontend/public/icon-$1" },
+    { "src": "/og-image.png",              "dest": "frontend/public/og-image.png" },
+    { "src": "/css/(.*)",                  "dest": "frontend/public/css/$1" },
+    { "src": "/js/(.*)",                   "dest": "frontend/public/js/$1" },
+    { "src": "/app.html",                  "dest": "frontend/public/app.html" },
+    { "src": "/upload.html",               "dest": "frontend/public/upload.html" },
+    { "src": "/index.html",                "dest": "frontend/public/index.html" },
+    { "src": "/",                          "dest": "frontend/public/index.html" },
+
     { "src": "/(.*)",                      "dest": "backend/src/server.js" }
   ],
   "headers": [
