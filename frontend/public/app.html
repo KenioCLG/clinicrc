@@ -161,7 +161,7 @@
 </svg>
 
 <!-- DROPDOWN SINO DE NOTIFICAÇÕES -->
-<div class="bell-panel" id="bellPanel" style="display:none;">
+<div class="bell-panel" id="bellPanel">
   <div class="bell-panel-hd">
     <span class="mi" style="font-size:16px;color:var(--cp)">notifications_active</span>
     <strong>Retornos Agendados</strong>
@@ -174,22 +174,40 @@
 
 <!-- MODAL AGENDAMENTO DE RETORNO -->
 <div class="mbg" id="modalRetorno" onclick="this.classList.remove('on')">
-  <div class="mbox" onclick="event.stopPropagation()" style="max-width:380px;">
+  <div class="mbox" onclick="event.stopPropagation()" style="max-width:390px;">
     <h3 style="display:flex;align-items:center;gap:8px;">
       <span class="mi" style="color:var(--cp)">schedule_send</span>
       Agendar Retorno de Ligação
     </h3>
-    <p style="font-size:13px;color:var(--cts);margin:8px 0 16px;">O paciente pediu para você ligar de volta. Defina quando:</p>
-    <div id="retornoNomePac" style="font-weight:600;font-size:14px;margin-bottom:12px;color:var(--ct);"></div>
-    <label for="retornoDatetime" style="font-size:11px;font-weight:600;color:var(--cts);text-transform:uppercase;letter-spacing:.5px;">Data e Hora do Retorno</label>
-    <input type="datetime-local" id="retornoDatetime" name="retornoDatetime" style="width:100%;margin-top:6px;padding:10px 12px;border:1px solid var(--cdiv);border-radius:8px;font-size:14px;font-family:var(--font);outline:none;color:var(--ct);background:var(--cibg);" />
-    <label for="retornoObs" style="font-size:11px;font-weight:600;color:var(--cts);text-transform:uppercase;letter-spacing:.5px;margin-top:12px;display:block;">Observação (opcional)</label>
-    <input type="text" id="retornoObs" name="retornoObs" placeholder="Ex: Ligar após 14h" style="width:100%;margin-top:6px;padding:10px 12px;border:1px solid var(--cdiv);border-radius:8px;font-size:14px;font-family:var(--font);outline:none;color:var(--ct);background:var(--cibg);" />
-    <div style="display:flex;gap:8px;margin-top:16px;">
-      <button class="cb cbg" style="flex:1;height:38px;" onclick="window.salvarRetorno()">
-        <span class="mi" style="font-size:16px;vertical-align:middle;">alarm_add</span> Confirmar
+    <p style="font-size:13px;color:var(--cts);margin:4px 0 14px;">Defina quando ligar de volta para o paciente:</p>
+    
+    <div id="retornoNomePac" style="font-weight:600;font-size:14px;margin-bottom:14px;color:var(--ct);display:flex;align-items:center;gap:6px;"></div>
+    
+    <!-- ATALHOS RÁPIDOS -->
+    <label style="font-size:10px;font-weight:700;color:var(--cts);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;display:block;">Agendamento Rápido</label>
+    <div class="ret-presets">
+      <button type="button" class="ret-preset-btn" onclick="window._setRetPreset('1h')">⚡ +1h</button>
+      <button type="button" class="ret-preset-btn" onclick="window._setRetPreset('2h')">⚡ +2h</button>
+      <button type="button" class="ret-preset-btn" onclick="window._setRetPreset('amanha-m')">🌅 Amanhã (M)</button>
+      <button type="button" class="ret-preset-btn" onclick="window._setRetPreset('amanha-t')">☀️ Amanhã (T)</button>
+      <button type="button" class="ret-preset-btn" onclick="window._setRetPreset('segunda-m')">🗓️ Seg (M)</button>
+    </div>
+
+    <!-- ENTRADA PERSONALIZADA -->
+    <label for="retornoDatetime" style="font-size:10px;font-weight:700;color:var(--cts);text-transform:uppercase;letter-spacing:.5px;margin-top:14px;display:block;">Data e Hora Personalizada</label>
+    <input type="datetime-local" id="retornoDatetime" name="retornoDatetime" onchange="window._onRetDateChange()" style="width:100%;margin-top:6px;padding:8px 12px;border:1px solid var(--cdiv);border-radius:8px;font-size:13px;font-family:var(--font);outline:none;color:var(--ct);background:var(--cibg);transition:all .2s;" />
+    
+    <!-- PREVIEW DO AGENDAMENTO -->
+    <div id="retornoPreview" class="ret-preview">Selecione um horário acima...</div>
+
+    <label for="retornoObs" style="font-size:10px;font-weight:700;color:var(--cts);text-transform:uppercase;letter-spacing:.5px;margin-top:12px;display:block;">Observação (opcional)</label>
+    <input type="text" id="retornoObs" name="retornoObs" placeholder="Ex: Ligar após 14h" style="width:100%;margin-top:6px;padding:10px 12px;border:1px solid var(--cdiv);border-radius:8px;font-size:13px;font-family:var(--font);outline:none;color:var(--ct);background:var(--cibg);" />
+    
+    <div style="display:flex;gap:8px;margin-top:18px;">
+      <button class="cb cbg" style="flex:1;height:36px;display:flex;align-items:center;justify-content:center;gap:6px;" onclick="window.salvarRetorno()">
+        <span class="mi" style="font-size:16px;">alarm_add</span> Confirmar
       </button>
-      <button class="cb cbgr" style="flex:1;height:38px;" onclick="document.getElementById('modalRetorno').classList.remove('on')">Cancelar</button>
+      <button class="cb cbgr" style="flex:1;height:36px;" onclick="document.getElementById('modalRetorno').classList.remove('on')">Cancelar</button>
     </div>
   </div>
 </div>

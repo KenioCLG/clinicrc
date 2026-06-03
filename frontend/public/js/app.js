@@ -198,7 +198,7 @@ setInterval(() => { renderBell(); }, 30000);
 window.toggleBell = () => {
   const panel = document.getElementById('bellPanel');
   if (!panel) return;
-  panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+  panel.classList.toggle('on');
   renderBell();
 };
 
@@ -209,7 +209,92 @@ window.abrirModalRetorno = (id) => {
   document.getElementById('retornoNomePac').innerHTML = `<span class="mi" style="font-size:16px;color:var(--cp);vertical-align:middle;margin-right:6px;">phone</span>${p.nome}`;
   document.getElementById('retornoDatetime').value = '';
   document.getElementById('retornoObs').value = '';
+  
+  const preview = document.getElementById('retornoPreview');
+  if (preview) {
+    preview.textContent = 'Selecione um horário acima...';
+    preview.classList.remove('active');
+  }
+  
   document.getElementById('modalRetorno').classList.add('on');
+};
+
+window._onRetDateChange = () => {
+  const val = document.getElementById('retornoDatetime').value;
+  const preview = document.getElementById('retornoPreview');
+  if (!preview) return;
+  
+  if (!val) {
+    preview.textContent = 'Selecione um horário acima...';
+    preview.classList.remove('active');
+    return;
+  }
+  
+  const date = new Date(val);
+  if (isNaN(date.getTime())) {
+    preview.textContent = 'Data inválida';
+    preview.classList.remove('active');
+    return;
+  }
+  
+  const wDays = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+  const months = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+  
+  const day = date.getDate().toString().padStart(2, '0');
+  const wDay = wDays[date.getDay()];
+  const month = months[date.getMonth()];
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  
+  // Checa se a data é hoje ou amanhã
+  const hoje = new Date();
+  const amanha = new Date();
+  amanha.setDate(hoje.getDate() + 1);
+  
+  let refDay = `${wDay}, ${day} de ${month}`;
+  if (date.toDateString() === hoje.toDateString()) {
+    refDay = 'Hoje';
+  } else if (date.toDateString() === amanha.toDateString()) {
+    refDay = 'Amanhã';
+  }
+  
+  preview.innerHTML = `<span class="mi" style="font-size:14px;color:var(--cp);">event_available</span> Agendando para: <strong>${refDay} às ${hours}:${minutes}</strong>`;
+  preview.classList.add('active');
+};
+
+window._setRetPreset = (type) => {
+  const now = new Date();
+  let target = new Date();
+  
+  if (type === '1h') {
+    target.setHours(now.getHours() + 1);
+  } else if (type === '2h') {
+    target.setHours(now.getHours() + 2);
+  } else if (type === 'amanha-m') {
+    target.setDate(now.getDate() + 1);
+    target.setHours(9, 0, 0, 0);
+  } else if (type === 'amanha-t') {
+    target.setDate(now.getDate() + 1);
+    target.setHours(14, 0, 0, 0);
+  } else if (type === 'segunda-m') {
+    const currentDay = now.getDay();
+    const daysToAdd = (currentDay === 0 ? 1 : 8 - currentDay);
+    target.setDate(now.getDate() + daysToAdd);
+    target.setHours(9, 0, 0, 0);
+  }
+  
+  const year = target.getFullYear();
+  const month = (target.getMonth() + 1).toString().padStart(2, '0');
+  const day = target.getDate().toString().padStart(2, '0');
+  const hours = target.getHours().toString().padStart(2, '0');
+  const minutes = target.getMinutes().toString().padStart(2, '0');
+  
+  const formatted = `${year}-${month}-${day}T${hours}:${minutes}`;
+  const input = document.getElementById('retornoDatetime');
+  if (input) {
+    input.value = formatted;
+    window._onRetDateChange();
+  }
 };
 
 window.salvarRetorno = () => {
@@ -428,9 +513,20 @@ function setSyncStatus(type, txt) {
 let toastTimer;
 function showToast(msg, type='ok') {
   const t = document.getElementById('toast');
-  t.textContent = msg; t.className = 'toast ' + type + ' on';
+  if (!t) return;
+  
+  // Ícones do Material Icons para dar contexto visual à notificação
+  let iconName = 'check_circle';
+  if (type === 'er') iconName = 'error';
+  else if (type === 'info') iconName = 'info';
+  
+  t.innerHTML = `<span class="mi" style="font-size:16px;">${iconName}</span><span>${msg}</span>`;
+  t.className = 'toast ' + type + ' on';
+  
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.className = 'toast', 2200);
+  toastTimer = setTimeout(() => {
+    t.classList.remove('on');
+  }, 2500);
 }
 
 /**
