@@ -42,8 +42,22 @@ app.use(cors({
 // Interpreta JSON no body das requisições
 app.use(express.json());
 
-// Serve os arquivos estáticos do frontend
-app.use(express.static(path.join(__dirname, '..', '..', 'frontend', 'public')));
+// Serve os arquivos estáticos do frontend — SEM CACHE agressivo
+app.use(express.static(path.join(__dirname, '..', '..', 'frontend', 'public'), {
+  etag: false,
+  lastModified: false,
+  setHeaders: (res, filePath) => {
+    // HTML: nunca guardar na memória
+    if (filePath.endsWith('.html')) {
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+    } else {
+      // CSS/JS: revalidar sempre
+      res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+    }
+  }
+}));
 
 // ─────────────────────────────────────────────
 // ROTAS DA API
@@ -66,6 +80,9 @@ app.get('/health', async (req, res) => {
 
 // Qualquer outra rota → serve o frontend (SPA fallback)
 app.use((req, res) => {
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
   res.sendFile(path.join(__dirname, '..', '..', 'frontend', 'public', 'index.html'));
 });
 
