@@ -116,7 +116,7 @@ body{font-family:var(--font);font-size:14px;color:var(--ct);background:var(--cbg
 
 
 /* LAYOUT MOBILE VERTICAL E RESIZER HORIZONTAL */
-@media (max-width: 768px) {
+@media (max-width: 1000px) {
   #mobileDebugLabel { display: inline-block !important; }
   .pg.on {
     flex-direction: column !important;

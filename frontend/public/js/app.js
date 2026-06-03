@@ -991,7 +991,7 @@ if (resizer && sp) {
     isResizing = true;
     resizer.classList.add('active');
     document.body.style.userSelect = 'none'; // Evita selecionar texto ao arrastar
-    if (window.innerWidth <= 768) {
+    if (window.innerWidth <= 1000) {
       document.body.style.cursor = 'row-resize';
     } else {
       document.body.style.cursor = 'col-resize';
@@ -1005,7 +1005,7 @@ if (resizer && sp) {
     const clientX = e.touches && e.touches.length > 0 ? e.touches[0].clientX : e.clientX;
     const clientY = e.touches && e.touches.length > 0 ? e.touches[0].clientY : e.clientY;
 
-    if (window.innerWidth <= 768) {
+    if (window.innerWidth <= 1000) {
       // MODO MOBILE: Ajuste Vertical
       const minHeight = 60; // Colapsado (só header do roteiro)
       const maxHeight = window.innerHeight - 150; // Deixa espaço para o Kanban
@@ -1050,10 +1050,11 @@ if (resizer && sp) {
   
   // Limpa os estilos inlines aplicados quando redimensiona e depois muda a orientação
   window.addEventListener('resize', () => {
-    if (window.innerWidth <= 768) {
+    if (window.innerWidth <= 1000) {
       sp.style.width = '100%';
     } else {
       sp.style.height = '';
+      sp.style.width = '38%';
     }
   });
 }
