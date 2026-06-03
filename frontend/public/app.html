@@ -45,7 +45,8 @@
   </button>
   <button class="hdr-menu" id="menuVersion" title="Versão do sistema">
     <span class="mi">medical_services</span>
-    <span class="version-tag" id="versionTag"><span class="ver-dot" id="verDot"></span><em id="verNum">v1.4</em></span>
+    <span class="version-tag" id="versionTag"><span class="ver-dot" id="verDot"></span><em id="verNum">v1.5</em></span>
+    <span id="mobileDebugLabel" style="display:none; background:red; color:white; padding:2px 4px; border-radius:4px; font-size:10px; margin-left:6px;">MOBILE</span>
   </button>
   
   <div class="hdr-nav" id="hdrNav">
@@ -347,10 +348,24 @@ O tom deve ser humano, empático e focado em gerar urgência e agendamento.
   })();
 </script>
 
-<!-- JS ENTRYPOINT -->
-<script type="module" src="js/app.js?v=3.0"></script>
-<script src="js/odontograma-anat.js?v=3.0" defer></script>
+<div id="debugCacheBust" style="position:fixed;bottom:10px;right:10px;z-index:9999;background:red;color:white;padding:10px;border-radius:8px;font-weight:bold;cursor:pointer;" onclick="caches.keys().then(k=>Promise.all(k.map(n=>caches.delete(n)))).then(()=>window.location.reload(true))">Limpar Memória</div>
 
+<!-- JS ENTRYPOINT -->
+<script type="module" src="js/app.js?v=4.0"></script>
+<script src="js/odontograma-anat.js?v=4.0" defer></script>
+<script>
+  if (window.innerWidth <= 768) {
+    // Força layout mobile brutalmente
+    document.querySelectorAll('.pg').forEach(pg => {
+      pg.style.setProperty('flex-direction', 'column', 'important');
+    });
+    const sp = document.querySelector('.sp');
+    if(sp) {
+      sp.style.setProperty('width', '100%', 'important');
+      sp.style.setProperty('height', '40%', 'important');
+    }
+  }
+</script>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {

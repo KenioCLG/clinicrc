@@ -58,11 +58,12 @@ self.addEventListener('fetch', (event) => {
 
   // 2. Estratégia Stale-While-Revalidate para recursos estáticos (CSS, JS, Imagens, Fontes, CDNs)
   // Serve do cache imediatamente e atualiza o cache em background se houver rede.
-  const isStaticAsset = URLS_TO_CACHE.some(asset => event.request.url.includes(asset)) || 
+  const isStaticAsset = (URLS_TO_CACHE.some(asset => event.request.url.includes(asset)) && !url.pathname.endsWith('.html') && !event.request.url.endsWith('/')) || 
                         url.pathname.endsWith('.css') || 
                         url.pathname.endsWith('.js') || 
                         url.pathname.endsWith('.png') || 
                         url.pathname.endsWith('.ico') ||
+                        url.hostname.includes('googleapis') ||
                         url.hostname.includes('googleapis') ||
                         url.hostname.includes('gstatic') ||
                         url.hostname.includes('jsdelivr');
