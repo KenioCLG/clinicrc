@@ -192,13 +192,13 @@
       <button type="button" class="ret-preset-btn" onclick="window._setRetPreset('amanha-t')">☀️ Amanhã (T)</button>
       <button type="button" class="ret-preset-btn" onclick="window._setRetPreset('segunda-m')">🗓️ Seg (M)</button>
     </div>
-
+    
     <!-- ENTRADA PERSONALIZADA -->
     <label for="retornoDatetime" style="font-size:10px;font-weight:700;color:var(--cts);text-transform:uppercase;letter-spacing:.5px;margin-top:14px;display:block;">Data e Hora Personalizada</label>
     <input type="datetime-local" id="retornoDatetime" name="retornoDatetime" onchange="window._onRetDateChange()" style="width:100%;margin-top:6px;padding:8px 12px;border:1px solid var(--cdiv);border-radius:8px;font-size:13px;font-family:var(--font);outline:none;color:var(--ct);background:var(--cibg);transition:all .2s;" />
     
-    <!-- PREVIEW DO AGENDAMENTO -->
-    <div id="retornoPreview" class="ret-preview">Selecione um horário acima...</div>
+    <!-- PREVIEW FORMATADO -->
+    <div class="ret-preview" id="retornoPreview">Selecione um horário acima...</div>
 
     <label for="retornoObs" style="font-size:10px;font-weight:700;color:var(--cts);text-transform:uppercase;letter-spacing:.5px;margin-top:12px;display:block;">Observação (opcional)</label>
     <input type="text" id="retornoObs" name="retornoObs" placeholder="Ex: Ligar após 14h" style="width:100%;margin-top:6px;padding:10px 12px;border:1px solid var(--cdiv);border-radius:8px;font-size:13px;font-family:var(--font);outline:none;color:var(--ct);background:var(--cibg);" />
