@@ -136,6 +136,25 @@ body{font-family:var(--font);font-size:14px;color:var(--ct);background:var(--cbg
   .sp-btn-edit span:not(.mi) {
     display: none;
   }
+  .pbar-btn {
+    padding: 6px !important;
+    min-width: 28px;
+    justify-content: center;
+  }
+  .pbar-btn .pbar-btn-txt {
+    display: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .pbar-btn {
+    padding: 6px !important;
+    min-width: 28px;
+    justify-content: center;
+  }
+  .pbar-btn .pbar-btn-txt {
+    display: none;
+  }
 }
 
 .sbody-edit{flex:1;display:flex;flex-direction:column;padding:0;}

@@ -467,6 +467,15 @@
     80%      { transform: translateX(4px); }
   }
 </style>
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
+  <link rel="apple-touch-icon" href="/icon-192.png">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#EC6726">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="ClinicRC">
 </head>
 <body>
 
@@ -862,5 +871,12 @@
     }
   }
 </script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').then(reg => console.log('SW registrado', reg.scope)).catch(err => console.log('Erro SW', err));
+      });
+    }
+  </script>
 </body>
 </html>
