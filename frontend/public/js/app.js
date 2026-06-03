@@ -386,6 +386,7 @@ window.deleteAttempt = async () => {
 function renderTbar() {
   const tbar = document.getElementById('tbar');
   if(!tbar) return;
+  tbar.classList.remove('tbar-active');
   // Script único (Master): a tentativa não muda o roteiro, só o contador no card
   tbar.innerHTML = `
     <div class="tbar-master">
@@ -833,6 +834,7 @@ function updP() {
 
   const tbar = document.getElementById('tbar');
   if (tbar) {
+    tbar.classList.add('tbar-active');
     tbar.innerHTML = `
       <div style="display:flex; width:100%; gap:8px;">
         <a href="tel:${numUrl}" onmouseover="this.style.filter='brightness(0.9)'" onmouseout="this.style.filter='none'" style="flex:1; background:#6B7280; color:#FFF; display:flex; align-items:center; justify-content:center; gap:6px; padding:10px; border-radius:8px; text-decoration:none; font-family:var(--font); font-size:13px; font-weight:600; cursor:pointer; transition:all .2s; border:none; text-align:center; min-height:40px; line-height:1.2;" title="Ligação Normal">
