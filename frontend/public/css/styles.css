@@ -78,8 +78,8 @@ body{font-family:var(--font);font-size:14px;color:var(--ct);background:var(--cbg
 .loading-overlay p{color:rgba(255,255,255,0.8);font-size:15px;font-weight:500;}
 
 /* LAYOUT */
-.body{padding-top:var(--hh);height:100vh;display:flex;overflow:hidden;}
-.pg{display:none;width:100%;}
+.body{padding-top:var(--hh);height:100vh;height:100dvh;display:flex;flex-direction:column;overflow:hidden;}
+.pg{display:none;width:100%;flex:1;overflow:hidden;}
 .pg.on{display:flex;}
 
 /* SCRIPT PANEL */
@@ -151,15 +151,15 @@ body{font-family:var(--font);font-size:14px;color:var(--ct);background:var(--cbg
 /* LAYOUT MOBILE VERTICAL E RESIZER HORIZONTAL */
 @media (max-width: 768px) {
   .pg.on {
-    flex-direction: column;
+    flex-direction: column !important;
   }
   .sp {
     width: 100% !important;
-    height: 40%; /* Altura inicial no mobile */
-    min-height: 60px; /* Quando colapsado para cima */
-    max-height: calc(100vh - 150px);
-    border-right: none;
-    border-bottom: 1px solid var(--cdiv);
+    height: 40% !important; /* Altura inicial no mobile */
+    min-height: 60px !important; /* Quando colapsado para cima */
+    max-height: calc(100vh - 150px) !important;
+    border-right: none !important;
+    border-bottom: 1px solid var(--cdiv) !important;
   }
   .resizer {
     width: 100% !important;
@@ -186,8 +186,9 @@ body{font-family:var(--font);font-size:14px;color:var(--ct);background:var(--cbg
     background: var(--cp);
   }
   .kp {
-    width: 100%;
-    flex: 1;
+    width: 100% !important;
+    flex: 1 !important;
+    height: auto !important;
   }
 }
 
