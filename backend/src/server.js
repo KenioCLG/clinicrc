@@ -6,18 +6,23 @@
  * e direciona cada visitante para o departamento certo (rotas).
  */
 
-require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
 
+const envPath = path.join(__dirname, '..', '..', '.env');
+if (require('fs').existsSync(envPath)) {
+  require('dotenv').config({ path: envPath });
+}
+
 const authRoutes = require('./routes/auth.routes');
 const patientRoutes = require('./routes/patient.routes');
 const uploadRoutes = require('./routes/upload.routes');
+const scriptRoutes = require('./routes/script.routes');
 const { createUser } = require('./auth');
 
 // Inicializa o banco (SQLite ou PostgreSQL via db.js)
-require('./db');
+require('./db-postgres');
 
 
 const app = express();
@@ -46,10 +51,17 @@ app.use(express.static(path.join(__dirname, '..', '..', 'frontend', 'public')));
 app.use('/auth', authRoutes);
 app.use('/patients', patientRoutes);
 app.use('/upload', uploadRoutes);
+app.use('/api/scripts', scriptRoutes);
 
-// Rota de health check (Railway usa isso para verificar se o app está vivo)
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+// Rota de health check (também testa a conexão com o banco)
+app.get('/health', async (req, res) => {
+  try {
+    const dbModule = require('./db-postgres');
+    if (dbModule.ready) await dbModule.ready;
+    res.json({ status: 'ok', database: 'connected', timestamp: new Date().toISOString() });
+  } catch (err) {
+    res.status(500).json({ status: 'error', database: 'failed', error: err.message });
+  }
 });
 
 // Qualquer outra rota → serve o frontend (SPA fallback)
@@ -58,15 +70,30 @@ app.use((req, res) => {
 });
 
 // ─────────────────────────────────────────────
+// MIDDLEWARE GLOBAL DE ERRO (A Rede de Segurança)
+// ─────────────────────────────────────────────
+app.use((err, req, res, next) => {
+  console.error('🚨 [Erro Global]', err.stack || err.message);
+  res.status(500).json({
+    error: 'Ocorreu um erro interno no servidor.',
+    details: process.env.NODE_ENV === 'development' ? err.message : undefined
+  });
+});
+
+// ─────────────────────────────────────────────
 // INICIALIZAÇÃO
 // ─────────────────────────────────────────────
 
 // Cria usuário admin padrão se o banco estiver vazio
 async function seedAdminUser() {
+  const dbModule = require('./db-postgres');
+  if (dbModule.ready) await dbModule.ready; // Aguarda Supabase criar tabelas
+
   const { queryOne } = require('./db-helpers');
   const count = await queryOne('SELECT COUNT(*) as cnt FROM users', []);
   const cnt = parseInt(count?.cnt || count?.count || 0);
   if (cnt === 0) {
+    const { createUser } = require('./auth');
     await createUser(
       'Administrador',
       process.env.ADMIN_USER || 'admin',
@@ -77,10 +104,15 @@ async function seedAdminUser() {
   }
 }
 
-app.listen(PORT, () => {
-  console.log(`\n🚀 ClinicRC Server rodando em http://localhost:${PORT}`);
-  console.log(`📁 Banco de dados: backend/data/clinicrc.db`);
-  seedAdminUser();
-});
+// Inicia o servidor apenas se NÃO estiver rodando no Vercel (onde ele gerencia a porta sozinho)
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`\n🚀 ClinicRC Server rodando em http://localhost:${PORT}`);
+    seedAdminUser().catch(console.error);
+  });
+} else {
+  // No Vercel, apenas tenta garantir a tabela de admin na inicialização de forma async
+  seedAdminUser().catch(err => console.error('SeedAdmin fail:', err.message));
+}
 
 module.exports = app;

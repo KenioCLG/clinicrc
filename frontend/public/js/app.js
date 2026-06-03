@@ -1,52 +1,108 @@
 import ClinicrcApiClient from './api-client.js';
 
-// Roteiros (PNL + SPIN) idênticos ao protótipo
-const ROT = {
-  1:{t:"1ª Ligação — Primeiro Contato (Rapport + Situação)",b:[
-    {tp:"or",lb:"🧠 TÉCNICA: RAPPORT EMPÁTICO (PNL)",h:`Tom de voz <strong>preocupado e genuíno</strong>, como quem liga para um amigo. Fale devagar. Sorria enquanto fala — muda a voz.`},
-    {tp:"bl",lb:"1️⃣ ABERTURA",h:`"Olá! Aqui quem fala é a <em>Diva</em>, da <em>Clínica Andreza Paz</em>.<br><br>Estou entrando em contato para saber se está tudo bem com o(a) senhor(a), [NOME].<br><br>Fiquei preocupada ao ver que alguns procedimentos clínicos estão em aberto — queria saber se está tudo bem mesmo."`},
-    {tp:"",lb:"⏸ 2️⃣ ESCUTAR ATIVAMENTE (PNL)",h:`<strong>Faça uma pausa. Deixe o paciente falar.</strong> Não interrompa.<br><strong>Espelhe</strong> palavras que ele usar (mesma linguagem = conexão).`},
-    {tp:"gr",lb:"🟢 CAMINHO A — Paciente abre para reagendar",h:`"Certo, compreendo perfeitamente.<br><br>Então vamos <strong>refazer a sua avaliação de forma totalmente gratuita!</strong><br><br>Quando podemos agendar — <strong>amanhã ou na próxima semana?</strong>"`},
-    {tp:"ye",lb:"🟡 CAMINHO B — Paciente recusa o tratamento",h:`"Entendo... Mas podemos fazer uma <strong>reavaliação gratuita</strong>, sem custo nenhum.<br><br>💎 E temos <strong>limpeza por apenas R$ 180,00</strong>!"`},
-    {tp:"bl",lb:"🔵 CAMINHO C — Já fez em outro local",h:`"Que bom! 💎 Temos <strong>limpeza por R$ 180,00</strong> — ótimo para manutenção!"`},
-    {tp:"",lb:"🔚 ENCERRAMENTO",h:`"Muito obrigada, [NOME]! Tenha um ótimo dia!"`},
-  ]},
-  2:{t:"2ª Ligação — Segundo Contato (Rapport + Problema)",b:[
-    {tp:"or",lb:"🧠 TÉCNICA: CONTINUIDADE + PROBLEMA (SPIN)",h:`Retome como conversa interrompida. Use <strong>"novamente"</strong> para criar familiaridade.`},
-    {tp:"bl",lb:"1️⃣ ABERTURA",h:`"Olá, [NOME]! Aqui é a Diva <strong>novamente</strong>, da Clínica Andreza Paz.<br><br>Liguei outro dia e vim saber se precisa de alguma coisa — aquele tratamento ainda está em aberto aqui."`},
-    {tp:"",lb:"⏸ 2️⃣ ESCUTAR ATIVAMENTE",h:`<strong>Pausa. Deixe o paciente responder.</strong> Preste atenção no tom de voz.`},
-    {tp:"gr",lb:"🟢 CAMINHO A — Reagendar",h:`"<strong>Reavaliação totalmente gratuita</strong>! Amanhã ou semana que vem?"`},
-    {tp:"ye",lb:"🟡 CAMINHO B — Recusa",h:`"<strong>Reavaliação gratuita</strong> + <strong>limpeza R$ 180,00</strong> — continua disponível!"`},
-    {tp:"bl",lb:"🔵 CAMINHO C — Outro local",h:`"Que maravilha! 💎 <strong>Limpeza R$ 180,00</strong> — manutenção 6 em 6 meses!"`},
-    {tp:"",lb:"🔚 ENCERRAMENTO",h:`"Obrigada, [NOME]! Ótimo dia!"`},
-  ]},
-  3:{t:"3ª Ligação — Terceira Tentativa (Implicação)",b:[
-    {tp:"or",lb:"🧠 TÉCNICA: IMPLICAÇÃO SUAVE (SPIN)",h:`Traga consciência das <strong>consequências de não tratar</strong> — mas como amigo que se preocupa.`},
-    {tp:"bl",lb:"1️⃣ ABERTURA",h:`"Boa [manhã/tarde], [NOME]! Aqui é a Diva, da Clínica Andreza Paz.<br><br>Estou ligando <strong>mais uma vez</strong> porque realmente me preocupo — <em>[PROCEDIMENTO]</em> continua em aberto."`},
-    {tp:"",lb:"⏸ 2️⃣ ESCUTAR",h:`<strong>Silêncio estratégico.</strong> Deixe espaço para falar.`},
-    {tp:"gr",lb:"🟢 CAMINHO A — Reagendar",h:`"<strong>Reavaliação gratuita</strong> agora mesmo! Amanhã ou semana que vem?"`},
-    {tp:"ye",lb:"🟡 CAMINHO B — Recusa",h:`"🏥 <strong>Reavaliação gratuita</strong> + 💎 <strong>Limpeza R$ 180,00</strong> — ambas disponíveis!"`},
-    {tp:"bl",lb:"🔵 CAMINHO C — Outro local",h:`"💎 <strong>Limpeza R$ 180,00</strong> — cada 6 meses faz toda diferença!"`},
-    {tp:"",lb:"🔚 ENCERRAMENTO",h:`"Obrigada, [NOME]! Cuide-se muito bem!"`},
-  ]},
-  4:{t:"4ª Ligação — Quarta Tentativa (Need-Payoff)",b:[
-    {tp:"or",lb:"🧠 TÉCNICA: NEED-PAYOFF + ACOLHIMENTO",h:`Foco no <strong>benefício real</strong>. Valide a hesitação antes de oferecer a solução.`},
-    {tp:"bl",lb:"1️⃣ ABERTURA",h:`"Olá, [NOME]! Sou a Diva da Clínica Andreza Paz.<br><br>Sei que já liguei algumas vezes — desculpe o incômodo. Me importo com o(a) senhor(a) e não queria deixar essa oportunidade passar."`},
-    {tp:"",lb:"⏸ 2️⃣ VALIDAR OBJEÇÃO",h:`<em>"Entendo perfeitamente, muita gente sente isso..."</em><br>Depois conduza com calma.`},
-    {tp:"gr",lb:"🟢 CAMINHO A — Reagendar",h:`"<strong>Reavaliação gratuita</strong> — sem compromisso. Amanhã ou semana que vem?"`},
-    {tp:"ye",lb:"🟡 CAMINHO B — Preocupa com $$",h:`"<strong>Reavaliação 100% gratuita</strong> + <strong>parcelamento</strong> disponível.<br>💎 <strong>Limpeza R$ 180,00</strong> também!"`},
-    {tp:"bl",lb:"🔵 CAMINHO C — Outro local",h:`"💎 <strong>Limpeza R$ 180,00</strong> — melhor preço da região! Fica o convite."`},
-    {tp:"",lb:"🔚 ENCERRAMENTO",h:`"Obrigada, [NOME]! Estarei aqui sempre. Ótimo dia!"`},
-  ]},
-  5:{t:"5ª Ligação — Última Tentativa (Encerramento Positivo)",b:[
-    {tp:"or",lb:"🧠 TÉCNICA: ÚLTIMO CONTATO + PORTA ABERTA",h:`Encerre sem frustração. Deixe uma <strong>boa lembrança</strong> — aumenta chance de retorno espontâneo.`},
-    {tp:"bl",lb:"1️⃣ ABERTURA",h:`"Olá, [NOME]! Aqui é a Diva, Clínica Andreza Paz.<br><br>Esta é minha <strong>última ligação</strong> sobre o tratamento. Queria muito conversar uma última vez."`},
-    {tp:"",lb:"⏸ 2️⃣ ESCUTAR",h:`<strong>Última chance de ouvir.</strong> Dê tempo, não pressione.`},
-    {tp:"gr",lb:"🟢 CAMINHO A — Reagendar",h:`"<strong>Reavaliação gratuita</strong> agora! Amanhã ou semana que vem?"`},
-    {tp:"ye",lb:"🟡 CAMINHO B — Recusa",h:`"🏥 <strong>Reavaliação gratuita</strong> + 💎 <strong>Limpeza R$ 180,00</strong> — sempre disponíveis. Se mudar de ideia, é só ligar!"`},
-    {tp:"bl",lb:"🔵 CAMINHO C — Outro local",h:`"💎 <strong>Limpeza R$ 180,00</strong> para manutenção — conte com a gente!"`},
-    {tp:"",lb:"🔚 ENCERRAMENTO COM CARINHO",h:`"Cuide-se muito, [NOME]! A <strong>Clínica Andreza Paz</strong> estará sempre de braços abertos. Lindo dia! 😊"`},
-  ]},
+// Scripts dinâmicos
+let scriptCache = {};
+let isEditingScript = false;
+
+async function fetchScript(attempt) {
+  if (scriptCache[attempt]) return scriptCache[attempt];
+  try {
+    const token = localStorage.getItem('clinicrc_token');
+    const res = await fetch(`/api/scripts/${attempt}`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const data = await res.json();
+    scriptCache[attempt] = data.content || '';
+    return scriptCache[attempt];
+  } catch (err) {
+    return 'Erro ao carregar roteiro.';
+  }
+}
+
+async function saveScript(attempt, content) {
+  try {
+    const token = localStorage.getItem('clinicrc_token');
+    const res = await fetch(`/api/scripts/${attempt}`, {
+      method: 'PUT',
+      headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content })
+    });
+    if(res.ok) {
+      scriptCache[attempt] = content;
+      showToast('Roteiro salvo!', 'ok');
+    }
+  } catch(err) {
+    showToast('Erro ao salvar roteiro', 'er');
+  }
+}
+
+function parseMathDiscount(text, valorNum) {
+  return text.replace(/#promo\((\d+)%\)/gi, (match, percStr) => {
+    const perc = parseInt(percStr, 10);
+    const desconto = valorNum * (1 - (perc / 100));
+    const vAntigo = valorNum.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
+    const vNovo = desconto.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
+    return `<span class="dyn-promo">de ${vAntigo} por ${vNovo}</span>`;
+  });
+}
+
+function parseScriptTags(text) {
+  const nm = pA ? pA.nome.split(' ')[0] : '[NOME]';
+  const pr = pA ? pA.proc : '[PROCEDIMENTO]';
+  const vlRaw = pA ? pA.valor : 'R$ 0,00';
+  
+  let vlNum = 0;
+  try {
+    vlNum = parseFloat(vlRaw.replace('R$','').replace(/\./g,'').replace(',','.').trim()) || 0;
+  } catch(e){}
+
+  let parsed = text;
+  parsed = parseMathDiscount(parsed, vlNum);
+  
+  parsed = parsed.replace(/#nome/gi, `<span class="dyn-var">${nm}</span>`);
+  parsed = parsed.replace(/#procedimento/gi, `<span class="dyn-var">${pr}</span>`);
+  parsed = parsed.replace(/#valor/gi, `<span class="dyn-var">${vlRaw}</span>`);
+  return parsed;
+}
+
+window.toggleScriptEdit = async () => {
+  const btn = document.getElementById('btnEditScript');
+  const btnDel = document.getElementById('btnDeleteScript');
+  const icon = document.getElementById('iconEditScript');
+  const txt = document.getElementById('txtEditScript');
+  const sbody = document.getElementById('sbody');
+  const sbodyEdit = document.getElementById('sbody-edit');
+  const textarea = document.getElementById('scriptTextarea');
+
+  isEditingScript = !isEditingScript;
+
+  if (isEditingScript) {
+    btn.classList.add('editing');
+    icon.textContent = 'save';
+    txt.textContent = 'Salvar';
+    sbody.style.display = 'none';
+    sbodyEdit.style.display = 'flex';
+    if(btnDel) btnDel.style.display = 'none';
+    
+    const content = scriptCache[tN] || '';
+    if (easyMDE) {
+      easyMDE.value(content);
+      setTimeout(() => easyMDE.codemirror.refresh(), 100);
+    } else {
+      textarea.value = content;
+    }
+  } else {
+    btn.classList.remove('editing');
+    icon.textContent = 'edit_note';
+    txt.textContent = 'Editar';
+    sbody.style.display = 'block';
+    sbodyEdit.style.display = 'none';
+    if(btnDel) btnDel.style.display = 'flex';
+    
+    const newContent = easyMDE ? easyMDE.value() : textarea.value;
+    await saveScript(tN, newContent);
+    await updS();
+  }
 };
 
 // Instanciar o cliente de API (comporta-se como portão)
@@ -68,6 +124,142 @@ window.doLogout = () => {
   window.location.href = 'index.html';
 };
 
+let maxAttempts = 1;
+let easyMDE = null;
+
+async function fetchConfig() {
+  try {
+    const token = localStorage.getItem('clinicrc_token');
+    const res = await fetch('/api/scripts/config', { headers: { 'Authorization': `Bearer ${token}` } });
+    if(res.ok) {
+      const data = await res.json();
+      maxAttempts = data.max_attempts || 1;
+    }
+  } catch(err) {}
+}
+
+window.addAttempt = async () => {
+  try {
+    const token = localStorage.getItem('clinicrc_token');
+    const res = await fetch('/api/scripts/config/add-attempt', { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } });
+    if(res.ok) {
+      const data = await res.json();
+      maxAttempts = data.max_attempts;
+      renderTbar();
+      render(); // Atualiza Kanban dots
+      showToast('Nova tentativa adicionada!', 'ok');
+    } else {
+      const errText = await res.text();
+      throw new Error(`Erro ${res.status}: ${errText}`);
+    }
+  } catch(err) {
+    console.error('addAttempt err:', err);
+    showToast('Erro ao adicionar tentativa', 'er');
+  }
+};
+
+window.deleteAttempt = async () => {
+  if (maxAttempts <= 1) {
+    showToast('Você deve manter pelo menos 1 tentativa!', 'er');
+    return;
+  }
+  if (!confirm(`Tem certeza que deseja apagar a ${tN}ª tentativa?\nIsso vai remover este roteiro e voltar todos os roteiros seguintes uma posição.`)) {
+    return;
+  }
+  try {
+    const token = localStorage.getItem('clinicrc_token');
+    const res = await fetch(`/api/scripts/${tN}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+    if (res.ok) {
+      const data = await res.json();
+      maxAttempts = data.max_attempts;
+      // Limpa cache para forçar recarregamento
+      scriptCache = {}; 
+      
+      // Volta uma aba se apagamos a última
+      if (tN > maxAttempts) {
+        tN = maxAttempts;
+      }
+      
+      renderTbar();
+      await updS(); // Atualiza o roteiro mostrado na tela
+      render(); // Atualiza Kanban (dots)
+      showToast('Tentativa removida!', 'ok');
+    } else {
+      const err = await res.json().catch(()=>({}));
+      throw new Error(err.error || `Erro ${res.status}`);
+    }
+  } catch(err) {
+    console.error('deleteAttempt err:', err);
+    showToast(err.message || 'Erro ao apagar', 'er');
+  }
+};
+
+function renderTbar() {
+  const tbar = document.getElementById('tbar');
+  if(!tbar) return;
+  let h = `<span class="tlbl">Tentativa:</span>`;
+  for(let i=1; i<=maxAttempts; i++) {
+    h += `<button class="tbtn ${i===tN ? 'on':''}" onclick="window.selT(${i})">${i}ª</button>`;
+  }
+  h += `<button class="tbtn" onclick="window.addAttempt()" title="Adicionar tentativa" style="padding: 0 10px; margin-left: 5px;"><span class="mi" style="font-size:18px; margin-top:2px;">add_call</span></button>`;
+  tbar.innerHTML = h;
+}
+
+function initEditor() {
+  const textarea = document.getElementById('scriptTextarea');
+  if (!textarea || typeof EasyMDE === 'undefined') return;
+  
+  easyMDE = new EasyMDE({
+    element: textarea,
+    spellChecker: false,
+    placeholder: "Escreva seu roteiro estratégico aqui...",
+    status: false,
+    toolbar: [
+      "bold", "italic", "heading", "|",
+      "quote", "unordered-list", "ordered-list", "|",
+      {
+        name: "insert-name",
+        action: (editor) => { const cm = editor.codemirror; cm.replaceSelection('#nome '); },
+        className: "fa fa-user",
+        title: "Inserir Nome",
+        text: "Nome"
+      },
+      {
+        name: "insert-proc",
+        action: (editor) => { const cm = editor.codemirror; cm.replaceSelection('#procedimento '); },
+        className: "fa fa-stethoscope",
+        title: "Inserir Procedimento",
+        text: "Proc"
+      },
+      {
+        name: "insert-val",
+        action: (editor) => { const cm = editor.codemirror; cm.replaceSelection('#valor '); },
+        className: "fa fa-money",
+        title: "Inserir Valor",
+        text: "Valor"
+      },
+      {
+        name: "insert-promo",
+        action: (editor) => { const cm = editor.codemirror; cm.replaceSelection('#promo(30%) '); },
+        className: "fa fa-percent",
+        title: "Inserir Promoção Automática",
+        text: "Promo"
+      },
+      "|",
+      {
+        name: "insert-tip",
+        action: (editor) => {
+          const cm = editor.codemirror;
+          cm.replaceSelection('\n> [!TIP]\n> **DICA DE OURO:** \n');
+        },
+        className: "fa fa-lightbulb-o",
+        title: "Caixa de Dica (PNL)",
+        text: "Dica"
+      }
+    ]
+  });
+}
+
 /**
  * Inicializar a aplicação
  */
@@ -78,6 +270,15 @@ async function init() {
 
   try {
     setSyncStatus('ok', 'Carregando dados...');
+    await fetchConfig();
+    renderTbar();
+    initEditor();
+    
+    // Inicializa o Odontograma (Flyweight Pattern)
+    if (window.Odontogram) {
+      window.odontogramaInstance = new window.Odontogram('odontograma-container');
+    }
+    
     E = await api.getPatients();
     window._E = E; // Sincroniza referência global
     setSyncStatus('ok', `Conectado · ${E.length} pacientes`);
@@ -87,6 +288,7 @@ async function init() {
   } finally {
     document.getElementById('loadingOverlay').classList.add('hide');
     render();
+    selT(1); // Load default attempt 1 script
   }
 }
 
@@ -96,7 +298,7 @@ async function init() {
 function fallbackMode() {
   setSyncStatus('err', 'Modo Offline (Local)');
   try {
-    const s = localStorage.getItem('clv_andreza');
+    const s = localStorage.getItem(`clv_${localStorage.getItem('clinicrc_user')}`);
     if (s) {
       E = JSON.parse(s);
     } else {
@@ -109,7 +311,7 @@ function fallbackMode() {
 }
 
 function saveLocal() {
-  try { localStorage.setItem('clv_andreza', JSON.stringify(E)); } catch(e) {}
+  try { localStorage.setItem(`clv_${localStorage.getItem('clinicrc_user')}`, JSON.stringify(E)); } catch(e) {}
 }
 
 function setSyncStatus(type, txt) {
@@ -171,8 +373,15 @@ function render() {
 function mkC(p) {
   const sel = pA?.id === p.id ? 'sel' : '';
   let d = `<div class="trow"><span class="tlb">Tent.:</span>`;
-  for (let i = 1; i <= 5; i++) {
-    const c = i <= p.tent ? 'dn' : (i === p.tent + 1 ? 'nx' : '');
+  for (let i = 1; i <= maxAttempts; i++) {
+    let c = '';
+    const t = p.tent || 0;
+    if (i <= t) {
+      c = 'dn';
+    } else if (i === t + 1) {
+      // S aplica 'nx' se j tiver feito alguma tentativa ou se no estiver na coluna 'ligar' inicial
+      if (t > 0 || p.col !== 'ligar') c = 'nx';
+    }
     d += `<div class="dot ${c}" onclick="window._mT('${p.id}',${i},event)">${i}</div>`;
   }
   d += `</div>`;
@@ -202,7 +411,12 @@ function mkC(p) {
 // ─── AÇÕES EXPOSTAS AO WINDOW PARA HANDLERS INLINE ─────────────────────────
 window._mv = (id, col, e) => {
   e?.stopPropagation();
-  updatePaciente(id, { col });
+  const updates = { col };
+  // Limpa o status (res) se estiver voltando pro funil para uma nova tentativa
+  if (col === 'ligar' || col === 'contato') {
+    updates.res = null;
+  }
+  updatePaciente(id, updates);
 };
 
 window._mT = (id, n, e) => {
@@ -241,33 +455,72 @@ window._oM = (id, e) => {
   document.getElementById('modal').classList.add('on');
 };
 
-function selT(n) {
+async function selT(n) {
   tN = n;
   document.querySelectorAll('.tbtn').forEach((b, i) => b.classList.toggle('on', i + 1 === n));
-  updS();
+  await updS();
 }
 window.selT = selT;
 
 function updP() {
   const el = document.getElementById('pbar');
-  if (!pA) return;
+  if (!pA) {
+    el.innerHTML = '';
+    el.classList.add('empty');
+    return;
+  }
   el.classList.remove('empty');
-  el.innerHTML = `<span class="mi" style="color:var(--cp)">person</span><div><strong>${pA.nome}</strong><span>${pA.proc} · ${pA.valor} · ${pA.tent || 0} tentativa(s)</span></div>`;
+  
+  let chip = '';
+  if (pA.res) {
+    const m = { agendou: ['bag','Agendou'], procedimento: ['bpr','Já Realizou'], 'sem-interesse': ['bsi','Sem Interesse'], 'sem-resposta': ['bsr','Sem Resposta'] };
+    const [cl, lb] = m[pA.res] || ['', ''];
+    chip = `<span class="bdg ${cl}" style="margin:0; font-size:11px; padding:4px 8px;">${lb}</span>`;
+  } else {
+    const colNames = { ligar: 'Para Ligar', contato: 'Em Contato', agendado: 'Agendado', concluido: 'Concluído' };
+    chip = `<span class="bdg" style="background:#E2E8F0; color:#475569; margin:0; font-size:11px; padding:4px 8px;">${colNames[pA.col] || 'Ativo'}</span>`;
+  }
+
+  el.innerHTML = `
+    <span class="mi" style="color:var(--cp); font-size:24px;">person</span>
+    <div style="flex:1;">
+      <strong>${pA.nome}</strong>
+      <span>${pA.proc} · ${pA.valor} · ${pA.tent || 0} tentativa(s)</span>
+    </div>
+    <div>${chip}</div>
+  `;
   updS();
 }
 
-function updS() {
+async function updS() {
+  const btnEdit = document.getElementById('btnEditScript');
+  const btnDel = document.getElementById('btnDeleteScript');
+  if (btnEdit) btnEdit.style.display = 'flex';
+  if (btnDel && !isEditingScript) btnDel.style.display = 'flex';
+
   const el = document.getElementById('sbody');
-  const r = ROT[tN];
-  if (!r) return;
-  const nm = pA ? pA.nome.split(' ')[0] : '[NOME]';
-  const pr = pA ? pA.proc : '[PROCEDIMENTO]';
-  let h = `<div class="rt">${r.t}</div>`;
-  r.b.forEach(b => {
-    let txt = b.h.replace(/\[NOME\]/g, `<em>${nm}</em>`).replace(/\[PROCEDIMENTO\]/g, `<em>${pr}</em>`);
-    h += `<div class="blk ${b.tp}"><div class="blk-l">${b.lb}</div><div class="blk-b">${txt}</div></div>`;
-  });
-  el.innerHTML = h; el.scrollTop = 0;
+  const textarea = document.getElementById('scriptTextarea');
+  
+  if (!isEditingScript) {
+    el.innerHTML = '<p style="color:#888;font-size:12px;padding:10px;">Carregando roteiro...</p>';
+  }
+  
+  const content = await fetchScript(tN);
+  
+  if (isEditingScript) {
+    textarea.value = content;
+  } else {
+    const parsedMarkdown = parseScriptTags(content);
+    let html = parsedMarkdown;
+    if (typeof marked !== 'undefined') {
+      html = marked.parse(parsedMarkdown);
+    }
+    // Converter alertas do GitHub (ex: [!TIP]) em classes CSS
+    html = html.replace(/<blockquote>\s*<p>\[!(\w+)\](?:<br>|\n|\s*)/gi, '<blockquote class="gh-alert gh-alert-$1"><p>');
+    
+    el.innerHTML = html;
+    el.scrollTop = 0;
+  }
 }
 
 function fModal() { document.getElementById('modal').classList.remove('on'); fId = null; }
@@ -352,3 +605,52 @@ function rel() {
 updS();
 init();
 window.render = render;
+
+// ─── RESIZER (AJUSTE DE LARGURA) ───────────────────────────────────────────
+const resizer = document.getElementById('resizer');
+const sp = document.querySelector('.sp');
+let isResizing = false;
+
+if (resizer && sp) {
+  resizer.addEventListener('mousedown', (e) => {
+    isResizing = true;
+    document.body.style.cursor = 'col-resize';
+    resizer.classList.add('active');
+    document.body.style.userSelect = 'none'; // Evita selecionar texto ao arrastar
+  });
+
+  window.addEventListener('mousemove', (e) => {
+    if (!isResizing) return;
+    const minWidth = 280; // Mínimo para o roteiro
+    const maxWidth = window.innerWidth - 400; // Mínimo para o Kanban
+    let newWidth = e.clientX;
+    if (newWidth < minWidth) newWidth = minWidth;
+    if (newWidth > maxWidth) newWidth = maxWidth;
+    sp.style.width = newWidth + 'px';
+  });
+
+  window.addEventListener('mouseup', () => {
+    if (isResizing) {
+      isResizing = false;
+      document.body.style.cursor = '';
+      resizer.classList.remove('active');
+      document.body.style.userSelect = '';
+    }
+  });
+}
+
+// ─── RELÓGIO (HORÁRIO DE BRASÍLIA) ───────────────────────────────────────
+const clockEl = document.getElementById('liveClock');
+if (clockEl) {
+  const updateClock = () => {
+    const d = new Date();
+    clockEl.textContent = d.toLocaleTimeString('pt-BR', {
+      timeZone: 'America/Sao_Paulo',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    });
+  };
+  updateClock(); // Chama imediatamente
+  setInterval(updateClock, 1000);
+}

@@ -22,3 +22,9 @@ backend/.env
 # OS
 .DS_Store
 Thumbs.db
+
+.vercel
+
+# Env files from Vercel CLI (contain secrets!)
+*.env.vercel
+*.env.prod.vercel

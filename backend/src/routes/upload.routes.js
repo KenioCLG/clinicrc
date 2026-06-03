@@ -14,13 +14,7 @@ const authMiddleware = require('../middleware/auth.middleware');
 const { parseClinicCorp } = require('../parsers/cliniccorp.parser');
 const { parseSimplesDental } = require('../parsers/simples-dental.parser');
 
-const UPLOAD_DIR = path.join(__dirname, '..', '..', 'data', 'uploads');
-if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, UPLOAD_DIR),
-  filename: (req, file, cb) => cb(null, Date.now() + '-' + Math.round(Math.random() * 1e6) + path.extname(file.originalname)),
-});
+const storage = multer.memoryStorage(); // Vercel-friendly (não usa disco)
 
 const upload = multer({
   storage,
@@ -45,14 +39,13 @@ router.post('/', upload.single('file'), async (req, res) => {
   }
 
   const clinicId = req.clinic.id;
-  const filepath = req.file.path;
   const filename = req.file.originalname;
 
   let patients = [];
   try {
     patients = source === 'cliniccorp'
-      ? parseClinicCorp(filepath)
-      : parseSimplesDental(filepath);
+      ? parseClinicCorp(req.file.buffer)
+      : parseSimplesDental(req.file.buffer);
   } catch (err) {
     return res.status(422).json({ error: `Erro ao ler planilha: ${err.message}` });
   }
@@ -105,11 +98,6 @@ router.post('/', upload.single('file'), async (req, res) => {
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
       [clinicId, filename, source, patients.length, newRows, updatedRows, skippedRows]
     );
-
-    // Remove arquivo temporário
-    fs.unlink(filepath, (err) => {
-      if (err) console.error('⚠️  Falha ao limpar upload temporário:', err.message);
-    });
 
     return res.json({
       success: true,

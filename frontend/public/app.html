@@ -6,7 +6,11 @@
 <title>Retorno de Pacientes — ClinicRC</title>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css">
+<script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
 <link rel="stylesheet" href="css/styles.css"/>
+<link rel="stylesheet" href="css/odontograma.css"/>
 </head>
 <body>
 
@@ -20,8 +24,18 @@
 <header class="hdr">
   <button class="hdr-menu"><span class="mi">menu</span></button>
   <div class="hdr-tabs">
-    <button class="tab-btn on" onclick="window.trocarAba(0,this)"><span class="mi">phone_callback</span> Retorno de Pacientes</button>
-    <button class="tab-btn" onclick="window.trocarAba(1,this)"><span class="mi">bar_chart</span> Relatório da Diva</button>
+    <button class="tab-btn on" onclick="window.trocarAba(0, this)">
+      <span class="mi" style="font-size:16px;">view_kanban</span>
+      Painel de CRM
+    </button>
+    <button class="tab-btn" onclick="window.trocarAba(1, this)">
+      <span class="mi" style="font-size:16px;">analytics</span>
+      Relatórios
+    </button>
+    <button class="tab-btn" onclick="window.trocarAba(2, this)" style="display: none;">
+      <span class="mi" style="font-size:16px;">medical_services</span>
+      Odontograma
+    </button>
   </div>
   <div class="hdr-r">
     <div class="sync-badge" id="syncBadge">
@@ -37,6 +51,7 @@
        title="Falar com suporte via WhatsApp">
       <span class="mi" style="font-size:18px">support_agent</span> Suporte
     </a>
+    <span id="liveClock" style="margin-left:8px;color:rgba(255,255,255,.9);font-size:12px;font-variant-numeric:tabular-nums;font-weight:500;">--:--:--</span>
     <span id="clinicNameDisplay" style="margin-left:8px;color:rgba(255,255,255,.6);font-size:12px;"></span>
     <span class="ava" style="margin-left:6px">D</span>
     <button onclick="window.doLogout()" style="margin-left:6px;background:none;border:none;cursor:pointer;color:rgba(255,255,255,.5);display:flex;align-items:center;padding:4px;border-radius:4px;transition:all .2s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,.5)'" title="Sair">
@@ -53,28 +68,41 @@
     <div class="sp">
       <div class="sp-hd">
         <span class="mi" style="color:var(--cp)">record_voice_over</span>
-        <div><h2>Roteiro de Ligação</h2><p>Selecione a tentativa e clique no paciente</p></div>
+        <div style="flex:1;"><h2>Roteiro de Ligação</h2><p>Selecione a tentativa e clique no paciente</p></div>
+        <button id="btnInfoScript" class="sp-btn-edit" onclick="document.getElementById('modalInfo').classList.add('on')" style="margin-right: 4px;" title="Variáveis e Dicas">
+          <span class="mi" style="font-size: 16px;">info</span>
+          <span style="font-size:11px;font-family:var(--font);font-weight:500;">Ajuda</span>
+        </button>
+        <button id="btnEditScript" class="sp-btn-edit" onclick="window.toggleScriptEdit()" style="display:none; margin-right: 4px;" title="Editar Roteiro">
+          <span class="mi" id="iconEditScript" style="font-size: 16px;">edit_note</span>
+          <span id="txtEditScript" style="font-size:11px;font-family:var(--font);font-weight:500;">Editar</span>
+        </button>
+        <button id="btnDeleteScript" class="sp-btn-edit" onclick="window.deleteAttempt()" style="display:none;" title="Excluir esta tentativa">
+          <span class="mi" style="font-size: 16px;">delete</span>
+          <span style="font-size:11px;font-family:var(--font);font-weight:500;">Excluir</span>
+        </button>
       </div>
-      <div class="tbar">
-        <span class="tlbl">Tentativa:</span>
-        <button class="tbtn on" onclick="window.selT(1)">1ª</button>
-        <button class="tbtn" onclick="window.selT(2)">2ª</button>
-        <button class="tbtn" onclick="window.selT(3)">3ª</button>
-        <button class="tbtn" onclick="window.selT(4)">4ª</button>
-        <button class="tbtn" onclick="window.selT(5)">5ª</button>
+      <div class="tbar" id="tbar">
+        <!-- Preenchido dinamicamente via JS -->
       </div>
       <div class="pbar empty" id="pbar">
         <span class="mi" style="color:var(--cp)">touch_app</span>
         <div><strong>Nenhum paciente selecionado</strong><span>Clique em um cartão ao lado</span></div>
       </div>
       <div class="sbody" id="sbody"></div>
+      <div class="sbody-edit" id="sbody-edit" style="display:none;">
+        <textarea id="scriptTextarea" placeholder="Digite seu roteiro em Markdown..."></textarea>
+      </div>
     </div>
+
+    <!-- RESIZER -->
+    <div class="resizer" id="resizer"></div>
 
     <!-- KANBAN -->
     <div class="kp">
       <div class="ktb">
         <h2>Pacientes em Aberto — Retorno Ativo</h2>
-        <input class="ksrch" type="text" placeholder="Buscar paciente..." oninput="window.render()">
+        <input id="searchPatient" name="searchPatient" class="ksrch" type="text" placeholder="Buscar paciente..." oninput="window.render()">
         <div class="kmini">
           <span class="kchip" style="background:var(--cop)"><span class="mi" style="font-size:14px">people</span>&nbsp;<span id="ki1">0</span> em contato</span>
           <span class="kchip" style="background:var(--cag)"><span class="mi" style="font-size:14px">event_available</span>&nbsp;<span id="ki2">0</span> agendados</span>
@@ -94,6 +122,78 @@
   <div class="pg" id="pg1">
     <div class="rp" id="rbody"></div>
   </div>
+
+  <!-- ABA 2: ODONTOGRAMA -->
+  <div class="pg" id="pg2" style="flex:1; overflow-y:auto; padding:20px;">
+    <!-- Container onde o JavaScript vai injetar o Odontograma -->
+    <div id="odontograma-container"></div>
+  </div>
+</div>
+
+<!-- SVG FLYWEIGHT TEMPLATE (Oculto) -->
+<!-- Ele define os 'moldes' geométricos de cada face do dente (Top, Bottom, Left, Right, Center). -->
+<svg width="0" height="0" style="display:none;">
+  <defs>
+    <path id="tooth-face-T" d="M 0,0 L 40,0 L 30,10 L 10,10 Z" />
+    <path id="tooth-face-B" d="M 0,40 L 40,40 L 30,30 L 10,30 Z" />
+    <path id="tooth-face-L" d="M 0,0 L 10,10 L 10,30 L 0,40 Z" />
+    <path id="tooth-face-R" d="M 40,0 L 30,10 L 30,30 L 40,40 Z" />
+    <path id="tooth-face-C" d="M 10,10 L 30,10 L 30,30 L 10,30 Z" />
+  </defs>
+</svg>
+
+<!-- MODAL INFO ROTEIROS -->
+<div class="mbg" id="modalInfo" onclick="this.classList.remove('on')">
+  <div class="mbox" onclick="event.stopPropagation()" style="max-width: 450px;">
+    <h3>Como escrever roteiros?</h3>
+    <p style="margin-top:10px;font-size:13px;line-height:1.5;">
+      Você pode usar marcações mágicas que o sistema troca automaticamente pelos dados do paciente:
+    </p>
+    <ul style="margin:15px 0;font-size:13px;line-height:1.6;list-style:none;padding:0;">
+      <li style="margin-bottom:8px;"><code>#nome</code> - Substituído pelo 1º nome do paciente.</li>
+      <li style="margin-bottom:8px;"><code>#procedimento</code> - Tratamento de interesse.</li>
+      <li style="margin-bottom:8px;"><code>#valor</code> - Mostra o valor (ex: R$ 1.500,00).</li>
+      <li style="margin-bottom:8px;"><code>#promo(30%)</code> - Calcula um desconto no valor original (troque o 30 pelo desconto que quiser).</li>
+    </ul>
+    
+    <div style="margin-top:20px;">
+      <strong>Destaques do GitHub (Alertas)</strong>
+      <p style="font-size:13px; margin-top:5px; margin-bottom:10px;">Para criar caixas coloridas bonitas de destaque, inicie um parágrafo novo digitando <code>></code> seguido do tipo de alerta, assim:</p>
+      
+      <div style="background:#f6f8fa; padding:10px; border-radius:6px; font-family:monospace; font-size:12px; margin-bottom:10px;">
+        > [!TIP]<br>
+        > Essa é uma dica de ouro!
+      </div>
+      
+      <ul style="margin:10px 0;font-size:13px;line-height:1.6;list-style:none;padding:0;">
+        <li style="margin-bottom:5px;"><code>[!TIP]</code> - Dica (Verde)</li>
+        <li style="margin-bottom:5px;"><code>[!WARNING]</code> - Aviso (Amarelo)</li>
+        <li style="margin-bottom:5px;"><code>[!IMPORTANT]</code> - Importante (Roxo)</li>
+        <li style="margin-bottom:5px;"><code>[!CAUTION]</code> - Cuidado (Vermelho)</li>
+      </ul>
+    </div>
+    <div style="margin-top:20px; padding-top:15px; border-top:1px solid #eee;">
+      <strong>Prompt Base para IA (ChatGPT/Claude)</strong>
+      <p style="font-size:12px; margin-top:5px; margin-bottom:8px; color:#555;">Copie o texto abaixo e cole na sua IA favorita para gerar roteiros automaticamente usando as nossas variáveis e padrões:</p>
+      <textarea id="aiPromptText" readonly style="width:100%; height:100px; padding:10px; font-size:12px; border:1px solid #ccc; border-radius:6px; resize:none; font-family:monospace; color:#333; background:#f9f9f9;">
+Atue como um roteirista especialista em funil de vendas para clínicas. Eu preciso de um roteiro de ligação persuasivo estruturado em tentativas (do 1º ao 5º contato).
+Para cada roteiro, utilize o padrão Markdown e adicione destaques nas dicas para os atendentes usando o padrão do GitHub (ex: > [!TIP] para dicas, > [!WARNING] para alertas).
+Sempre que for mencionar os dados do paciente, utilize EXATAMENTE as variáveis abaixo, pois meu sistema CRM vai substituí-las automaticamente:
+- #nome (para o primeiro nome do paciente)
+- #procedimento (para o tratamento de interesse)
+- #valor (para o preço do tratamento)
+- #promo(30%) (para oferecer um desconto dinâmico)
+O tom deve ser humano, empático e focado em gerar urgência e agendamento.
+</textarea>
+    </div>
+    
+    <div style="display:flex; gap:10px; margin-top:20px;">
+      <button class="mcanc" style="flex:1; background:#f1f1f1; color:#333; border:1px solid #ccc;" onclick="document.getElementById('modalInfo').classList.remove('on')">OK</button>
+      <button class="mcanc" id="btnCopyPrompt" style="flex:1; background:var(--cp); color:#fff; border:none; display:flex; align-items:center; justify-content:center; gap:5px;" onclick="navigator.clipboard.writeText(document.getElementById('aiPromptText').value); this.innerHTML='<span class=\'mi\' style=\'font-size:16px;\'>check</span> Copiado!'; setTimeout(() => this.innerHTML='<span class=\'mi\' style=\'font-size:16px;\'>content_copy</span> Copiar Prompt', 2000); event.stopPropagation();">
+        <span class="mi" style="font-size:16px;">content_copy</span> Copiar Prompt
+      </button>
+    </div>
+  </div>
 </div>
 
 <!-- MODAL DE FINALIZAÇÃO -->
@@ -105,7 +205,7 @@
       <button class="mopt" onclick="window.conf('agendou')"><span class="mi" style="color:var(--cag)">event_available</span><div><strong>Agendou o procedimento</strong><small>Paciente confirmou data de atendimento</small></div></button>
       <button class="mopt" onclick="window.conf('procedimento')"><span class="mi" style="color:var(--cop)">check_circle</span><div><strong>Já realizou / não precisa mais</strong><small>Procedimento já foi concluído</small></div></button>
       <button class="mopt" onclick="window.conf('sem-interesse')"><span class="mi" style="color:var(--cre)">cancel</span><div><strong>Sem interesse</strong><small>Paciente recusou o tratamento</small></div></button>
-      <button class="mopt" onclick="window.conf('sem-resposta')"><span class="mi" style="color:#9E9E9E">phone_disabled</span><div><strong>Sem resposta — 5 tentativas</strong><small>Não foi possível estabelecer contato</small></div></button>
+      <button class="mopt" onclick="window.conf('sem-resposta')"><span class="mi" style="color:#9E9E9E">phone_disabled</span><div><strong>Sem resposta</strong><small>Não foi possível estabelecer contato</small></div></button>
     </div>
     <button class="mcanc" onclick="window.fModal()">Cancelar</button>
   </div>
@@ -132,6 +232,7 @@
 
 <!-- JS ENTRYPOINT -->
 <script type="module" src="js/app.js"></script>
+<script src="js/odontograma-anat.js" defer></script>
 
 </body>
 </html>

@@ -46,9 +46,9 @@ router.put('/:tel', async (req, res) => {
     return res.status(400).json({ error: `col inválida. Valores aceitos: ${VALID_COLS.join(', ')}` });
   }
 
-  // Validação de tentativa (0 a 5)
-  if (tent !== undefined && (typeof tent !== 'number' || tent < 0 || tent > 5)) {
-    return res.status(400).json({ error: 'tent deve ser um número entre 0 e 5.' });
+  // Validação de tentativa (>= 0)
+  if (tent !== undefined && (typeof tent !== 'number' || tent < 0)) {
+    return res.status(400).json({ error: 'tent deve ser um número maior ou igual a 0.' });
   }
 
   try {

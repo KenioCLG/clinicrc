@@ -12,9 +12,14 @@
 
 const { Pool } = require('pg');
 
+let connString = process.env.SUPABASE_POSTGRES_URL || process.env.DATABASE_URL;
+if (connString && connString.includes('?')) {
+  connString = connString.split('?')[0]; // Remove query params que sobrescrevem a config SSL
+}
+
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false }, // Supabase exige SSL
+  connectionString: connString,
+  ssl: { rejectUnauthorized: false }, // Força aceitar certificado da Vercel/Supabase
 });
 
 // ─── Cria as tabelas no PostgreSQL (se não existirem) ────────────────────────
@@ -27,6 +32,21 @@ async function initSchema() {
       password     TEXT NOT NULL,
       whatsapp     TEXT DEFAULT '',
       created_at   TIMESTAMPTZ DEFAULT NOW()
+    );
+
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS max_attempts INTEGER DEFAULT 1;
+    UPDATE users SET max_attempts = 1 WHERE max_attempts = 5;
+
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS login_attempts INTEGER DEFAULT 0;
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS lockout_until TIMESTAMPTZ;
+
+    CREATE TABLE IF NOT EXISTS scripts (
+      id           SERIAL PRIMARY KEY,
+      clinic_id    INTEGER NOT NULL REFERENCES users(id),
+      attempt_num  INTEGER NOT NULL,
+      content      TEXT NOT NULL,
+      updated_at   TIMESTAMPTZ DEFAULT NOW(),
+      UNIQUE(clinic_id, attempt_num)
     );
 
     CREATE TABLE IF NOT EXISTS patients (
@@ -66,10 +86,10 @@ async function initSchema() {
   console.log('✅ Schema PostgreSQL inicializado');
 }
 
-// Inicializa schema ao carregar o módulo
-initSchema().catch(err => {
-  console.error('❌ Erro ao inicializar schema PostgreSQL:', err.message);
-  process.exit(1);
+// Inicializa schema e guarda a promessa
+const ready = initSchema().catch(err => {
+  console.error('❌ Erro ao inicializar schema PostgreSQL:', err.message, err.stack);
+  // Não usamos process.exit(1) para não derrubar a função Serverless do Vercel
 });
 
 // ─── Wrapper síncrono-like para compatibilidade com as rotas ─────────────────
@@ -83,6 +103,7 @@ initSchema().catch(err => {
 
 // Exporta helpers que as rotas vão usar
 const db = {
+  ready,
   pool,
 
   // query(sql, params) → { rows }

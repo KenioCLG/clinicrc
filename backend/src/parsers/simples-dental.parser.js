@@ -32,12 +32,13 @@ function formatValor(raw) {
 
 /**
  * Lê e converte o arquivo xlsx do Simples Dental
- * @param {string} filepath - Caminho do arquivo
+ * @param {Buffer} buffer - Buffer do arquivo
  * @returns {Array} Lista de pacientes no formato interno
  */
-function parseSimplesDental(filepath) {
-  const workbook = XLSX.readFile(filepath);
-  const sheet = workbook.Sheets[workbook.SheetNames[0]];
+function parseSimplesDental(buffer) {
+  const workbook = XLSX.read(buffer, { type: 'buffer' });
+  const sheetName = workbook.SheetNames[0];
+  const sheet = workbook.Sheets[sheetName];
   const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
 
   const patients = [];
@@ -52,15 +53,14 @@ function parseSimplesDental(filepath) {
       continue;
     }
 
-    const tel = normalizeTel(row[3]);
+    const tel = normalizeTel(row[3]) || normalizeTel(row[5]);
 
     if (!tel) continue;
 
     const status = String(row[7]).trim();
 
-    // Filtra: só importa orçamentos em aberto
-    // "Reprovado" = paciente já recusou, não faz sentido ligar
-    if (status !== 'Em aberto') continue;
+    // Removemos o filtro de "Em aberto" porque o objetivo do CRM é
+    // justamente ligar para pacientes que não fecharam (Reprovados).
 
     // Nome do procedimento: o campo Descrição costuma ser genérico
     // ("Plano tratamento de NOME"), então usamos como proc mesmo

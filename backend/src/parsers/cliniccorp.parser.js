@@ -49,12 +49,14 @@ function formatValor(raw) {
 
 /**
  * Lê e converte o arquivo xlsx do ClinicCorp
- * @param {string} filepath - Caminho do arquivo
+ * @param {Buffer} buffer - Buffer do arquivo
  * @returns {Array} Lista de pacientes no formato interno
  */
-function parseClinicCorp(filepath) {
-  const workbook = XLSX.readFile(filepath);
-  const sheet = workbook.Sheets[workbook.SheetNames[0]];
+function parseClinicCorp(buffer) {
+  // Lê do buffer em memória (serverless-friendly)
+  const workbook = XLSX.read(buffer, { type: 'buffer' });
+  const sheetName = workbook.SheetNames[0];
+  const sheet = workbook.Sheets[sheetName];
   const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
 
   const patients = [];

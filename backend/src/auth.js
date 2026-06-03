@@ -39,9 +39,29 @@ async function createUser(clinicName, username, password, whatsapp = '') {
 async function login(username, password) {
   const user = await queryOne('SELECT * FROM users WHERE username = ?', [username]);
 
-  if (!user || !bcrypt.compareSync(password, user.password)) {
+  if (!user) {
     return null;
   }
+
+  if (user.lockout_until && new Date(user.lockout_until) > new Date()) {
+    const remaining = Math.ceil((new Date(user.lockout_until) - new Date()) / 1000);
+    throw new Error(`Conta bloqueada. Tente novamente em ${remaining} segundos.`);
+  }
+
+  if (!bcrypt.compareSync(password, user.password)) {
+    const attempts = (user.login_attempts || 0) + 1;
+    if (attempts >= 5) {
+      await run(
+        'UPDATE users SET login_attempts = ?, lockout_until = NOW() + INTERVAL \'1 minute\' WHERE id = ?',
+        [attempts, user.id]
+      );
+    } else {
+      await run('UPDATE users SET login_attempts = ? WHERE id = ?', [attempts, user.id]);
+    }
+    return null;
+  }
+
+  await run('UPDATE users SET login_attempts = 0, lockout_until = NULL WHERE id = ?', [user.id]);
 
   const token = jwt.sign(
     { clinic_id: user.id, username: user.username, clinic_name: user.clinic_name },
