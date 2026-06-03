@@ -838,11 +838,8 @@ function updP() {
         <a href="tel:${numUrl}" onmouseover="this.style.filter='brightness(0.9)'" onmouseout="this.style.filter='none'" style="flex:1; background:#6B7280; color:#FFF; display:flex; align-items:center; justify-content:center; gap:6px; padding:10px; border-radius:8px; text-decoration:none; font-family:var(--font); font-size:13px; font-weight:600; cursor:pointer; transition:all .2s; border:none; text-align:center; min-height:40px; line-height:1.2;" title="Ligação Normal">
           <span class="mi" style="font-size:18px;">phone</span> Ligar
         </a>
-        <a href="https://wa.me/${waNum}" target="_blank" rel="noopener noreferrer" onmouseover="this.style.filter='brightness(0.9)'" onmouseout="this.style.filter='none'" style="flex:1; background:#25D366; color:#FFF; display:flex; align-items:center; justify-content:center; gap:6px; padding:10px; border-radius:8px; text-decoration:none; font-family:var(--font); font-size:13px; font-weight:600; cursor:pointer; transition:all .2s; border:none; text-align:center; min-height:40px; line-height:1.2;" title="Chamada de Áudio no WhatsApp">
-          <span class="mi" style="font-size:18px;">wifi_calling_3</span> Áudio WA
-        </a>
-        <a href="https://wa.me/${waNum}" target="_blank" rel="noopener noreferrer" onmouseover="this.style.filter='brightness(0.9)'" onmouseout="this.style.filter='none'" style="flex:1; background:#128C7E; color:#FFF; display:flex; align-items:center; justify-content:center; gap:6px; padding:10px; border-radius:8px; text-decoration:none; font-family:var(--font); font-size:13px; font-weight:600; cursor:pointer; transition:all .2s; border:none; text-align:center; min-height:40px; line-height:1.2;" title="Enviar Mensagem no WhatsApp">
-          ${waSvg} Mensagem
+        <a href="https://wa.me/${waNum}" target="_blank" rel="noopener noreferrer" onmouseover="this.style.filter='brightness(0.9)'" onmouseout="this.style.filter='none'" style="flex:1; background:#25D366; color:#FFF; display:flex; align-items:center; justify-content:center; gap:6px; padding:10px; border-radius:8px; text-decoration:none; font-family:var(--font); font-size:13px; font-weight:600; cursor:pointer; transition:all .2s; border:none; text-align:center; min-height:40px; line-height:1.2;" title="Enviar Mensagem no WhatsApp">
+          ${waSvg} WhatsApp
         </a>
       </div>
     `;
@@ -1026,25 +1023,41 @@ if (clockEl) {
 // PWA INSTALL LOGIC (Add to Home Screen)
 // ==========================================
 let deferredPrompt;
-window.addEventListener('beforeinstallprompt', (e) => {
-  // Prevent the mini-infobar from appearing on mobile
-  e.preventDefault();
-  // Stash the event so it can be triggered later.
-  deferredPrompt = e;
-  // Update UI notify the user they can install the PWA
-  const installBtn = document.getElementById('pwaInstallBtn');
-  if (installBtn) {
-    installBtn.style.display = 'flex'; // Show the button
-    installBtn.addEventListener('click', async () => {
-      // Hide the app provided install promotion
-      installBtn.style.display = 'none';
-      // Show the install prompt
-      deferredPrompt.prompt();
-      // Wait for the user to respond to the prompt
-      const { outcome } = await deferredPrompt.userChoice;
-      console.log(`PWA Install outcome: ${outcome}`);
-      // We've used the prompt, and can't use it again, throw it away
-      deferredPrompt = null;
-    });
-  }
-});
+const installBtn = document.getElementById('pwaInstallBtn');
+
+// Detecta se é iOS e se já está instalado
+const isIos = () => {
+  const userAgent = window.navigator.userAgent.toLowerCase();
+  return /iphone|ipad|ipod/.test(userAgent);
+};
+const isInStandaloneMode = () => ('standalone' in window.navigator) && (window.navigator.standalone);
+
+if (isIos() && !isInStandaloneMode() && installBtn) {
+  // Para iOS, mostramos o botão e, ao clicar, ensinamos a instalar
+  installBtn.style.display = 'flex';
+  installBtn.addEventListener('click', () => {
+    alert('Para instalar no iPhone/iPad:\n1. Toque no ícone de Compartilhar (quadrado com seta para cima) na barra do Safari.\n2. Role para baixo e selecione "Adicionar à Tela de Início".');
+  });
+} else {
+  // Para Android / Chrome Desktop
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    if (installBtn) {
+      installBtn.style.display = 'flex';
+      
+      // Remove event listeners antigos clonando o botão (para evitar duplicação caso dispare várias vezes)
+      const newBtn = installBtn.cloneNode(true);
+      installBtn.parentNode.replaceChild(newBtn, installBtn);
+      
+      newBtn.addEventListener('click', async () => {
+        newBtn.style.display = 'none';
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        console.log(`PWA Install outcome: ${outcome}`);
+        deferredPrompt = null;
+      });
+    }
+  });
+}
+
