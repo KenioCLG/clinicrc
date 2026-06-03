@@ -190,6 +190,50 @@ body{font-family:var(--font);font-size:14px;color:var(--ct);background:var(--cbg
     flex: 1 !important;
     height: auto !important;
   }
+  
+  /* HEADER RESPONSIVO */
+  .hdr {
+    padding: 0 4px;
+    overflow-x: auto;
+  }
+  .hdr::-webkit-scrollbar { height: 0; }
+  .hdr-menu { border-right: none; padding: 0 8px; }
+  .version-tag { display: none; }
+  .hdr-tabs { padding-left: 0; }
+  .tab-btn { padding: 0 10px; font-size: 0; } /* Esconde texto das abas */
+  .tab-btn .mi { font-size: 24px !important; }
+  .hdr-r { padding-right: 4px; gap: 8px; }
+  
+  .sync-badge span { display: none; } /* Esconde 'Conectando...' */
+  .sync-badge { padding: 6px; border-radius: 50%; }
+  
+  /* Botões de Ação no Topo */
+  a[href="upload.html"], #supportBtn {
+    font-size: 0 !important;
+    padding: 6px !important;
+  }
+  a[href="upload.html"] .mi, #supportBtn .mi {
+    font-size: 22px !important;
+  }
+  #pwaInstallBtn {
+    font-size: 0 !important;
+    padding: 6px !important;
+    width: 32px;
+    height: 32px;
+    border-radius: 50% !important;
+    justify-content: center;
+  }
+  
+  /* KANBAN COMO CARROSSEL (SNAP) NO MOBILE */
+  .cols {
+    scroll-snap-type: x mandatory;
+    scroll-padding: 12px;
+  }
+  .col {
+    flex: none !important;
+    width: 85vw !important; /* Quase a tela toda para o cartão */
+    scroll-snap-align: center;
+  }
 }
 
 @media (max-width: 600px) {
