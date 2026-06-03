@@ -19,5 +19,21 @@
       "type": "image/png",
       "purpose": "any maskable"
     }
+  ],
+  "categories": [
+    "medical",
+    "business"
+  ],
+  "shortcuts": [
+    {
+      "name": "Painel de CRM",
+      "url": "app.html",
+      "description": "Abrir o painel de pacientes ativo"
+    },
+    {
+      "name": "Upload de Planilha",
+      "url": "upload.html",
+      "description": "Fazer upload de novos orçamentos"
+    }
   ]
 }
