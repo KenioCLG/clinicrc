@@ -108,7 +108,6 @@
     <!-- KANBAN -->
     <div class="kp">
       <div class="ktb">
-        <h2>Pacientes em Aberto — Retorno Ativo</h2>
         <input id="searchPatient" name="searchPatient" class="ksrch" type="text" aria-label="Buscar paciente" placeholder="Buscar paciente..." oninput="window.render()">
         <div class="kmini">
           <span class="kchip" style="background:var(--cop)"><span class="mi" style="font-size:14px">people</span>&nbsp;<span id="ki1">0</span> em contato</span>
@@ -120,6 +119,9 @@
       <!-- FILTRO DE PROCEDIMENTOS -->
       <div class="proc-filter" id="procFilter">
         <span class="pf-label"><span class="mi" style="font-size:15px">filter_list</span> Filtrar:</span>
+        <button class="pf-clear-btn" id="pfClearBtn" onclick="window._clearProcFilter()" title="Limpar filtros">
+          <span class="mi" style="font-size:16px">filter_alt_off</span>
+        </button>
         <div class="pf-chips" id="pfChips">
           <!-- preenchido dinamicamente -->
         </div>

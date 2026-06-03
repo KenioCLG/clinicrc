@@ -151,14 +151,20 @@ body{font-family:var(--font);font-size:14px;color:var(--ct);background:var(--cbg
 .kchip{display:flex;align-items:center;gap:6px;padding:4px 12px;border-radius:24px;font-size:12px;font-weight:600;color:#fff;box-shadow:0 2px 4px rgba(0,0,0,0.1);}
 
 /* FILTRO DE PROCEDIMENTOS */
-.proc-filter{display:flex;align-items:center;gap:10px;padding:8px 16px;background:rgba(255,255,255,0.6);backdrop-filter:blur(6px);border-bottom:1px solid var(--cdiv);flex-shrink:0;overflow-x:auto;}
-.proc-filter::-webkit-scrollbar{height:0;}
+.proc-filter{display:flex;align-items:center;gap:10px;padding:8px 16px;background:rgba(255,255,255,0.6);backdrop-filter:blur(6px);border-bottom:1px solid var(--cdiv);flex-shrink:0;}
 .pf-label{display:flex;align-items:center;gap:4px;font-size:11px;font-weight:700;color:var(--cts);text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;flex-shrink:0;}
-.pf-chips{display:flex;gap:6px;flex-wrap:nowrap;}
+.pf-chips{display:flex;gap:6px;flex-wrap:nowrap;overflow-x:auto;flex:1;}
+.pf-chips::-webkit-scrollbar{height:0;}
 .pf-chip{display:flex;align-items:center;gap:5px;padding:4px 12px;border-radius:24px;font-size:12px;font-weight:600;color:#fff;cursor:pointer;border:none;box-shadow:0 2px 4px rgba(0,0,0,0.12);transition:all .18s cubic-bezier(0.4,0,0.2,1);white-space:nowrap;opacity:.55;}
 .pf-chip:hover{opacity:.85;transform:translateY(-1px);box-shadow:0 4px 8px rgba(0,0,0,0.18);}
 .pf-chip.on{opacity:1;transform:translateY(-1px);box-shadow:0 4px 10px rgba(0,0,0,0.22);}
 .pf-chip .pf-count{font-size:10px;background:rgba(255,255,255,0.3);padding:1px 6px;border-radius:10px;font-weight:700;}
+
+/* Botão Limpar Filtro (Quadrado) */
+.pf-clear-btn{display:flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:4px;background:#F3F4F6;color:#6B7280;border:1px solid #D1D5DB;cursor:pointer;transition:all .18s cubic-bezier(0.4,0,0.2,1);flex-shrink:0;box-shadow:0 1px 2px rgba(0,0,0,0.05);}
+.pf-clear-btn:hover{background:#E5E7EB;color:#374151;}
+.pf-clear-btn.active{background:#FEE2E2;color:#EF4444;border-color:#FCA5A5;box-shadow:0 2px 4px rgba(239,68,68,0.15);}
+.pf-clear-btn.active:hover{background:#FCA5A5;color:#DC2626;}
 .cols{flex:1;display:flex;overflow-x:auto;padding:12px;gap:12px;}
 .col{flex:1;min-width:280px;display:flex;flex-direction:column;background:rgba(255,255,255,0.4);border-radius:8px;border:1px solid var(--cdiv);overflow:hidden;}
 .col-hd{padding:10px 14px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;background:#fff;}

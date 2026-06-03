@@ -463,7 +463,7 @@ function render() {
   const C = { ligar: [], contato: [], agendado: [], final: [] };
   E.forEach(p => {
     const matchSearch = !q || p.nome.toLowerCase().includes(q);
-    const matchProc   = !activeProc || cleanProc(p.proc).toLowerCase().includes(activeProc.toLowerCase());
+    const matchProc   = !activeProc || getProcCategories(p.proc).includes(activeProc);
     if (matchSearch && matchProc) C[p.col]?.push(p);
   });
   const ids = { ligar: 'c1', contato: 'c2', agendado: 'c3', final: 'c4' };
@@ -491,6 +491,37 @@ function cleanProc(raw) {
     .join(', ');
 }
 
+// Agrupa e categoriza os procedimentos para simplificar os filtros
+function getProcCategories(raw) {
+  if (!raw) return [];
+  return raw
+    .split(',')
+    .map(s => {
+      const clean = s.trim().replace(/^\d{4}\s*[-–]\s*/, '').trim();
+      if (!clean) return '';
+      const lower = clean.toLowerCase();
+      
+      // Regras de agrupamento (leitura inteligente do texto)
+      if (lower.includes('orto')) return 'Ortodontia';
+      if (lower.includes('implan')) return 'Implante';
+      if (lower.includes('prot') || lower.includes('prót')) return 'Prótese';
+      if (lower.includes('canal') || lower.includes('endo')) return 'Canal';
+      if (lower.includes('limpez') || lower.includes('profila') || lower.includes('tartara') || lower.includes('raspag')) return 'Limpeza';
+      if (lower.includes('restaur') || lower.includes('resina') || lower.includes('obtura')) return 'Restauração';
+      if (lower.includes('claream')) return 'Clareamento';
+      if (lower.includes('cirurg') || lower.includes('extra') || lower.includes('siso')) return 'Cirurgia/Extração';
+      if (lower.includes('avalia') || lower.includes('consul') || lower.includes('diagnos')) return 'Avaliação';
+      
+      // Encurta outros textos longos: pega no máximo 2 palavras
+      const words = clean.split(/\s+/).filter(Boolean);
+      if (words.length > 2) {
+        return words.slice(0, 2).join(' ');
+      }
+      return words.join(' ');
+    })
+    .filter((v, i, self) => v && self.indexOf(v) === i);
+}
+
 // ── FILTRO DE PROCEDIMENTOS ─────────────────────────────────────────────────
 // Paleta de cores para os chips — rotativa
 const PF_COLORS = [
@@ -502,25 +533,29 @@ function renderProcFilter() {
   const chips = document.getElementById('pfChips');
   if (!chips) return;
 
-  // Agrupa procedimentos únicos (limpos) e conta pacientes
-  const map = new Map(); // proc → count
+  // Agrupa procedimentos categorizados e conta pacientes
+  const map = new Map(); // category → count
   E.forEach(p => {
-    const procs = (p.proc || '')
-      .split(',')
-      .map(s => s.trim().replace(/^\d{4}\s*[-–]\s*/, '').trim())
-      .filter(Boolean);
-    procs.forEach(pr => {
-      if (pr) map.set(pr, (map.get(pr) || 0) + 1);
+    const cats = getProcCategories(p.proc);
+    cats.forEach(cat => {
+      if (cat) map.set(cat, (map.get(cat) || 0) + 1);
     });
   });
 
   // Ordena por volume (maior primeiro)
   const sorted = [...map.entries()].sort((a, b) => b[1] - a[1]);
 
-  // Oculta a barra se não houver procedimentos variados
+  // Exibe a barra de filtro apenas se houver procedimentos
   const bar = document.getElementById('procFilter');
-  if (bar) bar.style.display = sorted.length > 1 ? 'flex' : 'none';
+  if (bar) bar.style.display = sorted.length > 0 ? 'flex' : 'none';
 
+  // Atualiza o estado visual do botão fixo de limpar filtros
+  const clearBtn = document.getElementById('pfClearBtn');
+  if (clearBtn) {
+    clearBtn.classList.toggle('active', !!activeProc);
+  }
+
+  // Gera os chips das categorias de procedimentos
   chips.innerHTML = sorted.map(([proc, count], i) => {
     const color = PF_COLORS[i % PF_COLORS.length];
     const isOn = activeProc === proc;
@@ -535,6 +570,11 @@ function renderProcFilter() {
 
 window._toggleProc = (proc) => {
   activeProc = activeProc === proc ? null : proc;
+  render();
+};
+
+window._clearProcFilter = () => {
+  activeProc = null;
   render();
 };
 
@@ -576,9 +616,9 @@ function mkC(p) {
 
   let b = '';
   if (p.col === 'ligar') b = `<button class="cb cbo" onclick="window._mv('${p.id}','contato',event)">Em Contato</button><button class="cb cbg" onclick="window._mv('${p.id}','agendado',event)">Agendar</button><button class="cb cbgr" onclick="window._oM('${p.id}',event)">Finalizar</button>`;
-  else if (p.col === 'contato') b = `<button class="cb cbg" onclick="window._mv('${p.id}','agendado',event)">Agendar</button><button class="cb cbgr" onclick="window._oM('${p.id}',event)">Finalizar</button><button class="cb" style="background:#FFF7ED;color:#92400E;border:1px solid #FED7AA;" onclick="window._mv('${p.id}','ligar',event)" title="Registrar mais uma tentativa e voltar para fila">📞 Nova Tentativa</button>`;
-  else if (p.col === 'agendado') b = `<button class="cb cbgr" onclick="window._oM('${p.id}',event)">Finalizar</button><button class="cb" style="background:#FFF7ED;color:#92400E;border:1px solid #FED7AA;" onclick="window._mv('${p.id}','ligar',event)" title="Registrar mais uma tentativa e voltar para fila">📞 Nova Tentativa</button>`;
-  else b = `<button class="cb" style="background:#FFF7ED;color:#92400E;border:1px solid #FED7AA;" onclick="window._mv('${p.id}','ligar',event)" title="Registrar mais uma tentativa e voltar para fila">📞 Nova Tentativa</button>`;
+  else if (p.col === 'contato') b = `<button class="cb cbg" onclick="window._mv('${p.id}','agendado',event)">Agendar</button><button class="cb cbgr" onclick="window._oM('${p.id}',event)">Finalizar</button><button class="cb" style="background:#FFF7ED;color:#92400E;border:1px solid #FED7AA;" onclick="window._mv('${p.id}','ligar',event)" title="Registrar mais uma tentativa e voltar para fila">Nova Tentativa</button>`;
+  else if (p.col === 'agendado') b = `<button class="cb cbgr" onclick="window._oM('${p.id}',event)">Finalizar</button><button class="cb" style="background:#FFF7ED;color:#92400E;border:1px solid #FED7AA;" onclick="window._mv('${p.id}','ligar',event)" title="Registrar mais uma tentativa e voltar para fila">Nova Tentativa</button>`;
+  else b = `<button class="cb" style="background:#FFF7ED;color:#92400E;border:1px solid #FED7AA;" onclick="window._mv('${p.id}','ligar',event)" title="Registrar mais uma tentativa e voltar para fila">Nova Tentativa</button>`;
 
   return `<div class="card ${sel}" onclick="window._sP('${p.id}')">
     <div class="cn">${p.nome}</div>
