@@ -24,7 +24,7 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 html,body{height:100%;overflow:hidden;}
 body{font-family:var(--font);font-size:14px;color:var(--ct);background:var(--cbg);-webkit-font-smoothing:antialiased;}
-.mi{font-family:'Material Icons';font-size:20px;vertical-align:middle;line-height:1;}
+.mi{font-family:'Material Icons';font-size:20px;vertical-align:middle;line-height:1;text-transform:none;}
 
 /* HEADER */
 .hdr{position:fixed;top:0;left:0;right:0;height:var(--hh);background:var(--chbg);display:flex;align-items:center;z-index:1000;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);}
