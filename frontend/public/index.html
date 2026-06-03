@@ -181,7 +181,7 @@
   .tab-btn .icon { font-size: 17px; }
 
   .tab-btn.active {
-    background: linear-gradient(135deg, #f07830, var(--orange-dark));
+    background: var(--orange);
     color: #fff;
     box-shadow: 0 2px 8px var(--orange-glow);
   }
@@ -339,7 +339,7 @@
     width: 100%;
     margin-top: 8px;
     padding: 13px 20px;
-    background: linear-gradient(135deg, #f07830, var(--orange-dark));
+    background: var(--orange);
     color: #fff;
     border: none;
     border-radius: 10px;
@@ -352,18 +352,13 @@
     justify-content: center;
     gap: 8px;
     box-shadow: 0 4px 20px var(--orange-glow);
-    transition: transform .15s, box-shadow .15s, opacity .15s;
+    transition: transform .15s, box-shadow .15s, opacity .15s, background .2s;
     position: relative;
     overflow: hidden;
   }
 
-  .btn-submit::before {
-    content: '';
-    position: absolute; inset: 0;
-    background: linear-gradient(180deg, rgba(255,255,255,.12) 0%, transparent 50%);
-  }
-
   .btn-submit:hover:not(:disabled) {
+    background: var(--orange-dark);
     transform: translateY(-1px);
     box-shadow: 0 8px 28px var(--orange-glow);
   }
@@ -505,7 +500,7 @@
 
     <!-- ── PAINEL LOGIN ── -->
     <div class="panel active" id="panelLogin">
-      <p class="card-heading">Bem-vindo de volta 👋</p>
+      <p class="card-heading">Bem-vindo de volta</p>
       <p class="card-sub">Entre com suas credenciais para acessar o painel</p>
 
       <form id="loginForm" onsubmit="handleLogin(event)" novalidate>
@@ -555,7 +550,7 @@
 
     <!-- ── PAINEL CADASTRO ── -->
     <div class="panel" id="panelRegister">
-      <p class="card-heading">Criar conta 🏥</p>
+      <p class="card-heading">Criar conta</p>
       <p class="card-sub">Preencha os dados da sua clínica para começar</p>
 
       <!-- Aviso de pagamento futuro -->
@@ -785,7 +780,7 @@
       document.getElementById('btnLoginIcon').style.display = '';
       document.getElementById('spinnerLogin').style.display = 'none';
       document.getElementById('btnLoginTxt').textContent = 'Bem-vindo!';
-      btn.style.background = 'linear-gradient(135deg,#22c55e,#16a34a)';
+      btn.style.background = '#16a34a';
 
       setTimeout(() => { window.location.href = 'app.html'; }, 600);
 

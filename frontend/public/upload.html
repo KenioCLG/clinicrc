@@ -183,7 +183,7 @@
 
 <!-- MAIN -->
 <div class="main">
-  <h1 class="page-title">📊 Upload de Planilhas</h1>
+  <h1 class="page-title"><span class="mi" style="font-size:26px;color:var(--cp);margin-right:8px;vertical-align:-2px;">cloud_upload</span>Upload de Planilhas</h1>
   <p class="page-sub">Importe orçamentos em aberto. Pacientes já existentes terão seus dados atualizados sem perder o progresso no Kanban.</p>
 
   <!-- SISTEMA DETECTADO AUTOMATICAMENTE -->
@@ -224,7 +224,7 @@
 
   <!-- RESULTADO -->
   <div class="result" id="result">
-    <h4 id="resultTitle">✅ Planilha processada com sucesso!</h4>
+    <h4 id="resultTitle" style="display:flex;align-items:center;gap:6px;font-size:14px;font-weight:600;"><span class="mi" style="color:var(--cag)">check_circle</span> Planilha processada com sucesso!</h4>
     <div class="stats">
       <div class="stat"><div class="num" id="sTotal">0</div><div class="lbl">Total lido</div></div>
       <div class="stat"><div class="num new" id="sNew">0</div><div class="lbl">Novos</div></div>
@@ -358,12 +358,12 @@
 
     if (error) {
       el.classList.add('error');
-      document.getElementById('resultTitle').textContent = '❌ ' + error;
+      document.getElementById('resultTitle').innerHTML = `<span class="mi" style="color:var(--cre);vertical-align:middle;margin-right:6px;">error</span> ${error}`;
       return;
     }
 
     el.classList.remove('error');
-    document.getElementById('resultTitle').textContent = '✅ Planilha processada com sucesso!';
+    document.getElementById('resultTitle').innerHTML = `<span class="mi" style="color:var(--cag);vertical-align:middle;margin-right:6px;">check_circle</span> Planilha processada com sucesso!`;
     document.getElementById('sTotal').textContent = summary.total;
     document.getElementById('sNew').textContent   = summary.new;
     document.getElementById('sUpdated').textContent = summary.updated;

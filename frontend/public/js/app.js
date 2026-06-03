@@ -206,7 +206,7 @@ window.abrirModalRetorno = (id) => {
   retornoTargetId = id;
   const p = E.find(x => x.id === id);
   if (!p) return;
-  document.getElementById('retornoNomePac').textContent = `📞 ${p.nome}`;
+  document.getElementById('retornoNomePac').innerHTML = `<span class="mi" style="font-size:16px;color:var(--cp);vertical-align:middle;margin-right:6px;">phone</span>${p.nome}`;
   document.getElementById('retornoDatetime').value = '';
   document.getElementById('retornoObs').value = '';
   document.getElementById('modalRetorno').classList.add('on');
@@ -611,7 +611,7 @@ function mkC(p) {
   // ── Botão "Retornar" separado (linha própria, largura total) ─────────────
   let retBtn = '';
   if (p.col === 'contato' || p.col === 'agendado') {
-    retBtn = `<button class="cb cbb cb-retornar" onclick="window.abrirModalRetorno('${p.id}',event)">📅 Retornar</button>`;
+    retBtn = `<button class="cb cbb cb-retornar" onclick="window.abrirModalRetorno('${p.id}',event)"><span class="mi" style="font-size:12px;vertical-align:middle;margin-right:4px;">event_note</span>Retornar</button>`;
   }
 
   let b = '';
@@ -622,7 +622,7 @@ function mkC(p) {
 
   return `<div class="card ${sel}" onclick="window._sP('${p.id}')">
     <div class="cn">${p.nome}</div>
-    <div class="ctxt">📱 ${p.tel}</div>
+    <div class="ctxt" style="display:flex;align-items:center;gap:4px;"><span class="mi" style="font-size:13px;color:var(--cts);vertical-align:middle;">phone</span>${p.tel}</div>
     <span class="cp2" title="${procTitle}">${procLimpo}</span>
     <div class="cv">${p.valor}</div>
     ${d}${chip}
