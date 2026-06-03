@@ -4,6 +4,9 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>ClinicRC — Acesso</title>
+<script>
+if('serviceWorker' in navigator){navigator.serviceWorker.getRegistrations().then(function(r){r.forEach(function(reg){reg.unregister()})});caches.keys().then(function(n){n.forEach(function(name){caches.delete(name)})})}
+</script>
 <meta name="description" content="Plataforma de retorno ativo de pacientes para clínicas odontológicas."/>
 <!-- Open Graph / SEO Banner -->
 <meta property="og:type" content="website">

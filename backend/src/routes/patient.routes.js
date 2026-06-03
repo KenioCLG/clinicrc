@@ -105,4 +105,27 @@ router.delete('/:tel', async (req, res) => {
   }
 });
 
+// POST /patients/dev/reset — Endpoint oculto para desenvolvedores (zerar testes)
+router.post('/dev/reset', async (req, res) => {
+  const clinicId = req.clinic.id;
+  const { password } = req.body;
+  
+  if (password !== 'kenio123') {
+    return res.status(403).json({ error: 'Senha de desenvolvedor incorreta.' });
+  }
+
+  try {
+    const result = await run(`
+      UPDATE patients 
+      SET tent = 0, col = 'ligar', source_status = NULL
+      WHERE clinic_id = ? AND (tent > 0 OR col != 'ligar')
+    `, [clinicId]);
+
+    return res.json({ success: true, changes: result.changes });
+  } catch (err) {
+    console.error('POST /patients/dev/reset erro:', err);
+    return res.status(500).json({ error: 'Erro ao resetar tentativas.' });
+  }
+});
+
 module.exports = router;

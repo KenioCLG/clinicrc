@@ -125,6 +125,44 @@ window.doLogout = () => {
   window.location.href = 'index.html';
 };
 
+// Função oculta para resetar tentativas
+window._devReset = async () => {
+  const pwd = prompt("Senha de desenvolvedor para resetar testes:");
+  if (pwd !== "kenio123") {
+    if (pwd) showToast("Senha incorreta", "er");
+    return;
+  }
+  if (!confirm("Isso vai zerar as tentativas de todos os pacientes DESTA CLÍNICA e voltar para 'ligar'. Continuar?")) return;
+  
+  try {
+    const token = localStorage.getItem('clinicrc_token');
+    const res = await fetch('/api/patients/dev/reset', {
+      method: 'POST',
+      headers: { 
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ password: pwd })
+    });
+    
+    if (!res.ok) {
+      const err = await res.json().catch(()=>({}));
+      throw new Error(err.error || 'Erro ao resetar');
+    }
+    
+    const data = await res.json();
+    showToast(`Base resetada! (${data.changes} pacientes)`, 'ok');
+    
+    // Atualiza base local e re-renderiza
+    setTimeout(() => {
+      window.location.reload();
+    }, 1500);
+    
+  } catch (err) {
+    showToast("Erro: " + err.message, "er");
+  }
+};
+
 let maxAttempts = 1;
 let easyMDE = null;
 
