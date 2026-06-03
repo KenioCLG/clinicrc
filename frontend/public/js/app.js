@@ -970,35 +970,79 @@ updS();
 init();
 window.render = render;
 
-// ─── RESIZER (AJUSTE DE LARGURA) ───────────────────────────────────────────
+// ─── RESIZER (AJUSTE DE LARGURA/ALTURA) ──────────────────────────────────────
 const resizer = document.getElementById('resizer');
 const sp = document.querySelector('.sp');
 let isResizing = false;
 
 if (resizer && sp) {
-  resizer.addEventListener('mousedown', (e) => {
+  const startResize = (e) => {
     isResizing = true;
-    document.body.style.cursor = 'col-resize';
     resizer.classList.add('active');
     document.body.style.userSelect = 'none'; // Evita selecionar texto ao arrastar
-  });
+    if (window.innerWidth <= 768) {
+      document.body.style.cursor = 'row-resize';
+    } else {
+      document.body.style.cursor = 'col-resize';
+    }
+  };
 
-  window.addEventListener('mousemove', (e) => {
+  const doResize = (e) => {
     if (!isResizing) return;
-    const minWidth = 280; // Mínimo para o roteiro
-    const maxWidth = window.innerWidth - 400; // Mínimo para o Kanban
-    let newWidth = e.clientX;
-    if (newWidth < minWidth) newWidth = minWidth;
-    if (newWidth > maxWidth) newWidth = maxWidth;
-    sp.style.width = newWidth + 'px';
-  });
+    
+    // Suporte para touch e mouse
+    const clientX = e.touches && e.touches.length > 0 ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches && e.touches.length > 0 ? e.touches[0].clientY : e.clientY;
 
-  window.addEventListener('mouseup', () => {
+    if (window.innerWidth <= 768) {
+      // MODO MOBILE: Ajuste Vertical
+      const minHeight = 60; // Colapsado (só header do roteiro)
+      const maxHeight = window.innerHeight - 150; // Deixa espaço para o Kanban
+      let newHeight = clientY - 56; // Abate a altura do header principal (56px)
+      
+      if (newHeight < minHeight) newHeight = minHeight;
+      if (newHeight > maxHeight) newHeight = maxHeight;
+      
+      sp.style.height = newHeight + 'px';
+      sp.style.width = '100%'; // Garante que a largura fica 100%
+    } else {
+      // MODO DESKTOP: Ajuste Horizontal
+      const minWidth = 280; // Mínimo para o roteiro
+      const maxWidth = window.innerWidth - 400; // Mínimo para o Kanban
+      let newWidth = clientX;
+      
+      if (newWidth < minWidth) newWidth = minWidth;
+      if (newWidth > maxWidth) newWidth = maxWidth;
+      
+      sp.style.width = newWidth + 'px';
+      sp.style.height = ''; // Remove altura fixa do mobile
+    }
+  };
+
+  const stopResize = () => {
     if (isResizing) {
       isResizing = false;
       document.body.style.cursor = '';
       resizer.classList.remove('active');
       document.body.style.userSelect = '';
+    }
+  };
+
+  resizer.addEventListener('mousedown', startResize);
+  resizer.addEventListener('touchstart', startResize, {passive: true});
+
+  window.addEventListener('mousemove', doResize);
+  window.addEventListener('touchmove', doResize, {passive: true});
+
+  window.addEventListener('mouseup', stopResize);
+  window.addEventListener('touchend', stopResize);
+  
+  // Limpa os estilos inlines aplicados quando redimensiona e depois muda a orientação
+  window.addEventListener('resize', () => {
+    if (window.innerWidth <= 768) {
+      sp.style.width = '100%';
+    } else {
+      sp.style.height = '';
     }
   });
 }

@@ -146,6 +146,49 @@ body{font-family:var(--font);font-size:14px;color:var(--ct);background:var(--cbg
   }
 }
 
+/* LAYOUT MOBILE VERTICAL E RESIZER HORIZONTAL */
+@media (max-width: 768px) {
+  .pg.on {
+    flex-direction: column;
+  }
+  .sp {
+    width: 100% !important;
+    height: 40%; /* Altura inicial no mobile */
+    min-height: 60px; /* Quando colapsado para cima */
+    max-height: calc(100vh - 150px);
+    border-right: none;
+    border-bottom: 1px solid var(--cdiv);
+  }
+  .resizer {
+    width: 100% !important;
+    height: 12px; /* Área de toque maior no mobile */
+    cursor: row-resize !important;
+    border-left: none;
+    border-right: none;
+    border-top: 1px solid var(--cdiv);
+    border-bottom: 1px solid var(--cdiv);
+    background: var(--cbg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  /* Um pequeno 'handle' visual no resizer para mobile */
+  .resizer::after {
+    content: '';
+    width: 40px;
+    height: 4px;
+    background: #CBD5E1;
+    border-radius: 4px;
+  }
+  .resizer:hover::after, .resizer.active::after {
+    background: var(--cp);
+  }
+  .kp {
+    width: 100%;
+    flex: 1;
+  }
+}
+
 @media (max-width: 600px) {
   .pbar-btn {
     padding: 6px !important;
