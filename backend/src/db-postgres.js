@@ -26,12 +26,13 @@ const pool = new Pool({
 async function initSchema() {
   await pool.query(`
     CREATE TABLE IF NOT EXISTS users (
-      id           SERIAL PRIMARY KEY,
-      clinic_name  TEXT NOT NULL,
-      username     TEXT NOT NULL UNIQUE,
-      password     TEXT NOT NULL,
-      whatsapp     TEXT DEFAULT '',
-      created_at   TIMESTAMPTZ DEFAULT NOW()
+      id             SERIAL PRIMARY KEY,
+      clinic_name    TEXT NOT NULL,
+      username       TEXT NOT NULL UNIQUE,
+      password       TEXT NOT NULL,
+      whatsapp       TEXT DEFAULT '',
+      system_source  TEXT NOT NULL DEFAULT 'cliniccorp',
+      created_at     TIMESTAMPTZ DEFAULT NOW()
     );
 
     ALTER TABLE users ADD COLUMN IF NOT EXISTS max_attempts INTEGER DEFAULT 1;
@@ -39,6 +40,8 @@ async function initSchema() {
 
     ALTER TABLE users ADD COLUMN IF NOT EXISTS login_attempts INTEGER DEFAULT 0;
     ALTER TABLE users ADD COLUMN IF NOT EXISTS lockout_until TIMESTAMPTZ;
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS email TEXT DEFAULT '';
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS system_source TEXT NOT NULL DEFAULT 'cliniccorp';
 
     CREATE TABLE IF NOT EXISTS scripts (
       id           SERIAL PRIMARY KEY,

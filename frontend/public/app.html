@@ -22,7 +22,10 @@
 
 <!-- HEADER -->
 <header class="hdr">
-  <button class="hdr-menu"><span class="mi">menu</span></button>
+  <button class="hdr-menu" id="menuVersion" title="Versão do sistema">
+    <span class="mi">medical_services</span>
+    <span class="version-tag" id="versionTag"><span class="ver-dot" id="verDot"></span><em id="verNum">v1.0</em></span>
+  </button>
   <div class="hdr-tabs">
     <button class="tab-btn on" onclick="window.trocarAba(0, this)">
       <span class="mi" style="font-size:16px;">view_kanban</span>
@@ -51,7 +54,11 @@
        title="Falar com suporte via WhatsApp">
       <span class="mi" style="font-size:18px">support_agent</span> Suporte
     </a>
-    <span id="liveClock" style="margin-left:8px;color:rgba(255,255,255,.9);font-size:12px;font-variant-numeric:tabular-nums;font-weight:500;">--:--:--</span>
+    <button class="bell-btn" id="bellBtn" onclick="window.toggleBell()" title="Agendamentos de Retorno">
+      <span class="mi" style="font-size:20px">notifications</span>
+      <span class="bell-count" id="bellCount" style="display:none">0</span>
+    </button>
+    <span id="liveClock" style="margin-left:4px;color:rgba(255,255,255,.9);font-size:12px;font-variant-numeric:tabular-nums;font-weight:500;">--:--:--</span>
     <span id="clinicNameDisplay" style="margin-left:8px;color:rgba(255,255,255,.6);font-size:12px;"></span>
     <span class="ava" style="margin-left:6px">D</span>
     <button onclick="window.doLogout()" style="margin-left:6px;background:none;border:none;cursor:pointer;color:rgba(255,255,255,.5);display:flex;align-items:center;padding:4px;border-radius:4px;transition:all .2s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,.5)'" title="Sair">
@@ -109,6 +116,15 @@
           <span class="kchip" style="background:var(--cp)"><span class="mi" style="font-size:14px">check_circle</span>&nbsp;<span id="ki3">0</span> finalizados</span>
         </div>
       </div>
+
+      <!-- FILTRO DE PROCEDIMENTOS -->
+      <div class="proc-filter" id="procFilter">
+        <span class="pf-label"><span class="mi" style="font-size:15px">filter_list</span> Filtrar:</span>
+        <div class="pf-chips" id="pfChips">
+          <!-- preenchido dinamicamente -->
+        </div>
+      </div>
+
       <div class="cols">
         <div class="col cl1"><div class="col-hd">Para Ligar<span class="bg" id="c1">0</span></div><div class="col-cards" id="col-ligar"></div></div>
         <div class="col cl2"><div class="col-hd">Em Contato<span class="bg" id="c2">0</span></div><div class="col-cards" id="col-contato"></div></div>
@@ -142,7 +158,42 @@
   </defs>
 </svg>
 
+<!-- DROPDOWN SINO DE NOTIFICAÇÕES -->
+<div class="bell-panel" id="bellPanel" style="display:none;">
+  <div class="bell-panel-hd">
+    <span class="mi" style="font-size:16px;color:var(--cp)">notifications_active</span>
+    <strong>Retornos Agendados</strong>
+    <button onclick="window.toggleBell()" style="margin-left:auto;background:none;border:none;cursor:pointer;color:var(--cts);font-size:18px;line-height:1;" class="mi">close</button>
+  </div>
+  <div class="bell-list" id="bellList">
+    <div class="bell-empty">Nenhum retorno agendado</div>
+  </div>
+</div>
+
+<!-- MODAL AGENDAMENTO DE RETORNO -->
+<div class="mbg" id="modalRetorno" onclick="this.classList.remove('on')">
+  <div class="mbox" onclick="event.stopPropagation()" style="max-width:380px;">
+    <h3 style="display:flex;align-items:center;gap:8px;">
+      <span class="mi" style="color:var(--cp)">schedule_send</span>
+      Agendar Retorno de Ligação
+    </h3>
+    <p style="font-size:13px;color:var(--cts);margin:8px 0 16px;">O paciente pediu para você ligar de volta. Defina quando:</p>
+    <div id="retornoNomePac" style="font-weight:600;font-size:14px;margin-bottom:12px;color:var(--ct);"></div>
+    <label style="font-size:11px;font-weight:600;color:var(--cts);text-transform:uppercase;letter-spacing:.5px;">Data e Hora do Retorno</label>
+    <input type="datetime-local" id="retornoDatetime" style="width:100%;margin-top:6px;padding:10px 12px;border:1px solid var(--cdiv);border-radius:8px;font-size:14px;font-family:var(--font);outline:none;color:var(--ct);background:var(--cibg);" />
+    <label style="font-size:11px;font-weight:600;color:var(--cts);text-transform:uppercase;letter-spacing:.5px;margin-top:12px;display:block;">Observação (opcional)</label>
+    <input type="text" id="retornoObs" placeholder="Ex: Ligar após 14h" style="width:100%;margin-top:6px;padding:10px 12px;border:1px solid var(--cdiv);border-radius:8px;font-size:14px;font-family:var(--font);outline:none;color:var(--ct);background:var(--cibg);" />
+    <div style="display:flex;gap:8px;margin-top:16px;">
+      <button class="cb cbg" style="flex:1;height:38px;" onclick="window.salvarRetorno()">
+        <span class="mi" style="font-size:16px;vertical-align:middle;">alarm_add</span> Confirmar
+      </button>
+      <button class="cb cbgr" style="flex:1;height:38px;" onclick="document.getElementById('modalRetorno').classList.remove('on')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL INFO ROTEIROS -->
+
 <div class="mbg" id="modalInfo" onclick="this.classList.remove('on')">
   <div class="mbox" onclick="event.stopPropagation()" style="max-width: 450px;">
     <h3>Como escrever roteiros?</h3>

@@ -112,6 +112,7 @@ let E = []; // Pacientes locais em memória
 window._E = E; // Expõe para o api-client achar o tel pelo ID
 let tN = 1, pA = null, fId = null;
 let obsDebounce = {};
+let activeProc = null; // filtro de procedimento ativo
 
 // Mostra nome da clínica logada no header
 const clinicName = localStorage.getItem('clinicrc_clinic');
@@ -126,6 +127,109 @@ window.doLogout = () => {
 
 let maxAttempts = 1;
 let easyMDE = null;
+
+// ── VERSÃO DO SISTEMA ─────────────────────────────────────────────────────────
+const APP_VERSION = 'v1.1';
+const VER_KEY = 'clinicrc_ver';
+(function initVersion() {
+  const verEl = document.getElementById('verNum');
+  const dotEl = document.getElementById('verDot');
+  if (verEl) verEl.textContent = APP_VERSION;
+  const stored = localStorage.getItem(VER_KEY);
+  if (stored && stored !== APP_VERSION) {
+    // Nova versão detectada — indica update pendente
+    if (dotEl) dotEl.classList.add('update');
+    const btn = document.getElementById('menuVersion');
+    if (btn) btn.title = `🔄 Nova versão disponível! Clique para atualizar.`;
+    btn?.addEventListener('click', () => {
+      localStorage.setItem(VER_KEY, APP_VERSION);
+      dotEl?.classList.remove('update');
+      window.location.reload(true);
+    });
+  } else {
+    localStorage.setItem(VER_KEY, APP_VERSION);
+  }
+})();
+
+// ── SINO DE NOTIFICAÇÕES / RETORNOS AGENDADOS ─────────────────────────────────
+const RETORNOS_KEY = 'clinicrc_retornos';
+let retornos = JSON.parse(localStorage.getItem(RETORNOS_KEY) || '[]');
+let retornoTargetId = null;
+
+function saveRetornos() {
+  localStorage.setItem(RETORNOS_KEY, JSON.stringify(retornos));
+}
+
+function renderBell() {
+  const list = document.getElementById('bellList');
+  const count = document.getElementById('bellCount');
+  if (!list) return;
+  const agora = Date.now();
+  const ativos = retornos.filter(r => r.dt > agora);
+  const vencidos = retornos.filter(r => r.dt <= agora);
+  if (!count) return;
+  count.style.display = retornos.length ? 'flex' : 'none';
+  count.textContent = retornos.length;
+  if (!retornos.length) {
+    list.innerHTML = '<div class="bell-empty">Nenhum retorno agendado</div>';
+    return;
+  }
+  const fmt = (ts) => new Date(ts).toLocaleString('pt-BR', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+  list.innerHTML = [...vencidos.map(r =>
+    `<div class="bell-item bell-item-alerta" style="background:#FEF2F2;">
+      <span class="bell-item-nome">⏰ ${r.nome}</span>
+      <span class="bell-item-time" style="color:#EF4444;">Agora! — ${fmt(r.dt)}</span>
+      ${r.obs ? `<span class="bell-item-obs">${r.obs}</span>` : ''}
+      <button onclick="window.removerRetorno('${r.id}')" style="align-self:flex-end;font-size:10px;border:none;background:none;color:#EF4444;cursor:pointer;margin-top:4px;">✓ Já liguei</button>
+    </div>`
+  ), ...ativos.map(r =>
+    `<div class="bell-item">
+      <span class="bell-item-nome">${r.nome}</span>
+      <span class="bell-item-time">${fmt(r.dt)}</span>
+      ${r.obs ? `<span class="bell-item-obs">${r.obs}</span>` : ''}
+      <button onclick="window.removerRetorno('${r.id}')" style="align-self:flex-end;font-size:10px;border:none;background:none;color:var(--cts);cursor:pointer;margin-top:4px;">Remover</button>
+    </div>`
+  )].join('');
+}
+
+// Verifica retornos vencidos a cada 30s
+setInterval(() => { renderBell(); }, 30000);
+
+window.toggleBell = () => {
+  const panel = document.getElementById('bellPanel');
+  if (!panel) return;
+  panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+  renderBell();
+};
+
+window.abrirModalRetorno = (id) => {
+  retornoTargetId = id;
+  const p = E.find(x => x.id === id);
+  if (!p) return;
+  document.getElementById('retornoNomePac').textContent = `📞 ${p.nome}`;
+  document.getElementById('retornoDatetime').value = '';
+  document.getElementById('retornoObs').value = '';
+  document.getElementById('modalRetorno').classList.add('on');
+};
+
+window.salvarRetorno = () => {
+  const dt = document.getElementById('retornoDatetime').value;
+  const obs = document.getElementById('retornoObs').value.trim();
+  if (!dt) { showToast('Selecione data e hora!', 'er'); return; }
+  const p = E.find(x => x.id === retornoTargetId);
+  if (!p) return;
+  retornos.push({ id: Date.now().toString(), nome: p.nome, pacId: p.id, dt: new Date(dt).getTime(), obs });
+  saveRetornos();
+  renderBell();
+  document.getElementById('modalRetorno').classList.remove('on');
+  showToast(`Retorno agendado para ${p.nome}!`, 'ok');
+};
+
+window.removerRetorno = (rid) => {
+  retornos = retornos.filter(r => r.id !== rid);
+  saveRetornos();
+  renderBell();
+};
 
 async function fetchConfig() {
   try {
@@ -197,12 +301,13 @@ window.deleteAttempt = async () => {
 function renderTbar() {
   const tbar = document.getElementById('tbar');
   if(!tbar) return;
-  let h = `<span class="tlbl">Tentativa:</span>`;
-  for(let i=1; i<=maxAttempts; i++) {
-    h += `<button class="tbtn ${i===tN ? 'on':''}" onclick="window.selT(${i})">${i}ª</button>`;
-  }
-  h += `<button class="tbtn" onclick="window.addAttempt()" title="Adicionar tentativa" style="padding: 0 10px; margin-left: 5px;"><span class="mi" style="font-size:18px; margin-top:2px;">add_call</span></button>`;
-  tbar.innerHTML = h;
+  // Script único (Master): a tentativa não muda o roteiro, só o contador no card
+  tbar.innerHTML = `
+    <div class="tbar-master">
+      <span class="mi" style="font-size:16px;color:var(--cp)">record_voice_over</span>
+      <span class="tlbl" style="color:var(--ct);font-weight:600;">Roteiro Master</span>
+      <span class="tbar-hint">· use os indicadores no cartão do paciente para registrar cada tentativa</span>
+    </div>`;
 }
 
 function initEditor() {
@@ -356,7 +461,11 @@ async function updatePaciente(id, updates) {
 function render() {
   const q = (document.querySelector('.ksrch')?.value || '').toLowerCase();
   const C = { ligar: [], contato: [], agendado: [], final: [] };
-  E.forEach(p => { if (!q || p.nome.toLowerCase().includes(q)) C[p.col]?.push(p); });
+  E.forEach(p => {
+    const matchSearch = !q || p.nome.toLowerCase().includes(q);
+    const matchProc   = !activeProc || cleanProc(p.proc).toLowerCase().includes(activeProc.toLowerCase());
+    if (matchSearch && matchProc) C[p.col]?.push(p);
+  });
   const ids = { ligar: 'c1', contato: 'c2', agendado: 'c3', final: 'c4' };
   
   ['ligar','contato','agendado','final'].forEach(c => {
@@ -368,42 +477,119 @@ function render() {
   document.getElementById('ki1').textContent = E.filter(p => p.col === 'contato').length;
   document.getElementById('ki2').textContent = E.filter(p => p.col === 'agendado').length;
   document.getElementById('ki3').textContent = E.filter(p => p.col === 'final').length;
+  
+  renderProcFilter();
 }
+
+// Remove códigos numéricos de procedimentos (ex: "2020 - Tratamento" → "Tratamento")
+function cleanProc(raw) {
+  if (!raw) return '';
+  return raw
+    .split(',')
+    .map(s => s.trim().replace(/^\d{4}\s*[-–]\s*/, '').trim())
+    .filter(Boolean)
+    .join(', ');
+}
+
+// ── FILTRO DE PROCEDIMENTOS ─────────────────────────────────────────────────
+// Paleta de cores para os chips — rotativa
+const PF_COLORS = [
+  '#7C3AED', '#0284C7', '#0F766E', '#B45309', '#BE185D',
+  '#1D4ED8', '#047857', '#9333EA', '#C2410C', '#0369A1',
+];
+
+function renderProcFilter() {
+  const chips = document.getElementById('pfChips');
+  if (!chips) return;
+
+  // Agrupa procedimentos únicos (limpos) e conta pacientes
+  const map = new Map(); // proc → count
+  E.forEach(p => {
+    const procs = (p.proc || '')
+      .split(',')
+      .map(s => s.trim().replace(/^\d{4}\s*[-–]\s*/, '').trim())
+      .filter(Boolean);
+    procs.forEach(pr => {
+      if (pr) map.set(pr, (map.get(pr) || 0) + 1);
+    });
+  });
+
+  // Ordena por volume (maior primeiro)
+  const sorted = [...map.entries()].sort((a, b) => b[1] - a[1]);
+
+  // Oculta a barra se não houver procedimentos variados
+  const bar = document.getElementById('procFilter');
+  if (bar) bar.style.display = sorted.length > 1 ? 'flex' : 'none';
+
+  chips.innerHTML = sorted.map(([proc, count], i) => {
+    const color = PF_COLORS[i % PF_COLORS.length];
+    const isOn = activeProc === proc;
+    return `<button class="pf-chip${isOn ? ' on' : ''}" style="background:${color}" onclick="window._toggleProc('${proc.replace(/'/g, "\\'")}')"
+      title="Filtrar por: ${proc}">
+      <span class="mi" style="font-size:13px">local_hospital</span>
+      ${proc}
+      <span class="pf-count">${count}</span>
+    </button>`;
+  }).join('');
+}
+
+window._toggleProc = (proc) => {
+  activeProc = activeProc === proc ? null : proc;
+  render();
+};
 
 function mkC(p) {
   const sel = pA?.id === p.id ? 'sel' : '';
+  const t = p.tent || 0;
+
+  // Indicador de tentativas com progresso visual
+  const tentLabel = t === 0 ? 'Nenhuma tentativa' : `${t}ª tentativa realizada`;
+  const tentColor = t === 0 ? '#9CA3AF' : t >= maxAttempts ? '#EF4444' : '#EC6726';
   let d = `<div class="trow"><span class="tlb">Tent.:</span>`;
   for (let i = 1; i <= maxAttempts; i++) {
     let c = '';
-    const t = p.tent || 0;
     if (i <= t) {
       c = 'dn';
-    } else if (i === t + 1) {
-      // S aplica 'nx' se j tiver feito alguma tentativa ou se no estiver na coluna 'ligar' inicial
-      if (t > 0 || p.col !== 'ligar') c = 'nx';
+    } else if (i === t + 1 && (t > 0 || p.col !== 'ligar')) {
+      c = 'nx';
     }
-    d += `<div class="dot ${c}" onclick="window._mT('${p.id}',${i},event)">${i}</div>`;
+    d += `<div class="dot ${c}" onclick="window._mT('${p.id}',${i},event)" title="Registrar ${i}ª tentativa">${i}</div>`;
   }
-  d += `</div>`;
+  d += `<span class="tent-lbl" style="color:${tentColor}">${tentLabel}</span></div>`;
+
   let chip = '';
   if (p.res) {
     const m = { agendou: ['bag','Agendou'], procedimento: ['bpr','Já Realizou'], 'sem-interesse': ['bsi','Sem Interesse'], 'sem-resposta': ['bsr','Sem Resposta'] };
     const [cl, lb] = m[p.res] || ['', ''];
     chip = `<span class="bdg ${cl}">${lb}</span><br>`;
   }
+
+  // Procedimentos: exibe limpo, original no tooltip
+  const procLimpo = cleanProc(p.proc);
+  const procTitle = p.proc || '';
+
+  // ── Botão "Retornar" separado (linha própria, largura total) ─────────────
+  let retBtn = '';
+  if (p.col === 'contato' || p.col === 'agendado') {
+    retBtn = `<button class="cb cbb cb-retornar" onclick="window.abrirModalRetorno('${p.id}',event)" title="Agendar retorno de ligação">
+      <span class="mi" style="font-size:14px;vertical-align:middle">event_note</span> 📅 Agendar Retorno
+    </button>`;
+  }
+
   let b = '';
   if (p.col === 'ligar') b = `<button class="cb cbo" onclick="window._mv('${p.id}','contato',event)">Em Contato</button><button class="cb cbg" onclick="window._mv('${p.id}','agendado',event)">Agendar</button><button class="cb cbgr" onclick="window._oM('${p.id}',event)">Finalizar</button>`;
-  else if (p.col === 'contato') b = `<button class="cb cbg" onclick="window._mv('${p.id}','agendado',event)">Agendar</button><button class="cb cbgr" onclick="window._oM('${p.id}',event)">Finalizar</button><button class="cb cbb" onclick="window._mv('${p.id}','ligar',event)">↩ Voltar</button>`;
-  else if (p.col === 'agendado') b = `<button class="cb cbgr" onclick="window._oM('${p.id}',event)">Finalizar</button><button class="cb cbo" onclick="window._mv('${p.id}','contato',event)">↩ Em Contato</button>`;
-  else b = `<button class="cb cbb" onclick="window._mv('${p.id}','ligar',event)">↩ Reabrir</button>`;
-  
+  else if (p.col === 'contato') b = `<button class="cb cbg" onclick="window._mv('${p.id}','agendado',event)">Agendar</button><button class="cb cbgr" onclick="window._oM('${p.id}',event)">Finalizar</button><button class="cb" style="background:#FFF7ED;color:#92400E;border:1px solid #FED7AA;" onclick="window._mv('${p.id}','ligar',event)" title="Registrar mais uma tentativa e voltar para fila">📞 Nova Tentativa</button>`;
+  else if (p.col === 'agendado') b = `<button class="cb cbgr" onclick="window._oM('${p.id}',event)">Finalizar</button><button class="cb" style="background:#FFF7ED;color:#92400E;border:1px solid #FED7AA;" onclick="window._mv('${p.id}','ligar',event)" title="Registrar mais uma tentativa e voltar para fila">📞 Nova Tentativa</button>`;
+  else b = `<button class="cb" style="background:#FFF7ED;color:#92400E;border:1px solid #FED7AA;" onclick="window._mv('${p.id}','ligar',event)" title="Registrar mais uma tentativa e voltar para fila">📞 Nova Tentativa</button>`;
+
   return `<div class="card ${sel}" onclick="window._sP('${p.id}')">
     <div class="cn">${p.nome}</div>
     <div class="ctxt">📱 ${p.tel}</div>
-    <span class="cp2">${p.proc}</span>
+    <span class="cp2" title="${procTitle}">${procLimpo}</span>
     <div class="cv">${p.valor}</div>
     ${d}${chip}
-    <textarea class="cobs" placeholder="Anotações..." onclick="event.stopPropagation()" oninput="window._sO('${p.id}',this.value)">${p.obs || ''}</textarea>
+    <textarea id="obs-${p.id}" name="obs-${p.id}" class="cobs" placeholder="Anotações..." onclick="event.stopPropagation()" oninput="window._sO('${p.id}',this.value)">${p.obs || ''}</textarea>
+    ${retBtn}
     <div class="cbtns">${b}</div>
   </div>`;
 }
@@ -411,9 +597,16 @@ function mkC(p) {
 // ─── AÇÕES EXPOSTAS AO WINDOW PARA HANDLERS INLINE ─────────────────────────
 window._mv = (id, col, e) => {
   e?.stopPropagation();
+  const p = E.find(x => x.id === id);
+  if (!p) return;
   const updates = { col };
-  // Limpa o status (res) se estiver voltando pro funil para uma nova tentativa
-  if (col === 'ligar' || col === 'contato') {
+
+  if (col === 'ligar') {
+    // Ao reabrir, registramos a tentativa atual e limpamos o status
+    // para que o indicador reflita que estamos na próxima rodada de contato
+    updates.tent = (p.tent || 0) + 1;
+    updates.res = null;
+  } else if (col === 'contato') {
     updates.res = null;
   }
   updatePaciente(id, updates);
@@ -427,10 +620,11 @@ window._mT = (id, n, e) => {
   if (n === p.tent) {
     if (!confirm('Desfazer última tentativa?')) return;
     newTent = p.tent - 1;
+  } else if (n === p.tent + 1) {
+    newTent = n;
+    // Move automaticamente para "Em Contato" na 1ª tentativa
+    if (p.col === 'ligar') newCol = 'contato';
   }
-  else if (n === p.tent + 1) { newTent = n; if (p.col === 'ligar') newCol = 'contato'; }
-  tN = Math.max(1, newTent + 1);
-  document.querySelectorAll('.tbtn').forEach((b, i) => b.classList.toggle('on', i + 1 === tN));
   updatePaciente(id, { tent: newTent, col: newCol });
   if (pA?.id === id) { pA = E.find(x => x.id === id); updS(); }
 };
@@ -442,8 +636,7 @@ window._sO = (id, v) => {
 
 window._sP = (id) => {
   pA = E.find(x => x.id === id);
-  tN = Math.max(1, (pA.tent || 0) + 1);
-  document.querySelectorAll('.tbtn').forEach((b, i) => b.classList.toggle('on', i + 1 === tN));
+  tN = 1; // Sempre usa o script master único
   render(); updP();
 };
 
@@ -456,8 +649,7 @@ window._oM = (id, e) => {
 };
 
 async function selT(n) {
-  tN = n;
-  document.querySelectorAll('.tbtn').forEach((b, i) => b.classList.toggle('on', i + 1 === n));
+  tN = 1; // Script master único — não muda com tentativas
   await updS();
 }
 window.selT = selT;

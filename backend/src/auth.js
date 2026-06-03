@@ -25,11 +25,11 @@ const WHATSAPP_SUPPORT = process.env.WHATSAPP_SUPPORT || 'https://wa.me/55819999
 /**
  * Cria um novo usuário/clínica
  */
-async function createUser(clinicName, username, password, whatsapp = '') {
+async function createUser(clinicName, username, password, whatsapp = '', email = '') {
   const hash = bcrypt.hashSync(password, 10);
   return run(
-    'INSERT INTO users (clinic_name, username, password, whatsapp) VALUES (?, ?, ?, ?)',
-    [clinicName, username, hash, whatsapp]
+    'INSERT INTO users (clinic_name, username, password, whatsapp, email) VALUES (?, ?, ?, ?, ?)',
+    [clinicName, username, hash, whatsapp, email]
   );
 }
 

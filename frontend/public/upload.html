@@ -47,40 +47,44 @@
   .btn-logout:hover{color:#fff;background:rgba(255,255,255,.1);}
 
   /* MAIN */
-  .main{max-width:800px;margin:0 auto;padding:32px 20px;}
+  .main{max-width:740px;margin:0 auto;padding:32px 20px;}
   .page-title{font-size:22px;font-weight:700;margin-bottom:4px;}
-  .page-sub{color:var(--cts);font-size:14px;margin-bottom:32px;}
+  .page-sub{color:var(--cts);font-size:14px;margin-bottom:24px;line-height:1.5;}
 
-  /* SOURCE SELECTOR */
-  .source-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:28px;}
-  .source-card{
-    background:var(--cs);border-radius:10px;padding:20px;
-    border:2px solid var(--cdiv);cursor:pointer;
-    transition:border-color .2s,box-shadow .2s;
-    display:flex;flex-direction:column;gap:8px;
+  /* SYSTEM BADGE — informativo, não selecionável */
+  .system-info{
+    display:flex;align-items:center;gap:10px;
+    background:var(--cs);border-radius:10px;padding:14px 18px;
+    border:1px solid var(--cdiv);margin-bottom:24px;
   }
-  .source-card:hover{border-color:var(--cp);box-shadow:0 4px 15px rgba(236,103,38,.15);}
-  .source-card.selected{border-color:var(--cp);box-shadow:0 4px 15px rgba(236,103,38,.2);}
-  .source-card .sc-icon{
-    width:40px;height:40px;border-radius:8px;
-    display:flex;align-items:center;justify-content:center;
+  .system-info .si-icon{
+    width:36px;height:36px;border-radius:8px;
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;
   }
-  .source-card .sc-icon.cc{background:#E3F2FD;}
-  .source-card .sc-icon.sd{background:#E8F5E9;}
-  .source-card .sc-icon .mi.cc{color:#0277BD;}
-  .source-card .sc-icon .mi.sd{color:#2E7D32;}
-  .source-card h3{font-size:14px;font-weight:600;}
-  .source-card p{font-size:12px;color:var(--cts);}
-  .source-card .sc-badge{
-    display:inline-flex;align-items:center;gap:4px;
-    font-size:11px;padding:2px 8px;border-radius:10px;
-    background:var(--cibg);color:var(--cts);width:fit-content;
+  .system-info .si-icon.cc{background:#E3F2FD;}
+  .system-info .si-icon.sd{background:#E8F5E9;}
+  .system-info .si-icon .mi.cc{color:#0277BD;}
+  .system-info .si-icon .mi.sd{color:#2E7D32;}
+  .system-info .si-text{flex:1;}
+  .system-info .si-label{font-size:11px;color:var(--cts);text-transform:uppercase;letter-spacing:.5px;}
+  .system-info .si-name{font-size:14px;font-weight:600;margin-top:2px;}
+  .system-info .si-badge{
+    font-size:11px;padding:3px 10px;border-radius:10px;
+  }
+  .system-info .si-badge.cc{background:#E3F2FD;color:#0277BD;}
+  .system-info .si-badge.sd{background:#E8F5E9;color:#2E7D32;}
+
+  /* SECTION TITLE */
+  .section-title{
+    font-size:12px;font-weight:600;text-transform:uppercase;
+    letter-spacing:.5px;color:var(--cts);margin-bottom:10px;
+    display:flex;align-items:center;gap:6px;
   }
 
   /* DROPZONE */
   .dropzone{
     background:var(--cs);border-radius:10px;
-    border:2px dashed var(--cdiv);padding:40px;
+    border:2px dashed var(--cdiv);padding:48px 40px;
     text-align:center;cursor:pointer;
     transition:border-color .2s,background .2s;
     margin-bottom:20px;
@@ -88,30 +92,23 @@
   .dropzone:hover,.dropzone.drag{
     border-color:var(--cp);background:#FFF8F4;
   }
-  .dropzone .dz-icon .mi{font-size:48px;color:var(--cp);}
-  .dropzone h3{font-size:15px;font-weight:600;margin:12px 0 6px;}
+  .dropzone .dz-icon .mi{font-size:52px;color:var(--cp);}
+  .dropzone h3{font-size:15px;font-weight:600;margin:14px 0 6px;}
   .dropzone p{font-size:13px;color:var(--cts);}
   .dropzone .dz-hint{
-    margin-top:12px;font-size:12px;color:var(--cts);
+    margin-top:14px;font-size:12px;color:var(--cts);
     background:var(--cibg);padding:6px 14px;border-radius:20px;
     display:inline-block;
   }
   #fileInput{display:none;}
   .file-selected{
-    margin-top:12px;display:flex;align-items:center;justify-content:center;
+    margin-top:14px;display:flex;align-items:center;justify-content:center;
     gap:8px;color:var(--cp);font-size:13px;font-weight:500;
-  }
-
-  /* HISTORY */
-  .section-title{
-    font-size:13px;font-weight:600;text-transform:uppercase;
-    letter-spacing:.5px;color:var(--cts);margin-bottom:12px;
-    display:flex;align-items:center;gap:6px;
   }
 
   /* BTN UPLOAD */
   .btn-upload{
-    width:100%;padding:14px;
+    width:100%;padding:15px;
     background:var(--cp);color:#fff;
     border:none;border-radius:8px;
     font-family:inherit;font-size:15px;font-weight:600;
@@ -120,7 +117,8 @@
     box-shadow:0 4px 15px rgba(236,103,38,.3);
     margin-bottom:28px;
   }
-  .btn-upload:hover{background:var(--cpd);}
+  .btn-upload:hover:not(:disabled){background:var(--cpd);transform:translateY(-1px);}
+  .btn-upload:active:not(:disabled){transform:translateY(0);}
   .btn-upload:disabled{background:#bbb;box-shadow:none;cursor:not-allowed;}
 
   /* RESULT CARD */
@@ -132,16 +130,16 @@
   }
   .result.show{display:block;}
   .result.error{border-color:var(--cre);}
-  .result h4{font-size:15px;font-weight:600;margin-bottom:12px;}
+  .result h4{font-size:15px;font-weight:600;margin-bottom:16px;}
   .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
   .stat{
     text-align:center;background:var(--cbg);
-    border-radius:8px;padding:12px;
+    border-radius:8px;padding:14px;
   }
-  .stat .num{font-size:22px;font-weight:700;color:var(--ct);}
+  .stat .num{font-size:24px;font-weight:700;color:var(--ct);}
   .stat .num.new{color:var(--cag);}
   .stat .num.updated{color:var(--cop);}
-  .stat .lbl{font-size:11px;color:var(--cts);margin-top:2px;}
+  .stat .lbl{font-size:11px;color:var(--cts);margin-top:3px;}
 
   /* HISTORY TABLE */
   .hist-card{background:var(--cs);border-radius:10px;overflow:hidden;}
@@ -186,33 +184,31 @@
 <!-- MAIN -->
 <div class="main">
   <h1 class="page-title">📊 Upload de Planilhas</h1>
-  <p class="page-sub">Importe orçamentos em aberto do ClinicCorp ou Simples Dental. Pacientes já existentes terão seus dados atualizados sem perder o progresso no Kanban.</p>
+  <p class="page-sub">Importe orçamentos em aberto. Pacientes já existentes terão seus dados atualizados sem perder o progresso no Kanban.</p>
 
-  <!-- SELEÇÃO DA FONTE -->
-  <div class="section-title"><span class="mi">tune</span> 1. Selecione o sistema de origem</div>
-  <div class="source-grid">
-    <div class="source-card selected" id="card-cc" onclick="selectSource('cliniccorp')">
-      <div class="sc-icon cc"><span class="mi cc">business</span></div>
-      <h3>ClinicCorp</h3>
-      <p>Relatório de orçamentos exportado do ClinicCorp</p>
-      <span class="sc-badge"><span class="mi" style="font-size:14px">check_circle</span> Status: OPEN</span>
+  <!-- SISTEMA DETECTADO AUTOMATICAMENTE -->
+  <div class="system-info" id="systemInfo">
+    <div class="si-icon cc" id="siIcon">
+      <span class="mi cc" id="siIconName">business</span>
     </div>
-    <div class="source-card" id="card-sd" onclick="selectSource('simples_dental')">
-      <div class="sc-icon sd"><span class="mi sd">healing</span></div>
-      <h3>Simples Dental</h3>
-      <p>Relatório de orçamentos por status do Simples Dental</p>
-      <span class="sc-badge"><span class="mi" style="font-size:14px">check_circle</span> Status: Em aberto</span>
+    <div class="si-text">
+      <div class="si-label">Sistema configurado na sua conta</div>
+      <div class="si-name" id="siName">ClinicCorp</div>
     </div>
+    <span class="si-badge cc" id="siBadge">Detectado automaticamente</span>
   </div>
 
   <!-- DROPZONE -->
-  <div class="section-title"><span class="mi">upload_file</span> 2. Selecione o arquivo</div>
-  <div class="dropzone" id="dropzone" onclick="document.getElementById('fileInput').click()"
-       ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">
+  <div class="section-title"><span class="mi">upload_file</span> Selecione o arquivo</div>
+  <div class="dropzone" id="dropzone"
+       onclick="document.getElementById('fileInput').click()"
+       ondragover="onDragOver(event)"
+       ondragleave="onDragLeave(event)"
+       ondrop="onDrop(event)">
     <div class="dz-icon"><span class="mi">table_chart</span></div>
     <h3>Arraste a planilha aqui ou clique para selecionar</h3>
     <p>Arquivo exportado do sistema (.xlsx)</p>
-    <span class="dz-hint">.xlsx — máximo 50MB</span>
+    <span class="dz-hint">.xlsx — máximo 10MB</span>
     <div class="file-selected" id="fileSelected" style="display:none">
       <span class="mi">description</span>
       <span id="fileName">—</span>
@@ -238,7 +234,7 @@
   </div>
 
   <!-- HISTÓRICO -->
-  <div class="section-title" style="margin-top:8px"><span class="mi">history</span> Histórico de uploads</div>
+  <div class="section-title" style="margin-top:4px"><span class="mi">history</span> Histórico de uploads</div>
   <div class="hist-card">
     <table>
       <thead>
@@ -273,24 +269,33 @@
 
   const API = window.location.origin;
 
-  // ── ESTADO ──────────────────────────────────────────
-  let selectedSource = 'cliniccorp';
-  let selectedFile = null;
+  // ── BADGE DO SISTEMA (lido do perfil retornado pelo backend) ────────────
+  // O sistema real vem do servidor quando carregamos o histórico.
+  // Por enquanto, mostramos um estado genérico que se atualiza.
+  function renderSystemBadge(source) {
+    const isCC = source !== 'simples_dental';
+    const icon   = document.getElementById('siIcon');
+    const icoNm  = document.getElementById('siIconName');
+    const name   = document.getElementById('siName');
+    const badge  = document.getElementById('siBadge');
 
-  // ── SELEÇÃO DA FONTE ────────────────────────────────
-  function selectSource(src) {
-    selectedSource = src;
-    document.getElementById('card-cc').classList.toggle('selected', src === 'cliniccorp');
-    document.getElementById('card-sd').classList.toggle('selected', src === 'simples_dental');
-    checkReady();
+    icon.className  = `si-icon ${isCC ? 'cc' : 'sd'}`;
+    icoNm.className = `mi ${isCC ? 'cc' : 'sd'}`;
+    icoNm.textContent = isCC ? 'business' : 'healing';
+    name.textContent  = isCC ? 'ClinicCorp' : 'Simples Dental';
+    badge.className   = `si-badge ${isCC ? 'cc' : 'sd'}`;
   }
+
+  // ── ESTADO ──────────────────────────────────────────
+  let selectedFile = null;
+  let detectedSource = 'cliniccorp'; // será atualizado pelo histórico
 
   // ── DRAG AND DROP ───────────────────────────────────
   function onDragOver(e) {
     e.preventDefault();
     document.getElementById('dropzone').classList.add('drag');
   }
-  function onDragLeave(e) {
+  function onDragLeave() {
     document.getElementById('dropzone').classList.remove('drag');
   }
   function onDrop(e) {
@@ -306,11 +311,7 @@
     selectedFile = file;
     document.getElementById('fileName').textContent = file.name;
     document.getElementById('fileSelected').style.display = 'flex';
-    checkReady();
-  }
-
-  function checkReady() {
-    document.getElementById('btnUpload').disabled = !selectedFile;
+    document.getElementById('btnUpload').disabled = false;
   }
 
   // ── UPLOAD ──────────────────────────────────────────
@@ -323,7 +324,7 @@
     txt.textContent = 'Processando...';
 
     const form = new FormData();
-    form.append('source', selectedSource);
+    // ── Não enviamos "source" — o backend detecta pelo perfil da clínica ──
     form.append('file', selectedFile);
 
     try {
@@ -343,7 +344,7 @@
       showResult(data.summary);
       loadHistory();
 
-    } catch (err) {
+    } catch {
       showResult(null, 'Falha ao conectar ao servidor.');
     } finally {
       btn.disabled = false;
@@ -364,7 +365,7 @@
     el.classList.remove('error');
     document.getElementById('resultTitle').textContent = '✅ Planilha processada com sucesso!';
     document.getElementById('sTotal').textContent = summary.total;
-    document.getElementById('sNew').textContent = summary.new;
+    document.getElementById('sNew').textContent   = summary.new;
     document.getElementById('sUpdated').textContent = summary.updated;
     document.getElementById('sSkipped').textContent = summary.unchanged;
   }
@@ -378,9 +379,15 @@
       const history = await res.json();
       const tbody = document.getElementById('histBody');
 
-      if (!history.length) {
+      if (!Array.isArray(history) || !history.length) {
         tbody.innerHTML = '<tr><td colspan="6" class="empty-hist">Nenhum upload ainda.</td></tr>';
         return;
+      }
+
+      // Atualiza o badge com o sistema do último upload
+      if (history[0]?.source) {
+        detectedSource = history[0].source;
+        renderSystemBadge(detectedSource);
       }
 
       tbody.innerHTML = history.map(h => {

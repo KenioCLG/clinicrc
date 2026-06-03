@@ -56,11 +56,11 @@ class Odontogram {
             <span class="tooth-label">${id}</span>
             <svg class="tooth-svg" viewBox="0 0 40 40">
               <!-- Instanciando o Molde (Flyweight Pattern) -->
-              <use href="#tooth-face-T" class="face face-T" data-face="T"></use>
-              <use href="#tooth-face-B" class="face face-B" data-face="B"></use>
-              <use href="#tooth-face-L" class="face face-L" data-face="L"></use>
-              <use href="#tooth-face-R" class="face face-R" data-face="R"></use>
-              <use href="#tooth-face-C" class="face face-C" data-face="C"></use>
+              <use href="#tooth-face-T" class="face face-T" data-face="T" title="Face Superior (Vestibular/Palatina)"></use>
+              <use href="#tooth-face-B" class="face face-B" data-face="B" title="Face Inferior (Lingual/Vestibular)"></use>
+              <use href="#tooth-face-L" class="face face-L" data-face="L" title="Face Esquerda (Mesial/Distal)"></use>
+              <use href="#tooth-face-R" class="face face-R" data-face="R" title="Face Direita (Distal/Mesial)"></use>
+              <use href="#tooth-face-C" class="face face-C" data-face="C" title="Face Central (Oclusal/Incisal)"></use>
             </svg>
             <div class="tooth-actions">
               <button class="btn-ausente" title="Marcar como Ausente / Extraído">❌</button>

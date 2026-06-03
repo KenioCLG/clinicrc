@@ -36,17 +36,20 @@
   :root {
     --orange:      #EC6726;
     --orange-dark: #c94f1a;
-    --orange-glow: rgba(236,103,38,.35);
-    --bg:          #0d1117;
-    --surface:     rgba(255,255,255,.04);
-    --border:      rgba(255,255,255,.09);
-    --border-focus:rgba(236,103,38,.55);
-    --text:        #eaeaea;
-    --text-muted:  rgba(255,255,255,.38);
-    --text-dim:    rgba(255,255,255,.22);
-    --err-bg:      rgba(239,68,68,.1);
-    --err-border:  rgba(239,68,68,.3);
-    --err-text:    #fca5a5;
+    --orange-glow: rgba(236,103,38,.25);
+    --bg:          #F3F4F6;
+    --surface:     #FFFFFF;
+    --border:      #E5E7EB;
+    --border-focus:rgba(236,103,38,.5);
+    --text:        #111827;
+    --text-muted:  #6B7280;
+    --text-dim:    #9CA3AF;
+    --err-bg:      #FEF2F2;
+    --err-border:  #FCA5A5;
+    --err-text:    #DC2626;
+    --ok-bg:       #F0FDF4;
+    --ok-border:   #86EFAC;
+    --ok-text:     #15803D;
   }
 
   /* ── BODY ── */
@@ -68,8 +71,8 @@
     content: '';
     position: fixed; top: -50%; left: -50%; width: 200%; height: 200%;
     background:
-      radial-gradient(ellipse 35% 35% at 35% 35%, rgba(236,103,38,.18) 0%, transparent 60%),
-      radial-gradient(ellipse 40% 40% at 65% 65%, rgba(120,60,200,.12) 0%, transparent 60%);
+      radial-gradient(ellipse 35% 35% at 35% 35%, rgba(236,103,38,.08) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 40% at 65% 65%, rgba(59,130,246,.06) 0%, transparent 60%);
     pointer-events: none;
     z-index: 0;
     animation: drift 25s ease-in-out infinite alternate;
@@ -86,8 +89,8 @@
     content: '';
     position: fixed; inset: 0;
     background-image:
-      linear-gradient(rgba(255,255,255,.018) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255,255,255,.018) 1px, transparent 1px);
+      linear-gradient(rgba(0,0,0,.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,0,0,.025) 1px, transparent 1px);
     background-size: 56px 56px;
     pointer-events: none;
     z-index: 0;
@@ -98,7 +101,7 @@
     position: relative;
     z-index: 1;
     width: 100%;
-    max-width: 400px;
+    max-width: 420px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -123,7 +126,7 @@
     background: linear-gradient(140deg, #f07830 0%, var(--orange-dark) 100%);
     border-radius: 14px;
     display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 0 0 1px rgba(236,103,38,.35), 0 8px 28px var(--orange-glow);
+    box-shadow: 0 4px 12px var(--orange-glow);
     flex-shrink: 0;
   }
 
@@ -145,19 +148,66 @@
     margin-top: 2px;
   }
 
+  /* ── TABS ── */
+  .tabs {
+    width: 100%;
+    display: flex;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 4px;
+    gap: 4px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.04);
+  }
+
+  .tab-btn {
+    flex: 1;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 10px;
+    background: transparent;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all .2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .tab-btn .icon { font-size: 17px; }
+
+  .tab-btn.active {
+    background: linear-gradient(135deg, #f07830, var(--orange-dark));
+    color: #fff;
+    box-shadow: 0 2px 8px var(--orange-glow);
+  }
+
   /* ── CARD ── */
   .card {
     width: 100%;
-    background: rgba(255,255,255,.038);
+    background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 20px;
     padding: 32px 28px 28px;
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    box-shadow:
-      0 1px 0 rgba(255,255,255,.06) inset,
-      0 28px 60px rgba(0,0,0,.45),
-      0 0 60px rgba(236,103,38,.05);
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,.05), 0 10px 15px -3px rgba(0,0,0,.08);
+    overflow: hidden;
+  }
+
+  /* ── PANELS ── */
+  .panel {
+    display: none;
+    animation: fadeIn .25s ease both;
+  }
+
+  .panel.active { display: block; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
   }
 
   .card-heading {
@@ -173,8 +223,40 @@
     margin-bottom: 26px;
   }
 
+  /* ── PAYMENT NOTICE ── */
+  .payment-notice {
+    background: linear-gradient(135deg, #fff7ed, #fff3e0);
+    border: 1px solid #fed7aa;
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .payment-notice .icon {
+    color: var(--orange);
+    font-size: 20px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .payment-notice-text {
+    font-size: 12.5px;
+    color: #92400e;
+    line-height: 1.5;
+  }
+
+  .payment-notice-text strong {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 1px;
+    color: #78350f;
+  }
+
   /* ── FIELDS ── */
-  .field { margin-bottom: 16px; }
+  .field { margin-bottom: 14px; }
 
   .field label {
     display: block;
@@ -190,7 +272,6 @@
     position: relative;
   }
 
-  /* Icon BEFORE input — uses absolute positioning */
   .input-wrap .input-icon {
     position: absolute;
     left: 13px;
@@ -208,30 +289,29 @@
 
   .input-wrap input {
     width: 100%;
-    padding: 12px 42px 12px 42px; /* left: icon space, right: toggle space */
-    background: rgba(255,255,255,.05);
+    padding: 12px 42px 12px 42px;
+    background: #F9FAFB;
     border: 1px solid var(--border);
     border-radius: 10px;
     color: var(--text);
     font-family: 'Inter', sans-serif;
     font-size: 14px;
     outline: none;
-    transition: border-color .18s, box-shadow .18s, background .18s;
+    transition: all .2s;
     -webkit-appearance: none;
   }
 
   .input-wrap input::placeholder {
-    color: rgba(255,255,255,.2);
-    font-weight: 300;
+    color: var(--text-dim);
+    font-weight: 400;
   }
 
   .input-wrap input:focus {
+    background: #FFFFFF;
     border-color: var(--border-focus);
     box-shadow: 0 0 0 3px rgba(236,103,38,.1);
-    background: rgba(255,255,255,.07);
   }
 
-  /* Toggle password button */
   .btn-toggle {
     position: absolute;
     right: 10px;
@@ -244,12 +324,12 @@
     border-radius: 6px;
     color: var(--text-dim);
     display: flex; align-items: center;
-    transition: color .18s, background .18s;
+    transition: all .2s;
   }
 
   .btn-toggle:hover {
-    color: var(--text-muted);
-    background: rgba(255,255,255,.06);
+    color: var(--text);
+    background: #F3F4F6;
   }
 
   .btn-toggle .icon { font-size: 18px; }
@@ -312,7 +392,7 @@
 
   @keyframes rotate { to { transform: rotate(360deg); } }
 
-  /* ── ERROR ── */
+  /* ── ALERT ── */
   .alert {
     display: none;
     margin-top: 14px;
@@ -335,10 +415,14 @@
     color: var(--err-text);
   }
 
+  .alert.success {
+    background: var(--ok-bg);
+    border: 1px solid var(--ok-border);
+    color: var(--ok-text);
+  }
+
   .alert.show { display: flex; }
   .alert .icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
-  .alert a { color: var(--orange); font-weight: 500; text-decoration: none; }
-  .alert a:hover { text-decoration: underline; }
 
   /* ── DIVIDER ── */
   .divider {
@@ -374,7 +458,7 @@
   /* ── FOOTER ── */
   .footer {
     font-size: 11px;
-    color: rgba(255,255,255,.16);
+    color: var(--text-dim);
     text-align: center;
     letter-spacing: .2px;
   }
@@ -404,76 +488,166 @@
     </div>
   </div>
 
+  <!-- TABS -->
+  <div class="tabs" role="tablist">
+    <button class="tab-btn active" id="tabLogin" role="tab" aria-selected="true" onclick="switchTab('login')">
+      <span class="icon">login</span>
+      Entrar
+    </button>
+    <button class="tab-btn" id="tabRegister" role="tab" aria-selected="false" onclick="switchTab('register')">
+      <span class="icon">person_add</span>
+      Cadastrar
+    </button>
+  </div>
+
   <!-- CARD -->
-  <div class="card" id="loginCard">
-    <p class="card-heading">Bem-vindo de volta 👋</p>
-    <p class="card-sub">Entre com suas credenciais para acessar o painel</p>
+  <div class="card" id="mainCard">
 
-    <form id="loginForm" onsubmit="handleLogin(event)" novalidate>
+    <!-- ── PAINEL LOGIN ── -->
+    <div class="panel active" id="panelLogin">
+      <p class="card-heading">Bem-vindo de volta 👋</p>
+      <p class="card-sub">Entre com suas credenciais para acessar o painel</p>
 
-      <!-- USUÁRIO -->
-      <div class="field">
-        <label for="username">Usuário</label>
-        <div class="input-wrap">
-          <span class="icon input-icon">person</span>
-          <input
-            type="text"
-            id="username"
-            placeholder="Seu usuário de acesso"
-            autocomplete="username"
-            spellcheck="false"
-            autocapitalize="none"
-          />
+      <form id="loginForm" onsubmit="handleLogin(event)" novalidate>
+
+        <div class="field">
+          <label for="username">Usuário</label>
+          <div class="input-wrap">
+            <span class="icon input-icon">person</span>
+            <input type="text" id="username" placeholder="Seu usuário de acesso"
+              autocomplete="username" spellcheck="false" autocapitalize="none"/>
+          </div>
         </div>
-      </div>
 
-      <!-- SENHA -->
-      <div class="field">
-        <label for="password">Senha</label>
-        <div class="input-wrap">
-          <span class="icon input-icon">lock</span>
-          <input
-            type="password"
-            id="password"
-            placeholder="Sua senha"
-            autocomplete="current-password"
-          />
-          <button
-            type="button"
-            class="btn-toggle"
-            id="togglePass"
-            onclick="togglePassword()"
-            title="Mostrar/ocultar senha"
-          >
-            <span class="icon" id="eyeIcon">visibility</span>
-          </button>
+        <div class="field">
+          <label for="password">Senha</label>
+          <div class="input-wrap">
+            <span class="icon input-icon">lock</span>
+            <input type="password" id="password" placeholder="Sua senha" autocomplete="current-password"/>
+            <button type="button" class="btn-toggle" id="togglePass" onclick="togglePassword('password','eyeIconLogin')" title="Mostrar/ocultar senha">
+              <span class="icon" id="eyeIconLogin">visibility</span>
+            </button>
+          </div>
         </div>
+
+        <button class="btn-submit" type="submit" id="btnLogin">
+          <span class="icon" id="btnLoginIcon">login</span>
+          <div class="spin" id="spinnerLogin"></div>
+          <span id="btnLoginTxt">Entrar</span>
+        </button>
+
+        <div class="alert error" id="errLogin" role="alert">
+          <span class="icon">error</span>
+          <div id="errLoginTxt">Usuário ou senha incorretos.</div>
+        </div>
+
+      </form>
+
+      <div class="divider"></div>
+      <div class="support">
+        <span>Precisa de ajuda?</span>
+        <a href="https://wa.me/5581986544577" id="supportLinkLogin" target="_blank" rel="noopener">
+          <span class="icon">chat</span>
+          Falar com suporte
+        </a>
       </div>
-
-      <!-- SUBMIT -->
-      <button class="btn-submit" type="submit" id="btnLogin">
-        <span class="icon" id="btnIcon">login</span>
-        <div class="spin" id="spinner"></div>
-        <span id="btnTxt">Entrar</span>
-      </button>
-
-      <!-- ERRO -->
-      <div class="alert error" id="errMsg" role="alert">
-        <span class="icon">error</span>
-        <div id="errTxt">Usuário ou senha incorretos.</div>
-      </div>
-
-    </form>
-
-    <div class="divider"></div>
-
-    <div class="support">
-      <span>Precisa de ajuda?</span>
-      <a href="https://wa.me/5581986544577" id="supportLink" target="_blank" rel="noopener">
-        <span class="icon">chat</span>
-        Falar com suporte
-      </a>
     </div>
+
+    <!-- ── PAINEL CADASTRO ── -->
+    <div class="panel" id="panelRegister">
+      <p class="card-heading">Criar conta 🏥</p>
+      <p class="card-sub">Preencha os dados da sua clínica para começar</p>
+
+      <!-- Aviso de pagamento futuro -->
+      <div class="payment-notice">
+        <span class="icon">info</span>
+        <div class="payment-notice-text">
+          <strong>Período de acesso gratuito</strong>
+          No futuro, a plataforma exigirá uma assinatura. Aproveite enquanto é grátis!
+        </div>
+      </div>
+
+      <form id="registerForm" onsubmit="handleRegister(event)" novalidate>
+
+        <div class="field">
+          <label for="regClinic">Nome da Clínica</label>
+          <div class="input-wrap">
+            <span class="icon input-icon">business</span>
+            <input type="text" id="regClinic" placeholder="Ex: Clínica Sorriso Perfeito"
+              autocomplete="organization"/>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="regUsername">Usuário</label>
+          <div class="input-wrap">
+            <span class="icon input-icon">person</span>
+            <input type="text" id="regUsername" placeholder="Mínimo 3 caracteres"
+              autocomplete="username" spellcheck="false" autocapitalize="none"/>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="regEmail">E-mail</label>
+          <div class="input-wrap">
+            <span class="icon input-icon">email</span>
+            <input type="email" id="regEmail" placeholder="seu@email.com"
+              autocomplete="email"/>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="regPassword">Senha</label>
+          <div class="input-wrap">
+            <span class="icon input-icon">lock</span>
+            <input type="password" id="regPassword" placeholder="Mínimo 6 caracteres"
+              autocomplete="new-password"/>
+            <button type="button" class="btn-toggle" onclick="togglePassword('regPassword','eyeIconReg')" title="Mostrar/ocultar senha">
+              <span class="icon" id="eyeIconReg">visibility</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="regConfirm">Confirmar Senha</label>
+          <div class="input-wrap">
+            <span class="icon input-icon">lock_reset</span>
+            <input type="password" id="regConfirm" placeholder="Repita a senha"
+              autocomplete="new-password"/>
+            <button type="button" class="btn-toggle" onclick="togglePassword('regConfirm','eyeIconConfirm')" title="Mostrar/ocultar senha">
+              <span class="icon" id="eyeIconConfirm">visibility</span>
+            </button>
+          </div>
+        </div>
+
+        <button class="btn-submit" type="submit" id="btnRegister">
+          <span class="icon" id="btnRegIcon">person_add</span>
+          <div class="spin" id="spinnerReg"></div>
+          <span id="btnRegTxt">Criar Conta</span>
+        </button>
+
+        <div class="alert error" id="errRegister" role="alert">
+          <span class="icon">error</span>
+          <div id="errRegisterTxt"></div>
+        </div>
+
+        <div class="alert success" id="okRegister" role="alert">
+          <span class="icon">check_circle</span>
+          <div id="okRegisterTxt"></div>
+        </div>
+
+      </form>
+
+      <div class="divider"></div>
+      <div class="support">
+        <span>Precisa de ajuda?</span>
+        <a href="https://wa.me/5581986544577" id="supportLinkReg" target="_blank" rel="noopener">
+          <span class="icon">chat</span>
+          Falar com suporte
+        </a>
+      </div>
+    </div>
+
   </div>
 
   <p class="footer">ClinicRC © 2025 — Plataforma de Retorno Ativo</p>
@@ -488,60 +662,102 @@
     }
   })();
 
-  // ── Toggle de senha ──
-  let passVisible = false;
-  function togglePassword() {
-    passVisible = !passVisible;
-    const input = document.getElementById('password');
-    const icon  = document.getElementById('eyeIcon');
-    input.type  = passVisible ? 'text' : 'password';
-    icon.textContent = passVisible ? 'visibility_off' : 'visibility';
+  // ── Toggle de tab ──
+  function switchTab(tab) {
+    const loginPanel    = document.getElementById('panelLogin');
+    const registerPanel = document.getElementById('panelRegister');
+    const tabLogin      = document.getElementById('tabLogin');
+    const tabRegister   = document.getElementById('tabRegister');
+
+    // Reseta alertas ao trocar de aba
+    ['errLogin','errRegister','okRegister'].forEach(id => {
+      document.getElementById(id).classList.remove('show');
+    });
+
+    if (tab === 'login') {
+      loginPanel.classList.add('active');
+      registerPanel.classList.remove('active');
+      tabLogin.classList.add('active');
+      tabRegister.classList.remove('active');
+      tabLogin.setAttribute('aria-selected', 'true');
+      tabRegister.setAttribute('aria-selected', 'false');
+    } else {
+      registerPanel.classList.add('active');
+      loginPanel.classList.remove('active');
+      tabRegister.classList.add('active');
+      tabLogin.classList.remove('active');
+      tabRegister.setAttribute('aria-selected', 'true');
+      tabLogin.setAttribute('aria-selected', 'false');
+    }
   }
 
-  // ── Carrega link de suporte do backend ──
+  // ── Toggle de senha (genérico) ──
+  const passVisibility = {};
+  function togglePassword(inputId, iconId) {
+    passVisibility[inputId] = !passVisibility[inputId];
+    const input = document.getElementById(inputId);
+    const icon  = document.getElementById(iconId);
+    input.type  = passVisibility[inputId] ? 'text' : 'password';
+    icon.textContent = passVisibility[inputId] ? 'visibility_off' : 'visibility';
+  }
+
+  // ── Carrega links de suporte do backend ──
   async function loadSupportLink() {
     try {
       const res = await fetch(window.location.origin + '/auth/support');
       if (res.ok) {
         const data = await res.json();
         if (data.whatsapp) {
-          document.getElementById('supportLink').href = data.whatsapp;
+          document.getElementById('supportLinkLogin').href = data.whatsapp;
+          document.getElementById('supportLinkReg').href = data.whatsapp;
         }
       }
     } catch (_) {}
   }
   loadSupportLink();
 
-  // ── Login ──
+  // ── Helper: Estado do botão ──
+  function setLoading(btnId, spinnerId, iconId, txtId, loading, loadingText = '', defaultText = '', defaultIcon = '') {
+    const btn     = document.getElementById(btnId);
+    const spinner = document.getElementById(spinnerId);
+    const icon    = document.getElementById(iconId);
+    const txt     = document.getElementById(txtId);
+    if (loading) {
+      btn.disabled = true;
+      spinner.style.display = 'block';
+      icon.style.display = 'none';
+      txt.textContent = loadingText;
+    } else {
+      btn.disabled = false;
+      spinner.style.display = 'none';
+      icon.style.display = '';
+      txt.textContent = defaultText;
+      if (defaultIcon) icon.textContent = defaultIcon;
+    }
+  }
+
+  // ── LOGIN ──
   async function handleLogin(e) {
     e.preventDefault();
 
     const username = document.getElementById('username').value.trim();
     const password = document.getElementById('password').value;
-    const btn      = document.getElementById('btnLogin');
-    const spinner  = document.getElementById('spinner');
-    const btnIcon  = document.getElementById('btnIcon');
-    const btnTxt   = document.getElementById('btnTxt');
-    const errMsg   = document.getElementById('errMsg');
-    const errTxt   = document.getElementById('errTxt');
-    const card     = document.getElementById('loginCard');
+    const card     = document.getElementById('mainCard');
+    const errMsg   = document.getElementById('errLogin');
+    const errTxt   = document.getElementById('errLoginTxt');
 
-    // Validação básica
+    errMsg.classList.remove('show');
+
     if (!username || !password) {
       errTxt.textContent = 'Preencha o usuário e a senha.';
       errMsg.classList.add('show');
       return;
     }
 
-    // Estado: carregando
-    btn.disabled = true;
-    spinner.style.display = 'block';
-    btnIcon.style.display = 'none';
-    btnTxt.textContent = 'Entrando...';
-    errMsg.classList.remove('show');
+    setLoading('btnLogin','spinnerLogin','btnLoginIcon','btnLoginTxt', true, 'Entrando...');
 
     try {
-      const res = await fetch(window.location.origin + '/auth/login', {
+      const res  = await fetch(window.location.origin + '/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
@@ -550,31 +766,25 @@
       const data = await res.json();
 
       if (!res.ok) {
-        // Mostra erro
-        let html = data.error || 'Credenciais inválidas.';
-        if (data.support) {
-          document.getElementById('supportLink').href = data.support;
-        }
-        errTxt.innerHTML = html;
+        errTxt.innerHTML = data.error || 'Credenciais inválidas.';
         errMsg.classList.add('show');
-
-        // Shake no card
         card.style.animation = 'none';
         card.offsetHeight;
         card.style.animation = 'shake .4s ease';
+        setLoading('btnLogin','spinnerLogin','btnLoginIcon','btnLoginTxt', false, 'Entrar', 'Entrar', 'login');
         return;
       }
 
-      // Salva sessão
       localStorage.setItem('clinicrc_token',  data.token);
       localStorage.setItem('clinicrc_clinic', data.clinic_name);
       localStorage.setItem('clinicrc_user',   data.username);
 
-      // Feedback de sucesso antes de redirecionar
-      btnIcon.textContent  = 'check_circle';
-      btnIcon.style.display = '';
-      spinner.style.display = 'none';
-      btnTxt.textContent = 'Bem-vindo!';
+      // Feedback de sucesso
+      const btn = document.getElementById('btnLogin');
+      document.getElementById('btnLoginIcon').textContent  = 'check_circle';
+      document.getElementById('btnLoginIcon').style.display = '';
+      document.getElementById('spinnerLogin').style.display = 'none';
+      document.getElementById('btnLoginTxt').textContent = 'Bem-vindo!';
       btn.style.background = 'linear-gradient(135deg,#22c55e,#16a34a)';
 
       setTimeout(() => { window.location.href = 'app.html'; }, 600);
@@ -582,14 +792,78 @@
     } catch (err) {
       errTxt.textContent = 'Não foi possível conectar ao servidor. Verifique sua internet.';
       errMsg.classList.add('show');
-      resetBtn();
+      setLoading('btnLogin','spinnerLogin','btnLoginIcon','btnLoginTxt', false, 'Entrar', 'Entrar', 'login');
+    }
+  }
+
+  // ── REGISTER ──
+  async function handleRegister(e) {
+    e.preventDefault();
+
+    const clinic_name    = document.getElementById('regClinic').value.trim();
+    const username       = document.getElementById('regUsername').value.trim();
+    const email          = document.getElementById('regEmail').value.trim();
+    const password       = document.getElementById('regPassword').value;
+    const confirm_password = document.getElementById('regConfirm').value;
+    const card           = document.getElementById('mainCard');
+    const errMsg         = document.getElementById('errRegister');
+    const errTxt         = document.getElementById('errRegisterTxt');
+    const okMsg          = document.getElementById('okRegister');
+    const okTxt          = document.getElementById('okRegisterTxt');
+
+    errMsg.classList.remove('show');
+    okMsg.classList.remove('show');
+
+    // Validação client-side
+    if (!clinic_name || !username || !email || !password || !confirm_password) {
+      errTxt.textContent = 'Preencha todos os campos.';
+      errMsg.classList.add('show');
+      return;
     }
 
-    function resetBtn() {
-      btn.disabled = false;
-      spinner.style.display = 'none';
-      btnIcon.style.display = '';
-      btnTxt.textContent = 'Entrar';
+    if (password !== confirm_password) {
+      errTxt.textContent = 'As senhas não coincidem.';
+      errMsg.classList.add('show');
+      card.style.animation = 'none';
+      card.offsetHeight;
+      card.style.animation = 'shake .4s ease';
+      return;
+    }
+
+    setLoading('btnRegister','spinnerReg','btnRegIcon','btnRegTxt', true, 'Criando conta...');
+
+    try {
+      const res  = await fetch(window.location.origin + '/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ clinic_name, username, email, password, confirm_password }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        errTxt.textContent = data.error || 'Erro ao criar conta.';
+        errMsg.classList.add('show');
+        card.style.animation = 'none';
+        card.offsetHeight;
+        card.style.animation = 'shake .4s ease';
+        setLoading('btnRegister','spinnerReg','btnRegIcon','btnRegTxt', false, 'Criar Conta', 'Criar Conta', 'person_add');
+        return;
+      }
+
+      // Sucesso
+      okTxt.textContent = data.message || 'Conta criada! Faça login para continuar.';
+      okMsg.classList.add('show');
+      document.getElementById('registerForm').reset();
+      setLoading('btnRegister','spinnerReg','btnRegIcon','btnRegTxt', false, 'Criar Conta', 'Criar Conta', 'person_add');
+
+      // Muda para aba de login após 2s
+      setTimeout(() => switchTab('login'), 2200);
+
+    } catch (err) {
+      errTxt.textContent = 'Não foi possível conectar ao servidor.';
+      errMsg.classList.add('show');
+      setLoading('btnRegister','spinnerReg','btnRegIcon','btnRegTxt', false, 'Criar Conta', 'Criar Conta', 'person_add');
     }
   }
 </script>

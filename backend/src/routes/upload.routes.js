@@ -33,10 +33,8 @@ router.use(authMiddleware);
 router.post('/', upload.single('file'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'Nenhum arquivo enviado.' });
 
-  const source = req.body.source;
-  if (!['cliniccorp', 'simples_dental'].includes(source)) {
-    return res.status(400).json({ error: 'source inválido.' });
-  }
+  // ── SOURCE é detectado automaticamente pelo perfil da clínica ────────────
+  const source = req.clinic.system_source || 'cliniccorp';
 
   const clinicId = req.clinic.id;
   const filename = req.file.originalname;
