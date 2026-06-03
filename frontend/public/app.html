@@ -98,7 +98,7 @@
       </div>
       <div class="sbody" id="sbody"></div>
       <div class="sbody-edit" id="sbody-edit" style="display:none;">
-        <textarea id="scriptTextarea" placeholder="Digite seu roteiro em Markdown..."></textarea>
+        <textarea id="scriptTextarea" name="scriptTextarea" aria-label="Editor de Roteiro" placeholder="Digite seu roteiro em Markdown..."></textarea>
       </div>
     </div>
 
@@ -109,7 +109,7 @@
     <div class="kp">
       <div class="ktb">
         <h2>Pacientes em Aberto — Retorno Ativo</h2>
-        <input id="searchPatient" name="searchPatient" class="ksrch" type="text" placeholder="Buscar paciente..." oninput="window.render()">
+        <input id="searchPatient" name="searchPatient" class="ksrch" type="text" aria-label="Buscar paciente" placeholder="Buscar paciente..." oninput="window.render()">
         <div class="kmini">
           <span class="kchip" style="background:var(--cop)"><span class="mi" style="font-size:14px">people</span>&nbsp;<span id="ki1">0</span> em contato</span>
           <span class="kchip" style="background:var(--cag)"><span class="mi" style="font-size:14px">event_available</span>&nbsp;<span id="ki2">0</span> agendados</span>
@@ -179,10 +179,10 @@
     </h3>
     <p style="font-size:13px;color:var(--cts);margin:8px 0 16px;">O paciente pediu para você ligar de volta. Defina quando:</p>
     <div id="retornoNomePac" style="font-weight:600;font-size:14px;margin-bottom:12px;color:var(--ct);"></div>
-    <label style="font-size:11px;font-weight:600;color:var(--cts);text-transform:uppercase;letter-spacing:.5px;">Data e Hora do Retorno</label>
-    <input type="datetime-local" id="retornoDatetime" style="width:100%;margin-top:6px;padding:10px 12px;border:1px solid var(--cdiv);border-radius:8px;font-size:14px;font-family:var(--font);outline:none;color:var(--ct);background:var(--cibg);" />
-    <label style="font-size:11px;font-weight:600;color:var(--cts);text-transform:uppercase;letter-spacing:.5px;margin-top:12px;display:block;">Observação (opcional)</label>
-    <input type="text" id="retornoObs" placeholder="Ex: Ligar após 14h" style="width:100%;margin-top:6px;padding:10px 12px;border:1px solid var(--cdiv);border-radius:8px;font-size:14px;font-family:var(--font);outline:none;color:var(--ct);background:var(--cibg);" />
+    <label for="retornoDatetime" style="font-size:11px;font-weight:600;color:var(--cts);text-transform:uppercase;letter-spacing:.5px;">Data e Hora do Retorno</label>
+    <input type="datetime-local" id="retornoDatetime" name="retornoDatetime" style="width:100%;margin-top:6px;padding:10px 12px;border:1px solid var(--cdiv);border-radius:8px;font-size:14px;font-family:var(--font);outline:none;color:var(--ct);background:var(--cibg);" />
+    <label for="retornoObs" style="font-size:11px;font-weight:600;color:var(--cts);text-transform:uppercase;letter-spacing:.5px;margin-top:12px;display:block;">Observação (opcional)</label>
+    <input type="text" id="retornoObs" name="retornoObs" placeholder="Ex: Ligar após 14h" style="width:100%;margin-top:6px;padding:10px 12px;border:1px solid var(--cdiv);border-radius:8px;font-size:14px;font-family:var(--font);outline:none;color:var(--ct);background:var(--cibg);" />
     <div style="display:flex;gap:8px;margin-top:16px;">
       <button class="cb cbg" style="flex:1;height:38px;" onclick="window.salvarRetorno()">
         <span class="mi" style="font-size:16px;vertical-align:middle;">alarm_add</span> Confirmar
@@ -226,7 +226,7 @@
     <div style="margin-top:20px; padding-top:15px; border-top:1px solid #eee;">
       <strong>Prompt Base para IA (ChatGPT/Claude)</strong>
       <p style="font-size:12px; margin-top:5px; margin-bottom:8px; color:#555;">Copie o texto abaixo e cole na sua IA favorita para gerar roteiros automaticamente usando as nossas variáveis e padrões:</p>
-      <textarea id="aiPromptText" readonly style="width:100%; height:100px; padding:10px; font-size:12px; border:1px solid #ccc; border-radius:6px; resize:none; font-family:monospace; color:#333; background:#f9f9f9;">
+      <textarea id="aiPromptText" name="aiPromptText" aria-label="Prompt para Inteligência Artificial" readonly style="width:100%; height:100px; padding:10px; font-size:12px; border:1px solid #ccc; border-radius:6px; resize:none; font-family:monospace; color:#333; background:#f9f9f9;">
 Atue como um roteirista especialista em funil de vendas para clínicas. Eu preciso de um roteiro de ligação persuasivo estruturado em tentativas (do 1º ao 5º contato).
 Para cada roteiro, utilize o padrão Markdown e adicione destaques nas dicas para os atendentes usando o padrão do GitHub (ex: > [!TIP] para dicas, > [!WARNING] para alertas).
 Sempre que for mencionar os dados do paciente, utilize EXATAMENTE as variáveis abaixo, pois meu sistema CRM vai substituí-las automaticamente:

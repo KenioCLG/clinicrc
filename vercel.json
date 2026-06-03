@@ -17,5 +17,16 @@
     { "src": "/upload/(.*)",               "dest": "backend/src/server.js" },
     { "src": "/api/(.*)",                  "dest": "backend/src/server.js" },
     { "src": "/(.*)",                      "dest": "backend/src/server.js" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self' 'unsafe-inline' 'unsafe-eval' https: data:;"
+        }
+      ]
+    }
   ]
 }

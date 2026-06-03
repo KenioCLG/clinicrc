@@ -514,7 +514,7 @@
           <label for="username">Usuário</label>
           <div class="input-wrap">
             <span class="icon input-icon">person</span>
-            <input type="text" id="username" placeholder="Seu usuário de acesso"
+            <input type="text" id="username" name="username" placeholder="Seu usuário de acesso"
               autocomplete="username" spellcheck="false" autocapitalize="none"/>
           </div>
         </div>
@@ -523,7 +523,7 @@
           <label for="password">Senha</label>
           <div class="input-wrap">
             <span class="icon input-icon">lock</span>
-            <input type="password" id="password" placeholder="Sua senha" autocomplete="current-password"/>
+            <input type="password" id="password" name="password" placeholder="Sua senha" autocomplete="current-password"/>
             <button type="button" class="btn-toggle" id="togglePass" onclick="togglePassword('password','eyeIconLogin')" title="Mostrar/ocultar senha">
               <span class="icon" id="eyeIconLogin">visibility</span>
             </button>
@@ -573,7 +573,7 @@
           <label for="regClinic">Nome da Clínica</label>
           <div class="input-wrap">
             <span class="icon input-icon">business</span>
-            <input type="text" id="regClinic" placeholder="Ex: Clínica Sorriso Perfeito"
+            <input type="text" id="regClinic" name="regClinic" placeholder="Ex: Clínica Sorriso Perfeito"
               autocomplete="organization"/>
           </div>
         </div>
@@ -582,7 +582,7 @@
           <label for="regUsername">Usuário</label>
           <div class="input-wrap">
             <span class="icon input-icon">person</span>
-            <input type="text" id="regUsername" placeholder="Mínimo 3 caracteres"
+            <input type="text" id="regUsername" name="regUsername" placeholder="Mínimo 3 caracteres"
               autocomplete="username" spellcheck="false" autocapitalize="none"/>
           </div>
         </div>
@@ -591,7 +591,7 @@
           <label for="regEmail">E-mail</label>
           <div class="input-wrap">
             <span class="icon input-icon">email</span>
-            <input type="email" id="regEmail" placeholder="seu@email.com"
+            <input type="email" id="regEmail" name="regEmail" placeholder="seu@email.com"
               autocomplete="email"/>
           </div>
         </div>
@@ -600,7 +600,7 @@
           <label for="regPassword">Senha</label>
           <div class="input-wrap">
             <span class="icon input-icon">lock</span>
-            <input type="password" id="regPassword" placeholder="Mínimo 6 caracteres"
+            <input type="password" id="regPassword" name="regPassword" placeholder="Mínimo 6 caracteres"
               autocomplete="new-password"/>
             <button type="button" class="btn-toggle" onclick="togglePassword('regPassword','eyeIconReg')" title="Mostrar/ocultar senha">
               <span class="icon" id="eyeIconReg">visibility</span>
@@ -612,7 +612,7 @@
           <label for="regConfirm">Confirmar Senha</label>
           <div class="input-wrap">
             <span class="icon input-icon">lock_reset</span>
-            <input type="password" id="regConfirm" placeholder="Repita a senha"
+            <input type="password" id="regConfirm" name="regConfirm" placeholder="Repita a senha"
               autocomplete="new-password"/>
             <button type="button" class="btn-toggle" onclick="togglePassword('regConfirm','eyeIconConfirm')" title="Mostrar/ocultar senha">
               <span class="icon" id="eyeIconConfirm">visibility</span>

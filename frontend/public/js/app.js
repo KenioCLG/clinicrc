@@ -571,9 +571,7 @@ function mkC(p) {
   // ── Botão "Retornar" separado (linha própria, largura total) ─────────────
   let retBtn = '';
   if (p.col === 'contato' || p.col === 'agendado') {
-    retBtn = `<button class="cb cbb cb-retornar" onclick="window.abrirModalRetorno('${p.id}',event)" title="Agendar retorno de ligação">
-      <span class="mi" style="font-size:14px;vertical-align:middle">event_note</span> 📅 Agendar Retorno
-    </button>`;
+    retBtn = `<button class="cb cbb cb-retornar" onclick="window.abrirModalRetorno('${p.id}',event)">📅 Retornar</button>`;
   }
 
   let b = '';
