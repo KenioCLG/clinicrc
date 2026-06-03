@@ -18,8 +18,8 @@
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css">
 <script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
-<link rel="stylesheet" href="css/styles.css?v=2.1"/>
-<link rel="stylesheet" href="css/odontograma.css?v=2.1"/>
+<link rel="stylesheet" href="css/styles.css?v=3.0"/>
+<link rel="stylesheet" href="css/odontograma.css?v=3.0"/>
   <link rel="icon" type="image/x-icon" href="favicon.ico">
   <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
   <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
@@ -40,11 +40,16 @@
 
 <!-- HEADER -->
 <header class="hdr">
+  <button class="mobile-menu-btn" onclick="window.toggleMobileMenu()" title="Abrir menu">
+    <span class="mi">menu</span>
+  </button>
   <button class="hdr-menu" id="menuVersion" title="Versão do sistema">
     <span class="mi">medical_services</span>
-    <span class="version-tag" id="versionTag"><span class="ver-dot" id="verDot"></span><em id="verNum">v1.2</em></span>
+    <span class="version-tag" id="versionTag"><span class="ver-dot" id="verDot"></span><em id="verNum">v1.3</em></span>
   </button>
-  <div class="hdr-tabs">
+  
+  <div class="hdr-nav" id="hdrNav">
+    <div class="hdr-tabs">
     <button class="tab-btn on" onclick="window.trocarAba(0, this)">
       <span class="mi" style="font-size:16px;">view_kanban</span>
       Painel de CRM
@@ -85,8 +90,11 @@
     <button onclick="window.doLogout()" style="margin-left:6px;background:none;border:none;cursor:pointer;color:rgba(255,255,255,.5);display:flex;align-items:center;padding:4px;border-radius:4px;transition:all .2s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,.5)'" title="Sair">
       <span class="mi" style="font-size:18px">logout</span>
     </button>
-  </div>
+  </div> <!-- end hdr-r -->
+  </div> <!-- end hdr-nav -->
 </header>
+
+<div class="mobile-overlay" id="mobileOverlay" onclick="window.toggleMobileMenu()"></div>
 
 <!-- MAIN CONTAINER -->
 <div class="body">
@@ -340,8 +348,8 @@ O tom deve ser humano, empático e focado em gerar urgência e agendamento.
 </script>
 
 <!-- JS ENTRYPOINT -->
-<script type="module" src="js/app.js?v=2.1"></script>
-<script src="js/odontograma-anat.js?v=2.1" defer></script>
+<script type="module" src="js/app.js?v=3.0"></script>
+<script src="js/odontograma-anat.js?v=3.0" defer></script>
 
   <script>
     if ('serviceWorker' in navigator) {

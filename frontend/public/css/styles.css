@@ -29,6 +29,10 @@ body{font-family:var(--font);font-size:14px;color:var(--ct);background:var(--cbg
 
 /* HEADER */
 .hdr{position:fixed;top:0;left:0;right:0;height:var(--hh);background:var(--chbg);display:flex;align-items:center;z-index:1000;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);}
+.mobile-menu-btn{display:none;background:none;border:none;color:#fff;padding:0 12px;height:100%;cursor:pointer;flex-shrink:0;}
+.mobile-menu-btn .mi{font-size:24px;}
+.hdr-nav{display:flex;flex:1;justify-content:space-between;align-items:center;height:100%;}
+.mobile-overlay{display:none;}
 .hdr-menu{display:flex;align-items:center;gap:6px;padding:0 14px;height:56px;background:rgba(255,255,255,0.05);border:none;border-right:1px solid rgba(255,255,255,0.1);color:#fff;cursor:pointer;flex-shrink:0;transition:background 0.2s;}
 .hdr-menu:hover{background:rgba(255,255,255,0.1);}
 .version-tag{display:flex;align-items:center;gap:4px;font-size:11px;letter-spacing:.3px;opacity:.85;}
@@ -191,37 +195,103 @@ body{font-family:var(--font);font-size:14px;color:var(--ct);background:var(--cbg
     height: auto !important;
   }
   
-  /* HEADER RESPONSIVO */
+  /* HEADER E-COMMERCE MOBILE (DRAWER) */
   .hdr {
     padding: 0 4px;
-    overflow-x: auto;
+    justify-content: space-between;
   }
-  .hdr::-webkit-scrollbar { height: 0; }
-  .hdr-menu { border-right: none; padding: 0 8px; }
-  .version-tag { display: none; }
-  .hdr-tabs { padding-left: 0; }
-  .tab-btn { padding: 0 10px; font-size: 0; } /* Esconde texto das abas */
-  .tab-btn .mi { font-size: 24px !important; }
-  .hdr-r { padding-right: 4px; gap: 8px; }
-  
-  .sync-badge span { display: none; } /* Esconde 'Conectando...' */
-  .sync-badge { padding: 6px; border-radius: 50%; }
-  
-  /* Botões de Ação no Topo */
-  a[href="upload.html"], #supportBtn {
-    font-size: 0 !important;
-    padding: 6px !important;
+  .mobile-menu-btn {
+    display: block;
   }
-  a[href="upload.html"] .mi, #supportBtn .mi {
-    font-size: 22px !important;
+  .hdr-menu { 
+    border-right: none; 
+    padding: 0 8px; 
+    margin: 0 auto; /* Centraliza a logo */
+  }
+  
+  /* GAVETA LATERAL */
+  .hdr-nav {
+    position: fixed;
+    top: var(--hh);
+    left: -100%;
+    width: 260px;
+    height: calc(100vh - var(--hh));
+    background: var(--chbg);
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: stretch;
+    transition: left 0.3s ease;
+    z-index: 2000;
+    border-right: 1px solid rgba(255,255,255,0.1);
+  }
+  .hdr-nav.open {
+    left: 0;
+  }
+  
+  /* OVERLAY ESCURO QUANDO MENU ABERTO */
+  .mobile-overlay {
+    display: block;
+    position: fixed;
+    top: var(--hh);
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 1999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+  .mobile-overlay.open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* ABAS NA GAVETA */
+  .hdr-tabs { 
+    flex-direction: column; 
+    height: auto; 
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+  .tab-btn { 
+    padding: 12px 20px; 
+    height: auto; 
+    justify-content: flex-start;
+    border-bottom: none !important;
+    border-left: 3px solid transparent;
+  }
+  .tab-btn.on {
+    border-left-color: var(--cp);
+    background: rgba(236,103,38,0.1);
+  }
+  
+  /* DIREITA (BOTÕES) NA GAVETA */
+  .hdr-r { 
+    flex-direction: column;
+    align-items: stretch;
+    padding: 10px 0;
+    gap: 0;
+    margin: 0;
+  }
+  .sync-badge { padding: 12px 20px; border-radius: 0; justify-content: flex-start; }
+  
+  /* Ajuste botões de ação na gaveta para ficarem como lista */
+  a[href="upload.html"], #supportBtn, #pwaInstallBtn {
+    padding: 12px 20px !important;
+    border-radius: 0 !important;
+    width: 100%;
+    justify-content: flex-start;
+    font-size: 14px !important;
   }
   #pwaInstallBtn {
-    font-size: 0 !important;
-    padding: 6px !important;
-    width: 32px;
-    height: 32px;
-    border-radius: 50% !important;
-    justify-content: center;
+    height: auto;
+    border: none;
+    background: transparent !important;
+    color: rgba(255,255,255,0.7);
+  }
+  #pwaInstallBtn:hover {
+    color: #fff;
   }
   
   /* KANBAN COMO CARROSSEL (SNAP) NO MOBILE */

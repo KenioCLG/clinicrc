@@ -129,8 +129,17 @@ let maxAttempts = 1;
 let easyMDE = null;
 
 // ── VERSÃO DO SISTEMA ─────────────────────────────────────────────────────────
-const APP_VERSION = 'v1.2';
+const APP_VERSION = 'v1.3';
 const VER_KEY = 'clinicrc_ver';
+
+// Toggle Menu Mobile
+window.toggleMobileMenu = function() {
+  const nav = document.getElementById('hdrNav');
+  const overlay = document.getElementById('mobileOverlay');
+  if(nav) nav.classList.toggle('open');
+  if(overlay) overlay.classList.toggle('open');
+};
+
 (function initVersion() {
   const verEl = document.getElementById('verNum');
   const dotEl = document.getElementById('verDot');
