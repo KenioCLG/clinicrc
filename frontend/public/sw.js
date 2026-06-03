@@ -1,4 +1,4 @@
-const CACHE_NAME = 'clinicrc-pwa-v3';
+const CACHE_NAME = 'clinicrc-pwa-v4';
 
 // Recursos vitais para o aplicativo carregar o shell visual (mesmo sem dados).
 const URLS_TO_CACHE = [
@@ -6,7 +6,7 @@ const URLS_TO_CACHE = [
   'index.html',
   'app.html',
   'upload.html',
-  'css/styles.css',
+  'css/styles-v4.css',
   'css/odontograma.css',
   'js/app.js',
   'js/api-client.js',
