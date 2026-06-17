@@ -12,7 +12,14 @@
 
 const { Pool } = require('pg');
 
-const connString = process.env.SUPABASE_POSTGRES_URL || process.env.DATABASE_URL;
+let connString = process.env.SUPABASE_POSTGRES_URL || process.env.DATABASE_URL;
+
+// Remove sslmode do query param para evitar conflito com a config ssl do pg
+if (connString) {
+  const url = new URL(connString);
+  url.searchParams.delete('sslmode');
+  connString = url.toString();
+}
 
 const pool = new Pool({
   connectionString: connString,
