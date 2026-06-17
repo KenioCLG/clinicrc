@@ -39,7 +39,7 @@ router.post('/login', [
       return res.status(429).json({ error: err.message });
     }
     console.error('Erro no login:', err);
-    return res.status(500).json({ error: 'Erro interno. Tente novamente.' });
+    return res.status(500).json({ error: 'Erro interno. Tente novamente.', debug: err.message });
   }
 });
 
