@@ -1,5 +1,11 @@
 import ClinicrcApiClient from './api-client.js';
 
+// XSS protection — escapa HTML em dados do usuário
+function esc(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
 // Scripts dinâmicos
 let scriptCache = {};
 let isEditingScript = false;
@@ -224,17 +230,17 @@ function renderBell() {
   const fmt = (ts) => new Date(ts).toLocaleString('pt-BR', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
   list.innerHTML = [...vencidos.map(r =>
     `<div class="bell-item bell-item-alerta" style="background:#FEF2F2;">
-      <span class="bell-item-nome">⏰ ${r.nome}</span>
+      <span class="bell-item-nome">⏰ ${esc(r.nome)}</span>
       <span class="bell-item-time" style="color:#EF4444;">Agora! — ${fmt(r.dt)}</span>
-      ${r.obs ? `<span class="bell-item-obs">${r.obs}</span>` : ''}
-      <button onclick="window.removerRetorno('${r.id}')" style="align-self:flex-end;font-size:10px;border:none;background:none;color:#EF4444;cursor:pointer;margin-top:4px;">✓ Já liguei</button>
+      ${r.obs ? `<span class="bell-item-obs">${esc(r.obs)}</span>` : ''}
+      <button onclick="window.removerRetorno('${esc(r.id)}')" style="align-self:flex-end;font-size:10px;border:none;background:none;color:#EF4444;cursor:pointer;margin-top:4px;">Ja liguei</button>
     </div>`
   ), ...ativos.map(r =>
     `<div class="bell-item">
-      <span class="bell-item-nome">${r.nome}</span>
+      <span class="bell-item-nome">${esc(r.nome)}</span>
       <span class="bell-item-time">${fmt(r.dt)}</span>
-      ${r.obs ? `<span class="bell-item-obs">${r.obs}</span>` : ''}
-      <button onclick="window.removerRetorno('${r.id}')" style="align-self:flex-end;font-size:10px;border:none;background:none;color:var(--cts);cursor:pointer;margin-top:4px;">Remover</button>
+      ${r.obs ? `<span class="bell-item-obs">${esc(r.obs)}</span>` : ''}
+      <button onclick="window.removerRetorno('${esc(r.id)}')" style="align-self:flex-end;font-size:10px;border:none;background:none;color:var(--cts);cursor:pointer;margin-top:4px;">Remover</button>
     </div>`
   )].join('');
 }
@@ -253,7 +259,7 @@ window.abrirModalRetorno = (id) => {
   retornoTargetId = id;
   const p = E.find(x => x.id === id);
   if (!p) return;
-  document.getElementById('retornoNomePac').innerHTML = `<span class="mi" style="font-size:16px;color:var(--cp);vertical-align:middle;margin-right:6px;">phone</span>${p.nome}`;
+  document.getElementById('retornoNomePac').innerHTML = `<span class="mi" style="font-size:16px;color:var(--cp);vertical-align:middle;margin-right:6px;">phone</span>${esc(p.nome)}`;
   document.getElementById('retornoDatetime').value = '';
   document.getElementById('retornoObs').value = '';
   
@@ -783,13 +789,13 @@ function mkC(p) {
   else if (p.col === 'agendado') b = `<button class="cb cbgr" onclick="window._oM('${p.id}',event)">Finalizar</button><button class="cb" style="background:#FFF7ED;color:#92400E;border:1px solid #FED7AA;" onclick="window._mv('${p.id}','ligar',event)" title="Registrar mais uma tentativa e voltar para fila">Nova Tentativa</button>`;
   else b = `<button class="cb" style="background:#FFF7ED;color:#92400E;border:1px solid #FED7AA;" onclick="window._mv('${p.id}','ligar',event)" title="Registrar mais uma tentativa e voltar para fila">Nova Tentativa</button>`;
 
-  return `<div class="card ${sel}" onclick="window._sP('${p.id}')">
-    <div class="cn">${p.nome}</div>
-    <div class="ctxt" style="display:flex;align-items:center;gap:4px;"><span class="mi" style="font-size:13px;color:var(--cts);vertical-align:middle;">phone</span>${p.tel}</div>
-    <span class="cp2" title="${procTitle}">${procLimpo}</span>
-    <div class="cv">${p.valor}</div>
+  return `<div class="card ${sel}" onclick="window._sP('${esc(p.id)}')">
+    <div class="cn">${esc(p.nome)}</div>
+    <div class="ctxt" style="display:flex;align-items:center;gap:4px;"><span class="mi" style="font-size:13px;color:var(--cts);vertical-align:middle;">phone</span>${esc(p.tel)}</div>
+    <span class="cp2" title="${esc(procTitle)}">${esc(procLimpo)}</span>
+    <div class="cv">${esc(p.valor)}</div>
     ${d}${chip}
-    <textarea id="obs-${p.id}" name="obs-${p.id}" class="cobs" placeholder="Anotações..." onclick="event.stopPropagation()" oninput="window._sO('${p.id}',this.value)">${p.obs || ''}</textarea>
+    <textarea id="obs-${esc(p.id)}" name="obs-${esc(p.id)}" class="cobs" placeholder="Anotações..." onclick="event.stopPropagation()" oninput="window._sO('${esc(p.id)}',this.value)">${esc(p.obs || '')}</textarea>
     ${retBtn}
     <div class="cbtns">${b}</div>
   </div>`;
@@ -985,7 +991,7 @@ function rel() {
     const lm = { final: { agendou: 'Agendou', 'sem-interesse': 'Sem Interesse', 'sem-resposta': 'Sem Resposta', procedimento: 'Já Realizou' }, agendado: 'Agendado', contato: 'Em Contato', ligar: 'Para Ligar' };
     const cc = p.col === 'final' ? (cm.final[p.res] || '') : cm[p.col] || '';
     const cl = p.col === 'final' ? (lm.final[p.res] || 'Finalizado') : lm[p.col];
-    return `<tr><td style="font-weight:500">${p.nome}</td><td>${p.proc}</td><td style="font-weight:700;color:var(--csu)">${p.valor}</td><td style="text-align:center">${p.tent || 0}</td><td><span class="bdg ${cc}">${cl}</span></td><td style="color:var(--cts)">${p.dt || '—'}</td></tr>`;
+    return `<tr><td style="font-weight:500">${esc(p.nome)}</td><td>${esc(p.proc)}</td><td style="font-weight:700;color:var(--csu)">${esc(p.valor)}</td><td style="text-align:center">${p.tent || 0}</td><td><span class="bdg ${cc}">${cl}</span></td><td style="color:var(--cts)">${p.dt || '—'}</td></tr>`;
   }).join('');
 
   document.getElementById('rbody').innerHTML = `

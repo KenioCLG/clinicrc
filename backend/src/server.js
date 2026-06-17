@@ -34,7 +34,7 @@ const PORT = process.env.PORT || 3000;
 
 // Permite requisições do frontend (CORS)
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || '*',
+  origin: process.env.CORS_ORIGIN || 'https://clinicrc.vercel.app',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));

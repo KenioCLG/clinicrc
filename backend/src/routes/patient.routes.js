@@ -105,18 +105,23 @@ router.delete('/:tel', async (req, res) => {
   }
 });
 
-// POST /patients/dev/reset — Endpoint oculto para desenvolvedores (zerar testes)
+// POST /patients/dev/reset — Reset Kanban (protegido por env var)
 router.post('/dev/reset', async (req, res) => {
+  const devPassword = process.env.DEV_RESET_PASSWORD;
+  if (!devPassword) {
+    return res.status(404).json({ error: 'Rota não disponível.' });
+  }
+
   const clinicId = req.clinic.id;
   const { password } = req.body;
-  
-  if (password !== 'kenio123') {
+
+  if (!password || password !== devPassword) {
     return res.status(403).json({ error: 'Senha de desenvolvedor incorreta.' });
   }
 
   try {
     const result = await run(`
-      UPDATE patients 
+      UPDATE patients
       SET tent = 0, col = 'ligar', source_status = NULL
       WHERE clinic_id = ? AND (tent > 0 OR col != 'ligar')
     `, [clinicId]);

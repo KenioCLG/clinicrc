@@ -26,5 +26,8 @@ Thumbs.db
 .vercel
 
 # Env files from Vercel CLI (contain secrets!)
+.env.vercel
+.env.prod
+.env.check
 *.env.vercel
 *.env.prod.vercel
