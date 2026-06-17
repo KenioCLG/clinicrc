@@ -12,14 +12,11 @@
 
 const { Pool } = require('pg');
 
-let connString = process.env.SUPABASE_POSTGRES_URL || process.env.DATABASE_URL;
-if (connString && connString.includes('?')) {
-  connString = connString.split('?')[0]; // Remove query params que sobrescrevem a config SSL
-}
+const connString = process.env.SUPABASE_POSTGRES_URL || process.env.DATABASE_URL;
 
 const pool = new Pool({
   connectionString: connString,
-  ssl: { rejectUnauthorized: false }, // Força aceitar certificado da Vercel/Supabase
+  ssl: { rejectUnauthorized: false },
 });
 
 // ─── Cria as tabelas no PostgreSQL (se não existirem) ────────────────────────
