@@ -141,15 +141,19 @@ body{font-family:var(--font);font-size:14px;color:var(--ct);background:var(--cbg
 @media (max-width: 1000px) {
   #mobileDebugLabel { display: inline-block !important; }
   .pg.on {
-    flex-direction: column !important;
+    display: grid !important;
+    grid-template-rows: var(--sp-h, 40%) 24px 1fr !important;
+    grid-template-columns: 1fr !important;
+    flex-direction: unset !important;
   }
   .sp {
     width: 100% !important;
     height: auto !important;
-    flex: 4 1 0% !important; /* 40% proporcional (4 de 10) */
-    min-height: 60px !important;
+    min-height: 0 !important;
+    overflow: hidden;
     border-right: none !important;
     border-bottom: none !important;
+    flex-shrink: unset !important;
   }
   .resizer {
     width: 100% !important;
@@ -189,19 +193,13 @@ body{font-family:var(--font);font-size:14px;color:var(--ct);background:var(--cbg
   .resizer.collapsed { cursor: pointer !important; background: rgba(236,103,38,0.05); }
   .resizer.collapsed::before { content: 'expand_less'; color: var(--cp); }
   .resizer.collapsed::after { background: var(--cp); }
-  /* Classe no .pg: esconde kanban e expande roteiro */
-  .pg.script-full .sp {
-    flex: 1 1 0% !important;
-    min-height: 0 !important;
-  }
-  .pg.script-full .kp {
-    display: none !important;
-  }
+  .pg.script-full { grid-template-rows: 1fr 24px 0px !important; }
+  .pg.script-full .kp { overflow: hidden !important; }
   .kp {
     width: 100% !important;
-    flex: 6 1 0% !important; /* 60% proporcional (6 de 10) */
     height: auto !important;
-    min-height: 80px !important;
+    min-height: 0 !important;
+    overflow: hidden;
   }
   
   /* ═══ HEADER COMPACTO MOBILE ═══ */

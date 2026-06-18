@@ -1262,14 +1262,10 @@ if (resizer && sp) {
   let spExpanded = false;
   const pg0 = document.getElementById('pg0');
 
-  const kp = document.querySelector('.kp');
-
   const toggleFullScript = () => {
     if (window.innerWidth > 1000) return;
     spExpanded = !spExpanded;
     if (spExpanded) {
-      sp.style.flex = '';
-      if (kp) kp.style.flex = '';
       pg0.classList.add('script-full');
       resizer.classList.add('collapsed');
     } else {
@@ -1331,17 +1327,10 @@ if (resizer && sp) {
     const clientY = e.touches?.[0]?.clientY ?? e.clientY;
 
     if (window.innerWidth <= 1000) {
-      // Mobile: ajusta proporcao flex baseado na posicao Y
+      // Mobile: muda CSS variable no grid container
       const hdrH = 36;
-      const resizerH = 24;
-      const totalH = window.innerHeight - hdrH - resizerH;
-      const spH = Math.max(60, Math.min(clientY - hdrH, totalH - 80));
-      const kpH = totalH - spH;
-      // Converte para flex-grow proporcional (base 10)
-      const spFlex = Math.round((spH / totalH) * 10 * 10) / 10;
-      const kpFlex = Math.round((kpH / totalH) * 10 * 10) / 10;
-      sp.style.flex = `${spFlex} 1 0%`;
-      if (kp) kp.style.flex = `${kpFlex} 1 0%`;
+      const spH = Math.max(60, Math.min(clientY - hdrH, window.innerHeight - hdrH - 104));
+      pg0.style.setProperty('--sp-h', spH + 'px');
     } else {
       let newWidth = Math.max(280, Math.min(clientX, window.innerWidth - 400));
       sp.style.width = newWidth + 'px';
@@ -1365,10 +1354,8 @@ if (resizer && sp) {
 
   window.addEventListener('resize', () => {
     exitFullScript();
-    // Reseta inline flex/width ao mudar orientacao
-    sp.style.flex = '';
+    pg0.style.removeProperty('--sp-h');
     sp.style.width = '';
-    if (kp) kp.style.flex = '';
     if (window.innerWidth > 1000) {
       sp.style.width = '38%';
     }
