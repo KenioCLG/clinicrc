@@ -19,6 +19,7 @@ const authRoutes = require('./routes/auth.routes');
 const patientRoutes = require('./routes/patient.routes');
 const uploadRoutes = require('./routes/upload.routes');
 const scriptRoutes = require('./routes/script.routes');
+const settingsRoutes = require('./routes/settings.routes');
 const { createUser } = require('./auth');
 
 // Inicializa o banco (SQLite ou PostgreSQL via db.js)
@@ -66,6 +67,7 @@ app.use('/auth', authRoutes);
 app.use('/patients', patientRoutes);
 app.use('/upload', uploadRoutes);
 app.use('/api/scripts', scriptRoutes);
+app.use('/settings', settingsRoutes);
 
 // Rota de health check (também testa a conexão com o banco)
 app.get('/health', async (req, res) => {

@@ -29,7 +29,12 @@ class ClinicrcApiClient {
 
   _handleAuth(res) {
     if (res.status === 401) {
+      // Preserva cores e avatar ao redirecionar por auth expirada
+      var keep = ['clinicrc_customColors','clinicrc_avatar'];
+      var saved = {};
+      keep.forEach(function(k) { try { saved[k] = localStorage.getItem(k); } catch(e){} });
       localStorage.clear();
+      keep.forEach(function(k) { if (saved[k]) try { localStorage.setItem(k, saved[k]); } catch(e){} });
       window.location.href = 'index.html';
       return true;
     }
@@ -373,6 +378,43 @@ function saveCustomColors(colors) {
   localStorage.setItem(CUSTOM_KEY, JSON.stringify(colors));
   applyCustomColors(colors);
   syncSwatches(colors);
+  // Persiste no backend (assíncrono, sem travar a UI)
+  saveColorsToBackend(colors);
+}
+
+// ── Sincronização com Backend ──
+
+function saveColorsToBackend(colors) {
+  var token = localStorage.getItem('clinicrc_token');
+  if (!token) return;
+  fetch(window.location.origin + '/settings', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+    body: JSON.stringify({ settings: colors })
+  }).catch(function(e) { console.warn('Falha ao salvar cores no servidor:', e); });
+}
+
+function fetchColorsFromBackend() {
+  var token = localStorage.getItem('clinicrc_token');
+  if (!token) return Promise.resolve(null);
+  return fetch(window.location.origin + '/settings', {
+    headers: { 'Authorization': 'Bearer ' + token }
+  }).then(function(r) {
+    if (!r.ok) return null;
+    return r.json();
+  }).then(function(data) {
+    if (data && data.settings && Object.keys(data.settings).length > 0) {
+      // Backend vence — atualiza localStorage e aplica
+      localStorage.setItem(CUSTOM_KEY, JSON.stringify(data.settings));
+      applyCustomColors(data.settings);
+      syncSwatches(data.settings);
+      return data.settings;
+    }
+    return null;
+  }).catch(function(e) {
+    console.warn('Falha ao carregar cores do servidor:', e);
+    return null;
+  });
 }
 
 // Inicializa cores salvas ao carregar
@@ -380,6 +422,8 @@ function saveCustomColors(colors) {
   var colors = loadCustomColors();
   applyCustomColors(colors);
   syncSwatches(colors);
+  // Tenta carregar versão mais recente do backend (em segundo plano)
+  fetchColorsFromBackend();
 })();
 
 // Abre popup personalizar
@@ -421,11 +465,17 @@ window.resetColors = function() {
   var colors = loadCustomColors();
   applyCustomColors(colors);
   syncSwatches(colors);
+  saveColorsToBackend(colors); // Persiste o reset no backend
 };
 
 // Função de logout global
 window.doLogout = () => {
+  // Preserva configurações de cor e avatar ao sair
+  var keep = ['clinicrc_customColors','clinicrc_avatar'];
+  var saved = {};
+  keep.forEach(function(k) { try { saved[k] = localStorage.getItem(k); } catch(e){} });
   localStorage.clear();
+  keep.forEach(function(k) { if (saved[k]) try { localStorage.setItem(k, saved[k]); } catch(e){} });
   window.location.href = 'index.html';
 };
 

@@ -93,6 +93,14 @@ async function initSchema() {
     );
 
     -- Indexes para queries frequentes (idempotente)
+    CREATE TABLE IF NOT EXISTS clinic_settings (
+      id           SERIAL PRIMARY KEY,
+      clinic_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      settings     JSONB NOT NULL DEFAULT '{}',
+      updated_at   TIMESTAMPTZ DEFAULT NOW(),
+      UNIQUE(clinic_id)
+    );
+
     CREATE INDEX IF NOT EXISTS idx_patients_clinic ON patients(clinic_id);
     CREATE INDEX IF NOT EXISTS idx_patients_clinic_tel ON patients(clinic_id, tel);
     CREATE INDEX IF NOT EXISTS idx_patients_clinic_col ON patients(clinic_id, col);
