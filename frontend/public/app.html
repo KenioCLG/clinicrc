@@ -117,13 +117,16 @@ if ('serviceWorker' in navigator) {
 <meta property="twitter:title" content="ClinicRC — Painel">
 <meta property="twitter:description" content="Gestão e retorno ativo de pacientes para clínicas odontológicas.">
 <meta property="twitter:image" content="/og-image.png">
-<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css">
-<script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
-<link rel="stylesheet" href="css/styles-v4.css?v=5.0"/>
-<link rel="stylesheet" href="css/odontograma.css?v=5.0"/>
+<script src="https://cdn.jsdelivr.net/npm/marked@15.0.4/marked.min.js" integrity="sha384-MQX6KLXAqxeh8gCqETDHfMWJbfuPTqOb0w25cRpYITn6mCnXU6OKcamXGNnPuGJ0" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde@2.18.0/dist/easymde.min.css">
+<script src="https://cdn.jsdelivr.net/npm/easymde@2.18.0/dist/easymde.min.js"></script>
+<link rel="stylesheet" href="css/styles-v4.css?v=6.0"/>
+<link rel="stylesheet" href="css/odontograma.css?v=6.0"/>
   <link rel="icon" type="image/x-icon" href="favicon.ico">
   <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
   <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
@@ -172,11 +175,11 @@ if ('serviceWorker' in navigator) {
       <div class="sync-dot"></div>
       <span id="syncTxt">Conectando...</span>
     </div>
-    <a href="upload.html" style="margin-left:8px;display:flex;align-items:center;gap:4px;color:rgba(255,255,255,.7);font-size:12px;text-decoration:none;padding:4px 8px;border-radius:4px;transition:background .2s;" onmouseover="this.style.background='rgba(255,255,255,.1)'" onmouseout="this.style.background='transparent'">
+    <a href="upload.html" style="margin-left:8px;display:flex;align-items:center;gap:4px;color:rgba(255,255,255,.9);font-size:12px;text-decoration:none;padding:8px 12px;border-radius:6px;transition:background .2s;min-height:44px;" onmouseover="this.style.background='rgba(255,255,255,.1)'" onmouseout="this.style.background='transparent'">
       <span class="mi" style="font-size:18px">upload_file</span> Upload
     </a>
     <a href="https://wa.me/5581986544577" id="supportBtn" target="_blank" rel="noopener"
-       style="margin-left:4px;display:flex;align-items:center;gap:4px;color:rgba(255,255,255,.7);font-size:12px;text-decoration:none;padding:4px 8px;border-radius:4px;transition:background .2s;"
+       style="margin-left:4px;display:flex;align-items:center;gap:4px;color:rgba(255,255,255,.9);font-size:12px;text-decoration:none;padding:8px 12px;border-radius:6px;transition:background .2s;min-height:44px;"
        onmouseover="this.style.background='rgba(255,255,255,.1)'" onmouseout="this.style.background='transparent'"
        title="Falar com suporte via WhatsApp">
       <span class="mi" style="font-size:18px">support_agent</span> Suporte
@@ -191,11 +194,8 @@ if ('serviceWorker' in navigator) {
     <span id="liveClock" style="margin-left:4px;color:rgba(255,255,255,.9);font-size:12px;font-variant-numeric:tabular-nums;font-weight:500;">--:--:--</span>
     <span id="clinicNameDisplay" style="margin-left:8px;color:rgba(255,255,255,.6);font-size:12px;"></span>
     <span class="ava" style="margin-left:6px">D</span>
-    <button onclick="window.doLogout()" style="margin-left:6px;background:none;border:none;cursor:pointer;color:rgba(255,255,255,.5);display:flex;align-items:center;padding:4px;border-radius:4px;transition:all .2s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,.5)'" title="Sair">
+    <button onclick="window.doLogout()" style="margin-left:6px;background:none;border:none;cursor:pointer;color:rgba(255,255,255,.7);display:flex;align-items:center;padding:8px;border-radius:6px;transition:all .2s;min-height:44px;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,.7)'" title="Sair">
       <span class="mi" style="font-size:18px">logout</span>
-    </button>
-    <button onclick="window._devReset()" style="margin-left:6px;background:none;border:none;cursor:pointer;color:rgba(255,255,255,.2);display:flex;align-items:center;padding:4px;border-radius:4px;transition:all .2s;" onmouseover="this.style.color='#EC6726'" onmouseout="this.style.color='rgba(255,255,255,.2)'" title="Resetar Base (Dev)">
-      <span class="mi" style="font-size:18px">refresh</span>
     </button>
   </div> <!-- end hdr-r -->
   </div> <!-- end hdr-nav -->
@@ -314,13 +314,13 @@ if ('serviceWorker' in navigator) {
 </div>
 
 <!-- MODAL AGENDAMENTO DE RETORNO -->
-<div class="mbg" id="modalRetorno" onclick="this.classList.remove('on')">
+<div class="mbg" id="modalRetorno" role="dialog" aria-modal="true" aria-labelledby="retornoTitle" onclick="this.classList.remove('on')">
   <div class="mbox" onclick="event.stopPropagation()" style="max-width:420px; padding: 0; overflow: hidden;">
     <!-- HEADER -->
     <div style="padding: 20px 24px; border-bottom: 1px solid var(--cdiv); background: var(--cbg);">
-      <h3 style="display:flex;align-items:center;gap:8px; margin-bottom: 4px;">
+      <h3 id="retornoTitle" style="display:flex;align-items:center;gap:8px; margin-bottom: 4px;">
         <span class="mi" style="color:var(--cp)">schedule_send</span>
-        Agendar Retorno de Ligação
+        Agendar Retorno de Ligacao
       </h3>
       <p style="font-size:13px;color:var(--cts); margin: 0;">Defina quando ligar de volta para o paciente:</p>
     </div>
@@ -455,10 +455,25 @@ O tom deve ser humano, empático e focado em gerar urgência e agendamento.
 </script>
 
 <!-- JS ENTRYPOINT -->
-<script type="module" src="js/app.js?v=5.0"></script>
-<script src="js/odontograma-anat.js?v=5.0" defer></script>
+<script type="module" src="js/app.js?v=6.0"></script>
+<script src="js/odontograma-anat.js?v=6.0" defer></script>
 
-<!-- Service Worker DESABILITADO temporariamente para resolver cache -->
-<!-- Será reabilitado após estabilizar o layout mobile -->
+<!-- Fechar modais com ESC + fechar drawer ao trocar aba -->
+<script>
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.mbg.on').forEach(function(m) { m.classList.remove('on'); });
+  }
+});
+document.querySelectorAll('.tab-btn').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    var nav = document.getElementById('hdrNav');
+    var ov = document.getElementById('mobileOverlay');
+    if (nav) nav.classList.remove('open');
+    if (ov) ov.classList.remove('open');
+  });
+});
+</script>
+
 </body>
 </html>

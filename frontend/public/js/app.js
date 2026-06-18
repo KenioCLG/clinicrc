@@ -134,10 +134,7 @@ window.doLogout = () => {
 // Função oculta para resetar tentativas
 window._devReset = async () => {
   const pwd = prompt("Senha de desenvolvedor para resetar testes:");
-  if (pwd !== "kenio123") {
-    if (pwd) showToast("Senha incorreta", "er");
-    return;
-  }
+  if (!pwd) return;
   if (!confirm("Isso vai zerar as tentativas de todos os pacientes DESTA CLÍNICA e voltar para 'ligar'. Continuar?")) return;
   
   try {
@@ -574,7 +571,7 @@ function showToast(msg, type='ok') {
   if (type === 'er') iconName = 'error';
   else if (type === 'info') iconName = 'info';
   
-  t.innerHTML = `<span class="mi" style="font-size:16px;">${iconName}</span><span>${msg}</span>`;
+  t.innerHTML = `<span class="mi" style="font-size:16px;">${iconName}</span><span>${esc(msg)}</span>`;
   t.className = 'toast ' + type + ' on';
   
   clearTimeout(toastTimer);
@@ -903,8 +900,8 @@ function updP() {
   el.innerHTML = `
     <span class="mi" style="color:var(--cp); font-size:24px;">person</span>
     <div style="flex:1;">
-      <strong>${pA.nome}</strong>
-      <span>${pA.proc} · ${pA.valor} · ${pA.tent || 0} tentativa(s)</span>
+      <strong>${esc(pA.nome)}</strong>
+      <span>${esc(pA.proc)} · ${esc(pA.valor)} · ${pA.tent || 0} tentativa(s)</span>
     </div>
     <div>${chip}</div>
   `;
@@ -937,7 +934,15 @@ async function updS() {
     // Converter alertas do GitHub (ex: [!TIP]) em classes CSS
     html = html.replace(/<blockquote>\s*<p>\[!(\w+)\](?:<br>|\n|\s*)/gi, '<blockquote class="gh-alert gh-alert-$1"><p>');
     
-    el.innerHTML = html;
+    // Sanitizar output do marked.js contra XSS
+    const tmp = document.createElement('div');
+    tmp.innerHTML = html;
+    tmp.querySelectorAll('script,iframe,object,embed').forEach(el2 => el2.remove());
+    tmp.querySelectorAll('[onerror],[onload],[onclick],[onmouseover]').forEach(el2 => {
+      el2.removeAttribute('onerror'); el2.removeAttribute('onload');
+      el2.removeAttribute('onclick'); el2.removeAttribute('onmouseover');
+    });
+    el.innerHTML = tmp.innerHTML;
     el.scrollTop = 0;
   }
 }
