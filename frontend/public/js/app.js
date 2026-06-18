@@ -331,31 +331,29 @@ function loadCustomColors() {
 }
 
 function applyCustomColors(colors) {
-  // Barra RGB
-  var bar = document.querySelector('.rgb-topbar');
-  if (bar) {
-    bar.style.setProperty('--rgb-c1', colors.rgbC1);
-    bar.style.setProperty('--rgb-c2', colors.rgbC2);
-    bar.style.setProperty('--rgb-c3', colors.rgbC3);
-    bar.style.setProperty('--rgb-c4', colors.rgbC4);
-  }
+  // Define variáveis CSS globalmente (atinge .rgb-topbar, .pop-rgb-preview, etc)
+  var root = document.documentElement;
+  root.style.setProperty('--rgb-c1', colors.rgbC1);
+  root.style.setProperty('--rgb-c2', colors.rgbC2);
+  root.style.setProperty('--rgb-c3', colors.rgbC3);
+  root.style.setProperty('--rgb-c4', colors.rgbC4);
   // Header
   var chbg = document.querySelector('.hdr');
   if (chbg) chbg.style.background = colors.headColor;
 }
 
 function syncSwatches(colors) {
-  // Atualiza a bolinha visível (.swatch-bg) de cada input color
   var map = {rgbC1:'--rgb-c1',rgbC2:'--rgb-c2',rgbC3:'--rgb-c3',rgbC4:'--rgb-c4',headColor:''};
   for (var id in map) {
     var inp = document.getElementById(id);
-    if (inp) {
-      if (colors[id]) inp.value = colors[id];
-      // Sincroniza o fundo do swatch
-      var swatch = inp.parentNode && inp.parentNode.querySelector('.swatch-bg');
-      if (swatch) swatch.style.background = colors[id] || inp.value;
-    }
+    if (!inp) continue;
+    if (colors[id]) inp.value = colors[id];
+    var swatch = inp.parentNode && inp.parentNode.querySelector('.pop-swatch-bg');
+    if (swatch) swatch.style.background = colors[id] || inp.value;
   }
+  // Atualiza label hex do cabeçalho
+  var lbl = document.getElementById('headColorLabel');
+  if (lbl && colors.headColor) lbl.textContent = colors.headColor;
 }
 
 function saveCustomColors(colors) {
