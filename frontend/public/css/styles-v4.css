@@ -86,6 +86,10 @@ body{font-family:var(--font);font-size:14px;color:var(--ct);background:var(--cbg
 .drawer-logout:hover{color:#fff;background:rgba(255,255,255,.08);}
 .drawer-clock{font-variant-numeric:tabular-nums;}
 .hdr-clinic-mobile{display:none;}
+.hdr-bell{display:none;background:none;border:none;cursor:pointer;color:rgba(255,255,255,.7);padding:4px 6px;border-radius:6px;position:relative;transition:all .2s;}
+.hdr-bell:hover{background:rgba(255,255,255,.1);color:#fff;}
+.hdr-bell .mi{font-size:20px;vertical-align:middle;}
+.hdr-bell .bell-count{position:absolute;top:0;right:0;background:#EF4444;color:#fff;font-size:9px;font-weight:700;min-width:15px;height:15px;border-radius:8px;display:flex;align-items:center;justify-content:center;line-height:1;padding:0 3px;border:1.5px solid var(--chbg);animation:bellPulse 2.0s infinite;}
 .bell-count{position:absolute;top:2px;right:2px;background:#EF4444;color:#fff;font-size:9px;font-weight:700;min-width:15px;height:15px;border-radius:8px;display:flex;align-items:center;justify-content:center;line-height:1;padding:0 3px;border:1.5px solid var(--chbg);animation:bellPulse 2.0s infinite;}
 
 /* LOADING OVERLAY */
@@ -223,22 +227,10 @@ body{font-family:var(--font);font-size:14px;color:var(--ct);background:var(--cbg
     padding: 0 4px;
   }
 
-  /* hdr-r no header: so sino */
-  .hdr-r {
-    gap: 4px !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    flex-shrink: 0;
-  }
-  .hdr-r > * { display: none !important; }
-  .hdr-r > #bellBtn {
-    display: flex !important;
-    padding: 4px 6px !important;
-    border-radius: 6px;
-  }
-  .hdr-r > #bellBtn .mi { font-size: 18px !important; }
-  .hdr-r > #bellBtn .drawer-label { display: none !important; }
-  .hdr-r > #bellBtn .bell-count { top: 0; right: 0; }
+  /* hdr-r: escondido no header (vive dentro do drawer off-screen) */
+  .hdr-r { display: none !important; }
+  /* Bell visivel no header mobile */
+  .hdr-bell { display: flex !important; align-items: center; }
 
   /* sp-hd: esconde hamburger duplicado, mostra versao */
   .sp-mobile-menu { display: none !important; }
@@ -312,11 +304,14 @@ body{font-family:var(--font);font-size:14px;color:var(--ct);background:var(--cbg
 
   /* ═══ GAVETA: layout vertical limpo ═══ */
   .hdr-nav .hdr-r {
+    display: flex !important;
     flex-direction: column !important;
     align-items: stretch !important;
     padding: 0 !important;
+    margin: 0 !important;
     gap: 0 !important;
     flex: 1;
+    width: 100%;
   }
   /* Mostra TODOS os itens dentro da gaveta */
   .hdr-nav .hdr-r > * { display: flex !important; }

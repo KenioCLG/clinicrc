@@ -227,6 +227,7 @@ function saveRetornos() {
 function renderBell() {
   const list = document.getElementById('bellList');
   const count = document.getElementById('bellCount');
+  const countHdr = document.getElementById('bellCountHdr');
   if (!list) return;
   const agora = Date.now();
   const ativos = retornos.filter(r => r.dt > agora);
@@ -234,6 +235,7 @@ function renderBell() {
   if (!count) return;
   count.style.display = retornos.length ? 'flex' : 'none';
   count.textContent = retornos.length;
+  if (countHdr) { countHdr.style.display = retornos.length ? 'flex' : 'none'; countHdr.textContent = retornos.length; }
   if (!retornos.length) {
     list.innerHTML = '<div class="bell-empty">Nenhum retorno agendado</div>';
     return;

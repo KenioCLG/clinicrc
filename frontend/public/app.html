@@ -47,8 +47,8 @@ if ('serviceWorker' in navigator && !localStorage.getItem('sw_cleaned')) {
 <script src="https://cdn.jsdelivr.net/npm/marked@15.0.4/marked.min.js" integrity="sha384-MQX6KLXAqxeh8gCqETDHfMWJbfuPTqOb0w25cRpYITn6mCnXU6OKcamXGNnPuGJ0" crossorigin="anonymous"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde@2.18.0/dist/easymde.min.css">
 <script src="https://cdn.jsdelivr.net/npm/easymde@2.18.0/dist/easymde.min.js"></script>
-<link rel="stylesheet" href="css/styles-v4.css?v=7.1"/>
-<link rel="stylesheet" href="css/odontograma.css?v=7.1"/>
+<link rel="stylesheet" href="css/styles-v4.css?v=7.2"/>
+<link rel="stylesheet" href="css/odontograma.css?v=7.2"/>
   <link rel="icon" type="image/x-icon" href="favicon.ico">
   <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
   <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
@@ -73,6 +73,10 @@ if ('serviceWorker' in navigator && !localStorage.getItem('sw_cleaned')) {
     <span class="mi">menu</span>
   </button>
   <span class="hdr-clinic-mobile" id="clinicNameMobile"></span>
+  <button class="hdr-bell" id="bellBtnHdr" onclick="window.toggleBell()" title="Retornos">
+    <span class="mi">notifications</span>
+    <span class="bell-count" id="bellCountHdr" style="display:none">0</span>
+  </button>
   <button class="hdr-menu" id="menuVersion" title="Versão do sistema">
     <span class="mi">medical_services</span>
     <span class="version-tag" id="versionTag"><span class="ver-dot" id="verDot"></span><em id="verNum">v7.0</em></span>
@@ -389,8 +393,8 @@ O tom deve ser humano, empático e focado em gerar urgência e agendamento.
 </script>
 
 <!-- JS ENTRYPOINT -->
-<script type="module" src="js/app.js?v=7.1"></script>
-<script src="js/odontograma-anat.js?v=7.1" defer></script>
+<script type="module" src="js/app.js?v=7.2"></script>
+<script src="js/odontograma-anat.js?v=7.2" defer></script>
 
 <!-- Fechar modais com ESC + fechar drawer ao trocar aba -->
 <script>
