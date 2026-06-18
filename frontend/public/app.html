@@ -18,66 +18,15 @@ if ('serviceWorker' in navigator && !localStorage.getItem('sw_cleaned')) {
 }
 </script>
 
-<!-- CSS MOBILE CRITICO — header compacto 36px, drawer via sp-hd -->
+<!-- CSS MOBILE CRITICO — previne layout shift no primeiro render -->
 <style>
 @media (max-width: 1000px) {
-  /* Header compacto */
-  .hdr { height: 36px !important; padding: 0 6px !important; }
+  .hdr { height: 36px !important; padding: 0 8px !important; }
   .body { padding-top: 36px !important; }
-  .mobile-menu-btn { display: none !important; }
   .hdr-menu { display: none !important; }
-
-  /* Drawer posicao */
-  .hdr-nav {
-    position: fixed !important;
-    top: 36px !important;
-    left: -100% !important;
-    width: 280px !important;
-    height: calc(100vh - 36px) !important;
-    height: calc(100dvh - 36px) !important;
-    background: #111827 !important;
-    flex-direction: column !important;
-    justify-content: flex-start !important;
-    align-items: stretch !important;
-    transition: left 0.3s ease !important;
-    z-index: 2000 !important;
-    border-right: 1px solid rgba(255,255,255,0.1) !important;
-    overflow-y: auto !important;
-  }
-  .hdr-nav.open { left: 0 !important; }
-
-  .mobile-overlay {
-    display: block !important;
-    position: fixed !important;
-    top: 36px !important;
-    left: 0 !important; right: 0 !important; bottom: 0 !important;
-    background: rgba(0,0,0,0.5) !important;
-    z-index: 1999 !important;
-    opacity: 0 !important;
-    pointer-events: none !important;
-    transition: opacity 0.3s ease !important;
-  }
-  .mobile-overlay.open { opacity: 1 !important; pointer-events: auto !important; }
-
-  /* Layout vertical */
   .pg.on { flex-direction: column !important; }
-  .sp {
-    width: 100% !important;
-    height: 40% !important;
-    min-height: 60px !important;
-    max-height: calc(100vh - 60px) !important;
-    border-right: none !important;
-    border-bottom: 1px solid #E5E7EB !important;
-  }
-  .resizer {
-    width: 100% !important; height: 12px !important;
-    cursor: row-resize !important;
-    border-left: none !important; border-right: none !important;
-    display: flex !important; align-items: center !important; justify-content: center !important;
-  }
-  .kp { width: 100% !important; flex: 1 !important; height: auto !important; }
-  .cols { scroll-snap-type: x mandatory !important; }
-  .col { flex: none !important; width: 85vw !important; scroll-snap-align: center !important; }
+  .sp { width: 100% !important; height: 40% !important; min-height: 60px !important; }
+  .kp { width: 100% !important; flex: 1 !important; }
 }
 </style>
 
@@ -98,8 +47,8 @@ if ('serviceWorker' in navigator && !localStorage.getItem('sw_cleaned')) {
 <script src="https://cdn.jsdelivr.net/npm/marked@15.0.4/marked.min.js" integrity="sha384-MQX6KLXAqxeh8gCqETDHfMWJbfuPTqOb0w25cRpYITn6mCnXU6OKcamXGNnPuGJ0" crossorigin="anonymous"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde@2.18.0/dist/easymde.min.css">
 <script src="https://cdn.jsdelivr.net/npm/easymde@2.18.0/dist/easymde.min.js"></script>
-<link rel="stylesheet" href="css/styles-v4.css?v=7.0"/>
-<link rel="stylesheet" href="css/odontograma.css?v=7.0"/>
+<link rel="stylesheet" href="css/styles-v4.css?v=7.1"/>
+<link rel="stylesheet" href="css/odontograma.css?v=7.1"/>
   <link rel="icon" type="image/x-icon" href="favicon.ico">
   <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
   <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
@@ -440,8 +389,8 @@ O tom deve ser humano, empático e focado em gerar urgência e agendamento.
 </script>
 
 <!-- JS ENTRYPOINT -->
-<script type="module" src="js/app.js?v=7.0"></script>
-<script src="js/odontograma-anat.js?v=7.0" defer></script>
+<script type="module" src="js/app.js?v=7.1"></script>
+<script src="js/odontograma-anat.js?v=7.1" defer></script>
 
 <!-- Fechar modais com ESC + fechar drawer ao trocar aba -->
 <script>

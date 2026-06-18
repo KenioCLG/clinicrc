@@ -1004,6 +1004,11 @@ function trocarAba(i, b) {
   document.querySelectorAll('.tab-btn').forEach((x, j) => x.classList.toggle('on', j === i));
   document.querySelectorAll('.pg').forEach((x, j) => x.classList.toggle('on', j === i));
   if (i === 1) rel();
+  // Fecha drawer no mobile
+  const nav = document.getElementById('hdrNav');
+  const ov = document.getElementById('mobileOverlay');
+  if (nav) nav.classList.remove('open');
+  if (ov) ov.classList.remove('open');
 }
 window.trocarAba = trocarAba;
 
