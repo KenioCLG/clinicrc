@@ -64,6 +64,10 @@ if('serviceWorker' in navigator){navigator.serviceWorker.getRegistrations().then
     --ok-text:     #15803D;
   }
 
+  /* BARRA RGB ANIMADA NO TOPO */
+  .rgb-topbar{position:fixed;top:0;left:0;right:0;height:3px;z-index:9999;pointer-events:none;background:linear-gradient(90deg,var(--rgb-c1,#ff0066),var(--rgb-c2,#00ffcc),var(--rgb-c3,#ffcc00),var(--rgb-c4,#9933ff),var(--rgb-c1,#ff0066));background-size:300% 100%;animation:rgbFlow 4s linear infinite;}
+  @keyframes rgbFlow{0%{background-position:0% 50%;}100%{background-position:300% 50%;}}
+
   /* ── BODY ── */
   body {
     font-family: 'Inter', system-ui, sans-serif;
@@ -490,6 +494,9 @@ if('serviceWorker' in navigator){navigator.serviceWorker.getRegistrations().then
   <meta name="apple-mobile-web-app-title" content="ClinicRC">
 </head>
 <body>
+
+<!-- BARRA RGB ANIMADA NO TOPO -->
+<div class="rgb-topbar" style="--rgb-c1:#ff0066;--rgb-c2:#00ffcc;--rgb-c3:#ffcc00;--rgb-c4:#9933ff;"></div>
 
 <div class="wrapper">
 

@@ -242,27 +242,27 @@ const clinicMobileEl = document.getElementById('clinicNameMobile');
 if (clinicEl && clinicName) clinicEl.textContent = clinicName;
 if (clinicMobileEl && clinicName) clinicMobileEl.textContent = clinicName;
 
-// Avatar do usuário — iniciais ou foto salva
+// Avatar do usuário — iniciais ou foto via upload
 (function initAvatar() {
-  const el = document.getElementById('userAvatar');
+  var el = document.getElementById('userAvatar');
   if (!el) return;
-  const name = clinicName || 'C';
-  const user = localStorage.getItem('clinicrc_user') || '';
-  const savedUrl = localStorage.getItem('clinicrc_avatar');
+  var name = clinicName || 'C';
+  var user = localStorage.getItem('clinicrc_user') || '';
+  var savedData = localStorage.getItem('clinicrc_avatar');
 
-  if (savedUrl) {
+  if (savedData) {
     el.style.background = 'none';
     el.style.boxShadow = 'none';
-    el.innerHTML = '<img src="' + savedUrl.replace(/"/g,'&quot;') + '" alt="" style="width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;">';
+    el.innerHTML = '<img src="' + savedData.replace(/"/g,'&quot;') + '" alt="" style="width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;">';
     el.title = 'Clique para trocar a foto';
   } else {
     // Iniciais a partir do nome da clínica (máx 2 letras)
     var parts = name.split(/\s+/);
     var initials = '';
     for (var i = 0; i < parts.length && initials.length < 2; i++) {
-      if (parts[i][0]) initials += parts[i][0].toUpperCase();
+      if (parts[i][0]) initials += parts[i][0];
     }
-    initials = initials || 'C';
+    initials = initials.toUpperCase() || 'C';
 
     // Cor HSL consistente a partir do username
     var hash = 0;
@@ -270,26 +270,46 @@ if (clinicMobileEl && clinicName) clinicMobileEl.textContent = clinicName;
     var hue = Math.abs(hash) % 360;
     el.style.background = 'linear-gradient(135deg, hsl(' + hue + ', 60%, 45%), hsl(' + hue + ', 50%, 35%))';
     el.textContent = initials;
-    el.title = '';
+    el.title = 'Clique para adicionar foto';
   }
 
-  // Clique para definir/remover foto via URL
+  // Input file oculto para upload de foto (cria uma única vez)
+  var fileInput = document.getElementById('avatarUploadInput');
+  if (!fileInput) {
+    fileInput = document.createElement('input');
+    fileInput.id = 'avatarUploadInput';
+    fileInput.type = 'file';
+    fileInput.accept = 'image/*';
+    fileInput.style.cssText = 'position:fixed;opacity:0;width:0;height:0;pointer-events:none;z-index:-1;';
+    document.body.appendChild(fileInput);
+
+    fileInput.addEventListener('change', function() {
+      var file = fileInput.files && fileInput.files[0];
+      if (!file) return;
+      if (file.size > 5 * 1024 * 1024) { alert('A imagem deve ter no máximo 5MB.'); return; }
+      var reader = new FileReader();
+      reader.onload = function(ev) {
+        localStorage.setItem('clinicrc_avatar', ev.target.result);
+        fileInput.value = '';
+        initAvatar();
+      };
+      reader.onerror = function() { alert('Erro ao ler o arquivo.'); };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // Clique: se já tem foto → pergunta se quer remover; senão → abre seletor de arquivo
   el.style.cursor = 'pointer';
   el.onclick = function(e) {
     e.stopPropagation();
-    var cur = localStorage.getItem('clinicrc_avatar') || '';
+    var cur = localStorage.getItem('clinicrc_avatar');
     if (cur) {
       if (confirm('Remover foto do perfil?')) {
         localStorage.removeItem('clinicrc_avatar');
         initAvatar();
       }
     } else {
-      var url = prompt('URL da foto do perfil (pode ser Google Drive, Imgur, etc.):');
-      if (url === null) return;
-      if (url.trim()) {
-        localStorage.setItem('clinicrc_avatar', url.trim());
-        initAvatar();
-      }
+      fileInput.click();
     }
   };
 })();
