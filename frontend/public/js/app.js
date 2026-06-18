@@ -371,14 +371,12 @@ function saveCustomColors(colors) {
   syncSwatches(colors);
 })();
 
-// Toggle painel personalizar
-window.toggleCustomColors = function() {
-  var panel = document.getElementById('customPanel');
-  var arrow = document.getElementById('customArrow');
-  if (!panel) return;
-  var open = panel.style.display !== 'block';
-  panel.style.display = open ? 'block' : 'none';
-  if (arrow) arrow.style.transform = open ? 'rotate(180deg)' : '';
+// Abre popup personalizar cores
+window.openCustomPopup = function() {
+  // Sincroniza swatches ao abrir
+  var colors = loadCustomColors();
+  syncSwatches(colors);
+  document.getElementById('modalCustom').classList.add('on');
 };
 
 // Input listeners (delegated via change)
@@ -389,6 +387,11 @@ document.addEventListener('change', function(e) {
     var colors = loadCustomColors();
     colors[id] = e.target.value;
     saveCustomColors(colors);
+    // Atualiza label hex da cor do cabeçalho
+    if (id === 'headColor') {
+      var lbl = document.getElementById('headColorLabel');
+      if (lbl) lbl.textContent = e.target.value;
+    }
   }
 });
 
@@ -396,7 +399,7 @@ document.addEventListener('change', function(e) {
 window.resetColors = function() {
   if (!confirm('Restaurar cores padrão?')) return;
   localStorage.removeItem(CUSTOM_KEY);
-  var colors = loadCustomColors(); // volta aos defaults
+  var colors = loadCustomColors();
   applyCustomColors(colors);
   syncSwatches(colors);
 };

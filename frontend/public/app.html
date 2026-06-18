@@ -131,29 +131,10 @@ if ('serviceWorker' in navigator && !localStorage.getItem('sw_cleaned')) {
       <span class="mi">schedule</span> <span class="drawer-label" id="liveClockTxt">--:--:--</span>
     </span>
 
-    <!-- PERSONALIZAR CORES -->
-    <button class="drawer-link" onclick="window.toggleCustomColors()" id="customToggle" title="Personalizar cores">
+    <!-- PERSONALIZAR CORES (abre popup) -->
+    <button class="drawer-link" onclick="window.openCustomPopup()" title="Personalizar cores do app">
       <span class="mi">palette</span> <span class="drawer-label">Personalizar</span>
-      <span class="mi" id="customArrow" style="margin-left:auto;font-size:16px;transition:transform .2s;">expand_more</span>
     </button>
-    <div id="customPanel" class="custom-panel" style="display:none;">
-      <div class="custom-group">
-        <span class="custom-label">Barra RGB — 4 cores</span>
-        <div class="custom-row">
-          <label class="custom-swatch" title="Cor 1"><input type="color" id="rgbC1" value="#ff0066"><span class="swatch-bg"></span></label>
-          <label class="custom-swatch" title="Cor 2"><input type="color" id="rgbC2" value="#00ffcc"><span class="swatch-bg"></span></label>
-          <label class="custom-swatch" title="Cor 3"><input type="color" id="rgbC3" value="#ffcc00"><span class="swatch-bg"></span></label>
-          <label class="custom-swatch" title="Cor 4"><input type="color" id="rgbC4" value="#9933ff"><span class="swatch-bg"></span></label>
-        </div>
-      </div>
-      <div class="custom-group">
-        <span class="custom-label">Cor do cabeçalho</span>
-        <div class="custom-row">
-          <label class="custom-swatch" title="Header"><input type="color" id="headColor" value="#111827"><span class="swatch-bg"></span></label>
-          <button class="custom-reset" onclick="window.resetColors()" title="Restaurar padrão">Padrão</button>
-        </div>
-      </div>
-    </div>
 
     <div class="drawer-divider" style="margin-top:auto;"></div>
     <div class="drawer-user">
@@ -411,6 +392,42 @@ O tom deve ser humano, empático e focado em gerar urgência e agendamento.
 <!-- TOAST NOTIFICATION -->
 <div class="toast" id="toast"></div>
 
+<!-- MODAL PERSONALIZAR CORES -->
+<div class="mbg" id="modalCustom">
+  <div class="mbox" style="max-width:380px;">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
+      <span class="mi" style="font-size:22px;color:var(--cp);">palette</span>
+      <h3 style="margin:0;font-size:16px;">Personalizar Cores</h3>
+      <button onclick="document.getElementById('modalCustom').classList.remove('on')" style="margin-left:auto;background:none;border:none;cursor:pointer;color:var(--cts);padding:4px;border-radius:4px;display:flex;" aria-label="Fechar">
+        <span class="mi">close</span>
+      </button>
+    </div>
+
+    <div class="custom-group">
+      <span class="custom-label" style="color:var(--cts);text-transform:uppercase;font-size:11px;font-weight:600;display:block;margin-bottom:6px;">Barra RGB — 4 cores</span>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <label class="custom-swatch" title="Cor 1"><input type="color" id="rgbC1" value="#ff0066"><span class="swatch-bg"></span></label>
+        <label class="custom-swatch" title="Cor 2"><input type="color" id="rgbC2" value="#00ffcc"><span class="swatch-bg"></span></label>
+        <label class="custom-swatch" title="Cor 3"><input type="color" id="rgbC3" value="#ffcc00"><span class="swatch-bg"></span></label>
+        <label class="custom-swatch" title="Cor 4"><input type="color" id="rgbC4" value="#9933ff"><span class="swatch-bg"></span></label>
+      </div>
+    </div>
+
+    <div class="custom-group" style="margin-top:16px;">
+      <span class="custom-label" style="color:var(--cts);text-transform:uppercase;font-size:11px;font-weight:600;display:block;margin-bottom:6px;">Cor do cabeçalho</span>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <label class="custom-swatch" title="Cabeçalho"><input type="color" id="headColor" value="#111827"><span class="swatch-bg"></span></label>
+        <span style="font-size:12px;color:var(--cts);font-family:monospace;" id="headColorLabel">#111827</span>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px;margin-top:20px;padding-top:16px;border-top:1px solid var(--cdiv);">
+      <button class="mcanc" onclick="window.resetColors()" style="flex:1;background:#f1f1f1;color:#666;">Padrão</button>
+      <button class="mcanc" onclick="document.getElementById('modalCustom').classList.remove('on')" style="flex:1;background:var(--cp);color:#fff;border:none;">OK</button>
+    </div>
+  </div>
+</div>
+
 <!-- Carrega link de suporte dinamicamente do backend -->
 <script>
   (async function() {
@@ -437,6 +454,10 @@ document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') {
     document.querySelectorAll('.mbg.on').forEach(function(m) { m.classList.remove('on'); });
   }
+});
+// Fecha modal Personalizar ao clicar fora
+document.getElementById('modalCustom').addEventListener('click', function(e) {
+  if (e.target === this) this.classList.remove('on');
 });
 document.querySelectorAll('.tab-btn').forEach(function(btn) {
   btn.addEventListener('click', function() {
