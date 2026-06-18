@@ -25,18 +25,17 @@ async function authMiddleware(req, res, next) {
     return res.status(401).json({ error: 'Token inválido ou expirado. Faça login novamente.' });
   }
 
-  // Busca o system_source do usuário no banco (definido no onboarding)
-  let systemSource = 'cliniccorp'; // fallback seguro
-  try {
-    const user = await queryOne('SELECT system_source FROM users WHERE id = ?', [payload.clinic_id]);
-    if (user && user.system_source) {
-      systemSource = user.system_source;
+  // system_source vem no JWT (adicionado no login); fallback ao DB para tokens antigos
+  let systemSource = payload.system_source || null;
+  if (!systemSource) {
+    try {
+      const user = await queryOne('SELECT system_source FROM users WHERE id = ?', [payload.clinic_id]);
+      systemSource = user?.system_source || 'cliniccorp';
+    } catch {
+      systemSource = 'cliniccorp';
     }
-  } catch {
-    // Em caso de erro, usa o fallback — não bloqueia a request
   }
 
-  // Injeta dados da clínica na request para uso nas rotas
   req.clinic = {
     id: payload.clinic_id,
     name: payload.clinic_name,

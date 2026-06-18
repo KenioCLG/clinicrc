@@ -37,7 +37,7 @@ async function createUser(clinicName, username, password, whatsapp = '', email =
  * Autentica e retorna JWT (ou null se credenciais inválidas)
  */
 async function login(username, password) {
-  const user = await queryOne('SELECT * FROM users WHERE username = ?', [username]);
+  const user = await queryOne('SELECT id, username, password, clinic_name, system_source, login_attempts, lockout_until FROM users WHERE username = ?', [username]);
 
   if (!user) {
     return null;
@@ -64,7 +64,7 @@ async function login(username, password) {
   await run('UPDATE users SET login_attempts = 0, lockout_until = NULL WHERE id = ?', [user.id]);
 
   const token = jwt.sign(
-    { clinic_id: user.id, username: user.username, clinic_name: user.clinic_name },
+    { clinic_id: user.id, username: user.username, clinic_name: user.clinic_name, system_source: user.system_source || 'cliniccorp' },
     JWT_SECRET,
     { expiresIn: '24h' }
   );

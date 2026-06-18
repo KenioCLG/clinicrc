@@ -187,7 +187,7 @@ if ('serviceWorker' in navigator && !localStorage.getItem('sw_cleaned')) {
     <div class="kp">
       <div class="ktb">
         <div style="display:flex; align-items:center; gap:6px;">
-          <input id="searchPatient" name="searchPatient" class="ksrch" type="text" aria-label="Buscar paciente" placeholder="Buscar paciente..." oninput="window.render()">
+          <input id="searchPatient" name="searchPatient" class="ksrch" type="text" aria-label="Buscar paciente" placeholder="Buscar paciente..." oninput="clearTimeout(searchDebounce); searchDebounce = setTimeout(window.render, 300)">
           <button id="toggleFilterBtn" class="pf-clear-btn" onclick="window._toggleFilterPanel()" title="Mostrar Filtros" style="height:34px;width:34px;">
             <span class="mi" style="font-size:20px">tune</span>
           </button>

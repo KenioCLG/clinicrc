@@ -73,11 +73,12 @@ router.get('/config', async (req, res) => {
 // POST /config/add-attempt
 router.post('/config/add-attempt', async (req, res) => {
   try {
-    const row = await db.queryOne('SELECT max_attempts FROM users WHERE id = ?', [req.clinic.id]);
-    let current = row ? row.max_attempts : 1;
-    current += 1;
-    await db.run('UPDATE users SET max_attempts = ? WHERE id = ?', [current, req.clinic.id]);
-    res.json({ max_attempts: current });
+    // Atomico: incrementa e retorna em uma unica query (sem race condition)
+    const row = await db.queryOne(
+      'UPDATE users SET max_attempts = max_attempts + 1 WHERE id = ? RETURNING max_attempts',
+      [req.clinic.id]
+    );
+    res.json({ max_attempts: row ? row.max_attempts : 2 });
   } catch (err) {
     console.error('Erro ao adicionar tentativa:', err);
     res.status(500).json({ error: 'Erro interno' });
@@ -148,28 +149,15 @@ router.delete('/:attempt_num', async (req, res) => {
       return res.status(400).json({ error: 'Você deve ter pelo menos 1 tentativa.' });
     }
 
-    // 1. Apagar o script alvo
-    await db.run('DELETE FROM scripts WHERE clinic_id = ? AND attempt_num = ?', [req.clinic.id, attemptNum]);
-
-    // 2. Deslocar todos os roteiros subsequentes uma posição para trás
-    await db.run(`
-      UPDATE scripts 
-      SET attempt_num = attempt_num - 1 
-      WHERE clinic_id = ? AND attempt_num > ?
-    `, [req.clinic.id, attemptNum]);
-
-    // 3. Atualizar limite da clínica
     const novoMax = currentMax - 1;
-    await db.run('UPDATE users SET max_attempts = ? WHERE id = ?', [novoMax, req.clinic.id]);
 
-    // 4. Ajustar pacientes que estavam nas tentativas superiores
-    // Como a tentativa atual não existe mais, quem estava nela volta uma casa.
-    // Quem estava acima (ex: na 4 e apagou a 3) volta para a 3.
-    await db.run(`
-      UPDATE patients
-      SET tent = tent - 1
-      WHERE clinic_id = ? AND tent >= ?
-    `, [req.clinic.id, attemptNum]);
+    // Todas as operacoes em uma unica transacao para evitar estado inconsistente
+    await db.transaction(async (tx) => {
+      await tx.run('DELETE FROM scripts WHERE clinic_id = ? AND attempt_num = ?', [req.clinic.id, attemptNum]);
+      await tx.run('UPDATE scripts SET attempt_num = attempt_num - 1 WHERE clinic_id = ? AND attempt_num > ?', [req.clinic.id, attemptNum]);
+      await tx.run('UPDATE users SET max_attempts = ? WHERE id = ?', [novoMax, req.clinic.id]);
+      await tx.run('UPDATE patients SET tent = tent - 1 WHERE clinic_id = ? AND tent >= ?', [req.clinic.id, attemptNum]);
+    });
 
     res.json({ success: true, max_attempts: novoMax });
   } catch (err) {

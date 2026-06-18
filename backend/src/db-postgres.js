@@ -36,20 +36,22 @@ async function initSchema() {
       password       TEXT NOT NULL,
       whatsapp       TEXT DEFAULT '',
       system_source  TEXT NOT NULL DEFAULT 'cliniccorp',
+      max_attempts   INTEGER NOT NULL DEFAULT 1,
+      login_attempts INTEGER NOT NULL DEFAULT 0,
+      lockout_until  TIMESTAMPTZ,
+      email          TEXT DEFAULT '',
       created_at     TIMESTAMPTZ DEFAULT NOW()
     );
 
-    ALTER TABLE users ADD COLUMN IF NOT EXISTS max_attempts INTEGER DEFAULT 1;
-    UPDATE users SET max_attempts = 1 WHERE max_attempts = 5;
-
-    ALTER TABLE users ADD COLUMN IF NOT EXISTS login_attempts INTEGER DEFAULT 0;
+    -- Migracao segura: adiciona colunas caso tabela ja exista sem elas
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS max_attempts INTEGER NOT NULL DEFAULT 1;
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS login_attempts INTEGER NOT NULL DEFAULT 0;
     ALTER TABLE users ADD COLUMN IF NOT EXISTS lockout_until TIMESTAMPTZ;
     ALTER TABLE users ADD COLUMN IF NOT EXISTS email TEXT DEFAULT '';
-    ALTER TABLE users ADD COLUMN IF NOT EXISTS system_source TEXT NOT NULL DEFAULT 'cliniccorp';
 
     CREATE TABLE IF NOT EXISTS scripts (
       id           SERIAL PRIMARY KEY,
-      clinic_id    INTEGER NOT NULL REFERENCES users(id),
+      clinic_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
       attempt_num  INTEGER NOT NULL,
       content      TEXT NOT NULL,
       updated_at   TIMESTAMPTZ DEFAULT NOW(),
@@ -58,7 +60,7 @@ async function initSchema() {
 
     CREATE TABLE IF NOT EXISTS patients (
       id              TEXT NOT NULL,
-      clinic_id       INTEGER NOT NULL REFERENCES users(id),
+      clinic_id       INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
       nome            TEXT NOT NULL,
       tel             TEXT NOT NULL,
       proc            TEXT NOT NULL DEFAULT '',
@@ -80,7 +82,7 @@ async function initSchema() {
 
     CREATE TABLE IF NOT EXISTS uploads (
       id           SERIAL PRIMARY KEY,
-      clinic_id    INTEGER NOT NULL REFERENCES users(id),
+      clinic_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
       filename     TEXT NOT NULL,
       source       TEXT NOT NULL,
       total_rows   INTEGER DEFAULT 0,
@@ -89,6 +91,13 @@ async function initSchema() {
       skipped_rows INTEGER DEFAULT 0,
       uploaded_at  TIMESTAMPTZ DEFAULT NOW()
     );
+
+    -- Indexes para queries frequentes (idempotente)
+    CREATE INDEX IF NOT EXISTS idx_patients_clinic ON patients(clinic_id);
+    CREATE INDEX IF NOT EXISTS idx_patients_clinic_tel ON patients(clinic_id, tel);
+    CREATE INDEX IF NOT EXISTS idx_patients_clinic_col ON patients(clinic_id, col);
+    CREATE INDEX IF NOT EXISTS idx_scripts_clinic_attempt ON scripts(clinic_id, attempt_num);
+    CREATE INDEX IF NOT EXISTS idx_uploads_clinic ON uploads(clinic_id);
   `);
   console.log('✅ Schema PostgreSQL inicializado');
 }

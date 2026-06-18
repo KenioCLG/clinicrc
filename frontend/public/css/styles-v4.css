@@ -155,7 +155,7 @@ body{font-family:var(--font);font-size:14px;color:var(--ct);background:var(--cbg
   }
   .resizer {
     width: 100% !important;
-    height: 20px;
+    height: 24px;
     cursor: row-resize !important;
     border-left: none;
     border-right: none;
@@ -165,26 +165,41 @@ body{font-family:var(--font);font-size:14px;color:var(--ct);background:var(--cbg
     display: flex;
     align-items: center;
     justify-content: center;
+    gap: 6px;
     touch-action: none;
+    position: relative;
+  }
+  .resizer::before {
+    content: 'expand_more';
+    font-family: 'Material Icons';
+    font-size: 18px;
+    color: #9CA3AF;
+    line-height: 1;
+    transition: color .2s;
   }
   .resizer::after {
     content: '';
-    width: 48px;
-    height: 5px;
+    width: 40px;
+    height: 4px;
     background: #CBD5E1;
     border-radius: 3px;
     transition: background .2s;
   }
-  .resizer:hover::after, .resizer.active::after {
-    background: var(--cp);
+  .resizer:hover::before, .resizer.active::before { color: var(--cp); }
+  .resizer:hover::after, .resizer.active::after { background: var(--cp); }
+  /* Estado expandido: roteiro fullscreen, contatos escondidos */
+  .resizer.collapsed { cursor: pointer !important; background: rgba(236,103,38,0.05); }
+  .resizer.collapsed::before { content: 'expand_less'; color: var(--cp); }
+  .resizer.collapsed::after { background: var(--cp); }
+  /* Classe no .pg: esconde kanban e expande roteiro */
+  .pg.script-full .sp {
+    height: auto !important;
+    max-height: none !important;
+    min-height: 0 !important;
+    flex: 1 1 0% !important;
   }
-  /* Hint visual: seta dupla */
-  .resizer::before {
-    content: '';
-    position: absolute;
-    font-family: 'Material Icons';
-    font-size: 14px;
-    color: #9CA3AF;
+  .pg.script-full .kp {
+    display: none !important;
   }
   .kp {
     width: 100% !important;

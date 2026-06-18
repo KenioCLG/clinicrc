@@ -10,21 +10,16 @@
 
 class ClinicrcApiClient {
   constructor() {
-    // URL base da API — em produção, vai ser o domínio do Railway
     this.base = window.location.origin;
-
-    // Token JWT salvo no login
     this.token = localStorage.getItem('clinicrc_token');
+    // AbortController por paciente — cancela request anterior se nova chegar
+    this._abortMap = new Map();
 
-    // Se não tem token, manda para o login
     if (!this.token) {
       window.location.href = 'index.html';
     }
   }
 
-  /**
-   * Headers padrão com autenticação
-   */
   get headers() {
     return {
       'Content-Type': 'application/json',
@@ -32,55 +27,57 @@ class ClinicrcApiClient {
     };
   }
 
-  /**
-   * Busca todos os pacientes da clínica logada
-   */
+  _handleAuth(res) {
+    if (res.status === 401) {
+      localStorage.clear();
+      window.location.href = 'index.html';
+      return true;
+    }
+    return false;
+  }
+
   async getPatients() {
     const res = await fetch(`${this.base}/patients`, {
       headers: this.headers,
       signal: AbortSignal.timeout(15000)
     });
-
-    if (res.status === 401) {
-      // Token expirado — volta para login
-      localStorage.clear();
-      window.location.href = 'index.html';
-      return [];
-    }
-
+    if (this._handleAuth(res)) return [];
     if (!res.ok) throw new Error(`Erro ${res.status}`);
     return await res.json();
   }
 
-  /**
-   * Atualiza dados de um paciente (progresso no Kanban)
-   * Usa o telefone como identificador único
-   */
   async updatePatient(id, updates) {
-    // Busca o paciente pelo ID para obter o tel
     const patient = window._E?.find(p => p.id === id);
     const tel = patient?.tel;
+    if (!tel) throw new Error('Telefone nao encontrado para ID: ' + id);
 
-    if (!tel) throw new Error('Telefone não encontrado para ID: ' + id);
-
-    const res = await fetch(`${this.base}/patients/${tel}`, {
-      method: 'PUT',
-      headers: this.headers,
-      body: JSON.stringify(updates),
-      signal: AbortSignal.timeout(15000)
-    });
-
-    if (res.status === 401) {
-      localStorage.clear();
-      window.location.href = 'index.html';
+    // Cancela request anterior para este paciente (evita race condition)
+    if (this._abortMap.has(id)) {
+      this._abortMap.get(id).abort();
     }
+    const controller = new AbortController();
+    this._abortMap.set(id, controller);
 
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || `Erro ${res.status}`);
+    try {
+      const res = await fetch(`${this.base}/patients/${tel}`, {
+        method: 'PUT',
+        headers: this.headers,
+        body: JSON.stringify(updates),
+        signal: controller.signal
+      });
+
+      this._abortMap.delete(id);
+      if (this._handleAuth(res)) return;
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || `Erro ${res.status}`);
+      }
+      return await res.json();
+    } catch (err) {
+      this._abortMap.delete(id);
+      if (err.name === 'AbortError') return; // cancelado por request mais recente
+      throw err;
     }
-
-    return await res.json();
   }
 }
 
@@ -210,11 +207,33 @@ window.toggleScriptEdit = async () => {
 // Instanciar o cliente de API (comporta-se como portão)
 const api = new ClinicrcApiClient();
 
-let E = []; // Pacientes locais em memória
-window._E = E; // Expõe para o api-client achar o tel pelo ID
+let E = []; // Pacientes locais em memoria
+window._E = E; // Expoe para o api-client achar o tel pelo ID
 let tN = 1, pA = null, fId = null;
 let obsDebounce = {};
 let activeProc = null; // filtro de procedimento ativo
+let searchDebounce = null;
+
+// Cache de contagens por coluna — atualizado incrementalmente
+let colCounts = { ligar: 0, contato: 0, agendado: 0, final: 0 };
+
+// Cache de categorias de procedimento por paciente id
+const procCatCache = new Map();
+
+function invalidateProcCache(id) { if (id) procCatCache.delete(id); else procCatCache.clear(); }
+
+function getCachedProcCategories(p) {
+  if (procCatCache.has(p.id)) return procCatCache.get(p.id);
+  const cats = getProcCategories(p.proc);
+  procCatCache.set(p.id, cats);
+  return cats;
+}
+
+// Recalcula contagens a partir do array E (chamado apenas quando E muda)
+function recalcCounts() {
+  colCounts = { ligar: 0, contato: 0, agendado: 0, final: 0 };
+  E.forEach(p => { if (colCounts[p.col] !== undefined) colCounts[p.col]++; });
+}
 
 // Mostra nome da clínica logada no header e drawer
 const clinicName = localStorage.getItem('clinicrc_clinic');
@@ -346,12 +365,15 @@ document.addEventListener('touchend', (e) => {
 const RETORNOS_KEY = 'clinicrc_retornos';
 let retornos = JSON.parse(localStorage.getItem(RETORNOS_KEY) || '[]');
 let retornoTargetId = null;
+let bellDirty = true; // flag: re-render bell somente quando dados mudaram
+let lastBellVencidoCount = -1; // detecta mudanca de vencidos por tempo
 
 function saveRetornos() {
   localStorage.setItem(RETORNOS_KEY, JSON.stringify(retornos));
+  bellDirty = true;
 }
 
-function renderBell() {
+function renderBell(force) {
   const list = document.getElementById('bellList');
   const count = document.getElementById('bellCount');
   const countHdr = document.getElementById('bellCountHdr');
@@ -359,6 +381,7 @@ function renderBell() {
   const agora = Date.now();
   const ativos = retornos.filter(r => r.dt > agora);
   const vencidos = retornos.filter(r => r.dt <= agora);
+  lastBellVencidoCount = vencidos.length;
   if (!count) return;
   count.style.display = 'flex';
   count.textContent = retornos.length;
@@ -387,8 +410,15 @@ function renderBell() {
   )].join('');
 }
 
-// Verifica retornos vencidos a cada 30s
-setInterval(() => { renderBell(); }, 30000);
+// Verifica retornos vencidos a cada 30s — so re-renderiza se algo mudou
+setInterval(() => {
+  if (!retornos.length) return;
+  const vencidos = retornos.filter(r => r.dt <= Date.now()).length;
+  if (vencidos !== lastBellVencidoCount) {
+    bellDirty = true;
+    renderBell();
+  }
+}, 30000);
 
 window.toggleBell = () => {
   const panel = document.getElementById('bellPanel');
@@ -668,7 +698,9 @@ async function init() {
     }
 
     E = await api.getPatients();
-    window._E = E; // Sincroniza referência global
+    window._E = E;
+    invalidateProcCache(); // limpa cache ao carregar dados novos
+    recalcCounts();
     setSyncStatus('ok', `Conectado · ${E.length} pacientes`);
   } catch (err) {
     console.warn('Erro ao conectar na API. Utilizando localStorage como fallback...', err);
@@ -707,12 +739,13 @@ function fallbackMode() {
     if (s) {
       E = JSON.parse(s);
     } else {
-      // Mock local sem rede
       E = [];
     }
   } catch(e) {
     E = [];
   }
+  invalidateProcCache();
+  recalcCounts();
 }
 
 function saveLocal() {
@@ -751,6 +784,15 @@ function showToast(msg, type='ok') {
 async function updatePaciente(id, updates) {
   const p = E.find(x => x.id === id);
   if (!p) return;
+  const prevState = { col: p.col, tent: p.tent, obs: p.obs, res: p.res, dt: p.dt };
+
+  // Atualiza contagem incremental se coluna mudou
+  if (updates.col && updates.col !== p.col) {
+    colCounts[p.col]--;
+    colCounts[updates.col]++;
+  }
+  if (updates.proc !== undefined) invalidateProcCache(id);
+
   Object.assign(p, updates);
   render();
   saveLocal();
@@ -759,10 +801,19 @@ async function updatePaciente(id, updates) {
     setSyncStatus('ok', 'Salvando...');
     await api.updatePatient(id, updates);
     setSyncStatus('ok', `Conectado · ${E.length} pacientes`);
-    showToast('Salvo ✓', 'ok');
+    showToast('Salvo', 'ok');
   } catch (err) {
+    if (err?.name === 'AbortError') return; // cancelado por request mais recente, sem rollback
+    // Rollback: restaura estado anterior
+    if (prevState.col !== p.col) {
+      colCounts[p.col]--;
+      colCounts[prevState.col]++;
+    }
+    Object.assign(p, prevState);
+    render();
+    saveLocal();
     setSyncStatus('err', 'Erro ao salvar');
-    showToast('Salvo localmente (offline)', 'ok');
+    showToast('Erro ao salvar no servidor', 'er');
     console.error('Erro na API:', err);
   }
 }
@@ -775,21 +826,22 @@ function render() {
   const C = { ligar: [], contato: [], agendado: [], final: [] };
   E.forEach(p => {
     const matchSearch = !q || p.nome.toLowerCase().includes(q);
-    const matchProc   = !activeProc || getProcCategories(p.proc).includes(activeProc);
+    const matchProc   = !activeProc || getCachedProcCategories(p).includes(activeProc);
     if (matchSearch && matchProc) C[p.col]?.push(p);
   });
   const ids = { ligar: 'c1', contato: 'c2', agendado: 'c3', final: 'c4' };
-  
+
+  // Usa contagens cacheadas (total real, independente de filtro)
   ['ligar','contato','agendado','final'].forEach(c => {
-    document.getElementById(ids[c]).textContent = E.filter(p => p.col === c).length;
+    document.getElementById(ids[c]).textContent = colCounts[c];
     const el = document.getElementById('col-' + c);
     el.innerHTML = C[c].length ? C[c].map(p => mkC(p)).join('') : `<div class="empty-c">Nenhum paciente aqui</div>`;
   });
-  
-  document.getElementById('ki1').textContent = E.filter(p => p.col === 'contato').length;
-  document.getElementById('ki2').textContent = E.filter(p => p.col === 'agendado').length;
-  document.getElementById('ki3').textContent = E.filter(p => p.col === 'final').length;
-  
+
+  document.getElementById('ki1').textContent = colCounts.contato;
+  document.getElementById('ki2').textContent = colCounts.agendado;
+  document.getElementById('ki3').textContent = colCounts.final;
+
   renderProcFilter();
 }
 
@@ -845,10 +897,10 @@ function renderProcFilter() {
   const chips = document.getElementById('pfChips');
   if (!chips) return;
 
-  // Agrupa procedimentos categorizados e conta pacientes
-  const map = new Map(); // category → count
+  // Agrupa procedimentos categorizados e conta pacientes (usa cache)
+  const map = new Map();
   E.forEach(p => {
-    const cats = getProcCategories(p.proc);
+    const cats = getCachedProcCategories(p);
     cats.forEach(cat => {
       if (cat) map.set(cat, (map.get(cat) || 0) + 1);
     });
@@ -957,7 +1009,7 @@ function mkC(p) {
     <span class="cp2" title="${esc(procTitle)}">${esc(procLimpo)}</span>
     <div class="cv">${esc(p.valor)}</div>
     ${d}${chip}
-    <textarea id="obs-${esc(p.id)}" name="obs-${esc(p.id)}" class="cobs" placeholder="Anotações..." onclick="event.stopPropagation()" oninput="window._sO('${esc(p.id)}',this.value)">${esc(p.obs || '')}</textarea>
+    <textarea id="obs-${esc(p.id)}" name="obs-${esc(p.id)}" class="cobs" aria-label="Anotações de ${esc(p.nome)}" placeholder="Anotações..." onclick="event.stopPropagation()" oninput="window._sO('${esc(p.id)}',this.value)">${esc(p.obs || '')}</textarea>
     ${retBtn}
     <div class="cbtns">${b}</div>
   </div>`;
@@ -1207,71 +1259,85 @@ const sp = document.querySelector('.sp');
 let isResizing = false;
 
 if (resizer && sp) {
-  let spExpanded = false; // Track se roteiro esta fullscreen
+  let spExpanded = false;
+  const pg0 = document.getElementById('pg0');
 
-  // Double-tap/click no resizer: toggle fullscreen do roteiro
-  let lastTap = 0;
+  // Toggle: expande roteiro / esconde contatos
   const toggleFullScript = () => {
     if (window.innerWidth > 1000) return;
     spExpanded = !spExpanded;
     if (spExpanded) {
-      // Expande roteiro para quase tela toda
-      sp.style.height = (window.innerHeight - 36 - 12) + 'px';
+      // Limpa inline styles do drag anterior que bloqueariam o CSS
+      sp.style.height = '';
+      sp.style.width = '';
+      pg0.classList.add('script-full');
+      resizer.classList.add('collapsed');
     } else {
-      // Volta ao 40% padrão
+      pg0.classList.remove('script-full');
+      resizer.classList.remove('collapsed');
       sp.style.height = '40%';
+      sp.style.width = '100%';
     }
   };
 
+  const exitFullScript = () => {
+    if (!spExpanded) return;
+    spExpanded = false;
+    pg0.classList.remove('script-full');
+    resizer.classList.remove('collapsed');
+  };
+
+  // Desktop: double-click
   resizer.addEventListener('dblclick', toggleFullScript);
+
+  // Mobile touch: tap = toggle, drag = resize
+  let touchStartY = 0;
+  let touchMoved = false;
+
+  resizer.addEventListener('touchstart', (e) => {
+    touchStartY = e.touches[0].clientY;
+    touchMoved = false;
+  }, { passive: true });
+
+  resizer.addEventListener('touchmove', (e) => {
+    if (!touchMoved) {
+      // Primeiro pixel de movimento: inicia drag
+      exitFullScript();
+      isResizing = true;
+      resizer.classList.add('active');
+      document.body.style.userSelect = 'none';
+    }
+    touchMoved = true;
+  }, { passive: true });
+
   resizer.addEventListener('touchend', (e) => {
-    const now = Date.now();
-    if (now - lastTap < 300) {
+    if (!touchMoved && window.innerWidth <= 1000) {
+      // Foi tap, nao drag
       e.preventDefault();
       toggleFullScript();
     }
-    lastTap = now;
   });
 
+  // Desktop mouse drag
   const startResize = (e) => {
+    exitFullScript();
     isResizing = true;
-    spExpanded = false; // Reset fullscreen state ao arrastar
     resizer.classList.add('active');
     document.body.style.userSelect = 'none';
-    if (window.innerWidth <= 1000) {
-      document.body.style.cursor = 'row-resize';
-    } else {
-      document.body.style.cursor = 'col-resize';
-    }
+    document.body.style.cursor = window.innerWidth <= 1000 ? 'row-resize' : 'col-resize';
   };
 
   const doResize = (e) => {
     if (!isResizing) return;
-
-    const clientX = e.touches && e.touches.length > 0 ? e.touches[0].clientX : e.clientX;
-    const clientY = e.touches && e.touches.length > 0 ? e.touches[0].clientY : e.clientY;
+    const clientX = e.touches?.[0]?.clientX ?? e.clientX;
+    const clientY = e.touches?.[0]?.clientY ?? e.clientY;
 
     if (window.innerWidth <= 1000) {
-      // MODO MOBILE: Ajuste Vertical
-      const hdrH = 36; // Header compacto mobile
-      const minHeight = 60; // Colapsado
-      const maxHeight = window.innerHeight - hdrH - 24; // Quase tela toda
-      let newHeight = clientY - hdrH;
-
-      if (newHeight < minHeight) newHeight = minHeight;
-      if (newHeight > maxHeight) newHeight = maxHeight;
-
+      const hdrH = 36;
+      let newHeight = Math.max(60, Math.min(clientY - hdrH, window.innerHeight - hdrH - 24));
       sp.style.height = newHeight + 'px';
-      sp.style.width = '100%';
     } else {
-      // MODO DESKTOP: Ajuste Horizontal
-      const minWidth = 280;
-      const maxWidth = window.innerWidth - 400;
-      let newWidth = clientX;
-
-      if (newWidth < minWidth) newWidth = minWidth;
-      if (newWidth > maxWidth) newWidth = maxWidth;
-
+      let newWidth = Math.max(280, Math.min(clientX, window.innerWidth - 400));
       sp.style.width = newWidth + 'px';
       sp.style.height = '';
     }
@@ -1287,16 +1353,13 @@ if (resizer && sp) {
   };
 
   resizer.addEventListener('mousedown', startResize);
-  resizer.addEventListener('touchstart', startResize, {passive: true});
-
   window.addEventListener('mousemove', doResize);
-  window.addEventListener('touchmove', doResize, {passive: true});
-
+  window.addEventListener('touchmove', doResize, { passive: true });
   window.addEventListener('mouseup', stopResize);
   window.addEventListener('touchend', stopResize);
-  
-  // Limpa os estilos inlines aplicados quando redimensiona e depois muda a orientação
+
   window.addEventListener('resize', () => {
+    exitFullScript();
     if (window.innerWidth <= 1000) {
       sp.style.width = '100%';
     } else {
@@ -1309,14 +1372,20 @@ if (resizer && sp) {
 // ─── RELÓGIO (HORÁRIO DE BRASÍLIA) ───────────────────────────────────────
 const clockTxtEl = document.getElementById('liveClockTxt');
 if (clockTxtEl) {
+  // Formatter cacheado (Intl e caro para criar toda vez)
+  const clockFmt = new Intl.DateTimeFormat('pt-BR', {
+    timeZone: 'America/Sao_Paulo',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  });
+  let lastClockText = '';
   const updateClock = () => {
-    const d = new Date();
-    clockTxtEl.textContent = d.toLocaleTimeString('pt-BR', {
-      timeZone: 'America/Sao_Paulo',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit'
-    });
+    const text = clockFmt.format(new Date());
+    if (text !== lastClockText) {
+      clockTxtEl.textContent = text;
+      lastClockText = text;
+    }
   };
   updateClock();
   setInterval(updateClock, 1000);

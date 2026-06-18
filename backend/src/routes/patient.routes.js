@@ -20,7 +20,7 @@ router.get('/', async (req, res) => {
     const total = totalRow.cnt;
 
     const patients = await queryAll(
-      'SELECT * FROM patients WHERE clinic_id = ? ORDER BY created_at ASC LIMIT ? OFFSET ?',
+      'SELECT id, nome, tel, proc, valor, col, tent, obs, res, dt, source, source_status, profissional, data_orcamento, created_at FROM patients WHERE clinic_id = ? ORDER BY created_at ASC LIMIT ? OFFSET ?',
       [req.clinic.id, limit, offset]
     );
 
@@ -61,20 +61,24 @@ router.put('/:tel', async (req, res) => {
       return res.status(404).json({ error: 'Paciente não encontrado.' });
     }
 
+    // Monta SET dinamico para evitar COALESCE (que ignora 0 e '')
+    const sets = [];
+    const params = [];
+    if (col !== undefined)       { sets.push('col = ?');  params.push(col); }
+    if (tent !== undefined)      { sets.push('tent = ?'); params.push(tent); }
+    if (obs !== undefined)       { sets.push('obs = ?');  params.push(obs); }
+    sets.push('res = ?');  params.push(resultado ?? null);
+    sets.push('dt = ?');   params.push(dt ?? null);
+    sets.push('updated_at = CURRENT_TIMESTAMP');
+    params.push(clinicId, tel);
+
     await run(
-      `UPDATE patients
-       SET col = COALESCE(?, col),
-           tent = COALESCE(?, tent),
-           obs = COALESCE(?, obs),
-           res = ?,
-           dt = ?,
-           updated_at = CURRENT_TIMESTAMP
-       WHERE clinic_id = ? AND tel = ?`,
-      [col, tent, obs, resultado ?? null, dt ?? null, clinicId, tel]
+      `UPDATE patients SET ${sets.join(', ')} WHERE clinic_id = ? AND tel = ?`,
+      params
     );
 
     const updated = await queryOne(
-      'SELECT * FROM patients WHERE clinic_id = ? AND tel = ?',
+      'SELECT id, nome, tel, proc, valor, col, tent, obs, res, dt, source, source_status, profissional, data_orcamento FROM patients WHERE clinic_id = ? AND tel = ?',
       [clinicId, tel]
     );
     return res.json(updated);

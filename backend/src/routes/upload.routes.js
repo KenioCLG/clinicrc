@@ -58,7 +58,7 @@ router.post('/', upload.single('file'), async (req, res) => {
   let newRows = 0, updatedRows = 0, skippedRows = 0;
 
   try {
-    // ── MERGE TRANSACTION ────────────────────────────────────────────────────
+    // Merge + historico em uma unica transacao (atomico)
     await transaction(async (tx) => {
       for (const p of patients) {
         const existing = await tx.queryOne(
@@ -88,14 +88,14 @@ router.post('/', upload.single('file'), async (req, res) => {
           }
         }
       }
-    });
 
-    // Registra no histórico
-    await run(
-      `INSERT INTO uploads (clinic_id, filename, source, total_rows, new_rows, updated_rows, skipped_rows)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [clinicId, filename, source, patients.length, newRows, updatedRows, skippedRows]
-    );
+      // Historico dentro da mesma transacao
+      await tx.run(
+        `INSERT INTO uploads (clinic_id, filename, source, total_rows, new_rows, updated_rows, skipped_rows)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [clinicId, filename, source, patients.length, newRows, updatedRows, skippedRows]
+      );
+    });
 
     return res.json({
       success: true,
