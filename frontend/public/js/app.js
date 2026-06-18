@@ -287,7 +287,7 @@ let maxAttempts = 1;
 let easyMDE = null;
 
 // ── VERSÃO DO SISTEMA ─────────────────────────────────────────────────────────
-const APP_VERSION = 'v7.2';
+const APP_VERSION = 'v7.3';
 const VER_KEY = 'clinicrc_ver';
 
 // Toggle Menu Mobile

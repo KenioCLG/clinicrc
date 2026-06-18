@@ -128,8 +128,8 @@ function parseClinicCorp(buffer) {
 
     if (!tel) { skippedReasons.noTel++; continue; }
 
-    // Filtra: só importa orçamentos em aberto (OPEN)
-    if (colStatus >= 0 && status !== 'OPEN') { skippedReasons.notOpen++; continue; }
+    // Filtra: só importa orçamentos em aberto (OPEN / EM ABERTO)
+    if (colStatus >= 0 && status !== 'OPEN' && status !== 'EM ABERTO') { skippedReasons.notOpen++; continue; }
 
     patients.push({
       nome: nome.toUpperCase() || 'SEM NOME',
