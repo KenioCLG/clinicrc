@@ -243,78 +243,85 @@ if (clinicEl && clinicName) clinicEl.textContent = clinicName;
 if (clinicMobileEl && clinicName) clinicMobileEl.textContent = clinicName;
 
 // Avatar do usuário — iniciais ou foto via upload
-(function initAvatar() {
-  var el = document.getElementById('userAvatar');
-  if (!el) return;
-  var name = clinicName || 'C';
-  var user = localStorage.getItem('clinicrc_user') || '';
-  var savedData = localStorage.getItem('clinicrc_avatar');
+// ── AVATAR — inicializa + clique abre popup personalizar ──
+var _avatarFileInput = null; // reutilizado para upload no popup
 
+function renderAvatar(el, name, user) {
+  if (!el) return;
+  var savedData = localStorage.getItem('clinicrc_avatar');
   if (savedData) {
     el.style.background = 'none';
     el.style.boxShadow = 'none';
-    el.innerHTML = '<img src="' + savedData.replace(/"/g,'&quot;') + '" alt="" style="width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;">';
-    el.title = 'Clique para trocar a foto';
+    el.innerHTML = '<img src="' + savedData.replace(/"/g,'&quot;') + '" alt="" style="width:100%;height:100%;object-fit:cover;display:block;">';
   } else {
-    // Iniciais a partir do nome da clínica (máx 2 letras)
-    var parts = name.split(/\s+/);
+    var parts = (name || 'C').split(/\s+/);
     var initials = '';
     for (var i = 0; i < parts.length && initials.length < 2; i++) {
       if (parts[i][0]) initials += parts[i][0];
     }
     initials = initials.toUpperCase() || 'C';
-
-    // Cor HSL consistente a partir do username
     var hash = 0;
-    for (var j = 0; j < user.length; j++) hash = user.charCodeAt(j) + ((hash << 5) - hash);
+    for (var j = 0; j < (user||'').length; j++) hash = user.charCodeAt(j) + ((hash << 5) - hash);
     var hue = Math.abs(hash) % 360;
     el.style.background = 'linear-gradient(135deg, hsl(' + hue + ', 60%, 45%), hsl(' + hue + ', 50%, 35%))';
     el.textContent = initials;
-    el.title = 'Clique para adicionar foto';
   }
+}
 
-  // Input file oculto para upload de foto (cria uma única vez)
-  var fileInput = document.getElementById('avatarUploadInput');
-  if (!fileInput) {
-    fileInput = document.createElement('input');
-    fileInput.id = 'avatarUploadInput';
-    fileInput.type = 'file';
-    fileInput.accept = 'image/*';
-    fileInput.style.cssText = 'position:fixed;opacity:0;width:0;height:0;pointer-events:none;z-index:-1;';
-    document.body.appendChild(fileInput);
+(function initAvatar() {
+  var el = document.getElementById('userAvatar');
+  if (!el) return;
+  var name = clinicName || 'C';
+  var user = localStorage.getItem('clinicrc_user') || '';
+  renderAvatar(el, name, user);
 
-    fileInput.addEventListener('change', function() {
-      var file = fileInput.files && fileInput.files[0];
+  // Cria input file oculto uma única vez (compartilhado)
+  if (!_avatarFileInput) {
+    _avatarFileInput = document.createElement('input');
+    _avatarFileInput.type = 'file';
+    _avatarFileInput.accept = 'image/*';
+    _avatarFileInput.style.cssText = 'position:fixed;opacity:0;width:0;height:0;pointer-events:none;z-index:-1;';
+    document.body.appendChild(_avatarFileInput);
+    _avatarFileInput.addEventListener('change', function() {
+      var file = _avatarFileInput.files && _avatarFileInput.files[0];
       if (!file) return;
       if (file.size > 5 * 1024 * 1024) { alert('A imagem deve ter no máximo 5MB.'); return; }
       var reader = new FileReader();
       reader.onload = function(ev) {
         localStorage.setItem('clinicrc_avatar', ev.target.result);
-        fileInput.value = '';
-        initAvatar();
+        _avatarFileInput.value = '';
+        // Re-renderiza ambos os lugares
+        renderAvatar(document.getElementById('userAvatar'), clinicName, localStorage.getItem('clinicrc_user'));
+        renderAvatar(document.getElementById('popupAvatarPreview'), clinicName, localStorage.getItem('clinicrc_user'));
       };
       reader.onerror = function() { alert('Erro ao ler o arquivo.'); };
       reader.readAsDataURL(file);
     });
   }
 
-  // Clique: se já tem foto → pergunta se quer remover; senão → abre seletor de arquivo
+  // Clique no avatar → abre popup personalizar (não mais upload direto)
   el.style.cursor = 'pointer';
+  el.title = 'Personalizar';
   el.onclick = function(e) {
     e.stopPropagation();
-    var cur = localStorage.getItem('clinicrc_avatar');
-    if (cur) {
-      if (confirm('Remover foto do perfil?')) {
-        localStorage.removeItem('clinicrc_avatar');
-        initAvatar();
-      }
-    } else {
-      fileInput.click();
-    }
+    window.openCustomPopup();
   };
 })();
 
-// ── PERSONALIZAR CORES ──
+// Função chamada pelo popup para trocar foto
+window.changeAvatar = function() {
+  if (_avatarFileInput) _avatarFileInput.click();
+};
+
+// Função para remover foto
+window.removeAvatar = function() {
+  if (!confirm('Remover foto do perfil?')) return;
+  localStorage.removeItem('clinicrc_avatar');
+  renderAvatar(document.getElementById('userAvatar'), clinicName, localStorage.getItem('clinicrc_user'));
+  renderAvatar(document.getElementById('popupAvatarPreview'), clinicName, localStorage.getItem('clinicrc_user'));
+};
+
+// ── PERSONALIZAR CORES (WHITE-LABEL) ──
 var CUSTOM_KEY = 'clinicrc_customColors';
 
 function loadCustomColors() {
@@ -322,6 +329,7 @@ function loadCustomColors() {
   try { saved = JSON.parse(localStorage.getItem(CUSTOM_KEY)); } catch(e) {}
   saved = saved || {};
   var def = {
+    primaryColor: '#ec6726',
     rgbC1: '#ff0066', rgbC2: '#00ffcc', rgbC3: '#ffcc00', rgbC4: '#9933ff',
     headColor: '#111827'
   };
@@ -331,8 +339,10 @@ function loadCustomColors() {
 }
 
 function applyCustomColors(colors) {
-  // Define variáveis CSS globalmente (atinge .rgb-topbar, .pop-rgb-preview, etc)
   var root = document.documentElement;
+  // Cor primária — afeta toda a UI via var(--cp)
+  root.style.setProperty('--cp', colors.primaryColor);
+  // Cores da barra RGB
   root.style.setProperty('--rgb-c1', colors.rgbC1);
   root.style.setProperty('--rgb-c2', colors.rgbC2);
   root.style.setProperty('--rgb-c3', colors.rgbC3);
@@ -343,7 +353,7 @@ function applyCustomColors(colors) {
 }
 
 function syncSwatches(colors) {
-  var map = {rgbC1:'--rgb-c1',rgbC2:'--rgb-c2',rgbC3:'--rgb-c3',rgbC4:'--rgb-c4',headColor:''};
+  var map = {primaryColor:'--cp',rgbC1:'--rgb-c1',rgbC2:'--rgb-c2',rgbC3:'--rgb-c3',rgbC4:'--rgb-c4',headColor:''};
   for (var id in map) {
     var inp = document.getElementById(id);
     if (!inp) continue;
@@ -351,9 +361,12 @@ function syncSwatches(colors) {
     var swatch = inp.parentNode && inp.parentNode.querySelector('.pop-swatch-bg');
     if (swatch) swatch.style.background = colors[id] || inp.value;
   }
-  // Atualiza label hex do cabeçalho
-  var lbl = document.getElementById('headColorLabel');
-  if (lbl && colors.headColor) lbl.textContent = colors.headColor;
+  // Labels hex
+  var labels = {headColor:'headColorLabel',primaryColor:'primaryColorLabel'};
+  for (var lid in labels) {
+    var l = document.getElementById(labels[lid]);
+    if (l && colors[lid]) l.textContent = colors[lid];
+  }
 }
 
 function saveCustomColors(colors) {
@@ -369,11 +382,17 @@ function saveCustomColors(colors) {
   syncSwatches(colors);
 })();
 
-// Abre popup personalizar cores
+// Abre popup personalizar
 window.openCustomPopup = function() {
-  // Sincroniza swatches ao abrir
   var colors = loadCustomColors();
   syncSwatches(colors);
+  // Sincroniza preview do avatar no popup
+  renderAvatar(document.getElementById('popupAvatarPreview'), clinicName, localStorage.getItem('clinicrc_user'));
+  var nameEl = document.getElementById('popupAvatarName');
+  if (nameEl) nameEl.textContent = clinicName || 'Usuário';
+  // Botão de trocar foto no popup
+  var btn = document.getElementById('popupAvatarBtn');
+  if (btn) btn.onclick = function(e) { e.stopPropagation(); window.changeAvatar(); };
   document.getElementById('modalCustom').classList.add('on');
 };
 
@@ -381,13 +400,15 @@ window.openCustomPopup = function() {
 document.addEventListener('change', function(e) {
   var id = e.target && e.target.id;
   if (!id) return;
-  if (id === 'rgbC1' || id === 'rgbC2' || id === 'rgbC3' || id === 'rgbC4' || id === 'headColor') {
+  var validIds = {rgbC1:1,rgbC2:1,rgbC3:1,rgbC4:1,headColor:1,primaryColor:1};
+  if (validIds[id]) {
     var colors = loadCustomColors();
     colors[id] = e.target.value;
     saveCustomColors(colors);
-    // Atualiza label hex da cor do cabeçalho
-    if (id === 'headColor') {
-      var lbl = document.getElementById('headColorLabel');
+    // Atualiza labels hex
+    var labelMap = {headColor:'headColorLabel',primaryColor:'primaryColorLabel'};
+    if (labelMap[id]) {
+      var lbl = document.getElementById(labelMap[id]);
       if (lbl) lbl.textContent = e.target.value;
     }
   }

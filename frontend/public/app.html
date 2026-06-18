@@ -131,10 +131,6 @@ if ('serviceWorker' in navigator && !localStorage.getItem('sw_cleaned')) {
       <span class="mi">schedule</span> <span class="drawer-label" id="liveClockTxt">--:--:--</span>
     </span>
 
-    <!-- PERSONALIZAR CORES (abre popup) -->
-    <button class="drawer-link" onclick="window.openCustomPopup()" title="Personalizar cores do app">
-      <span class="mi">palette</span> <span class="drawer-label">Personalizar</span>
-    </button>
 
     <div class="drawer-divider" style="margin-top:auto;"></div>
     <div class="drawer-user">
@@ -392,9 +388,10 @@ O tom deve ser humano, empático e focado em gerar urgência e agendamento.
 <!-- TOAST NOTIFICATION -->
 <div class="toast" id="toast"></div>
 
-<!-- MODAL PERSONALIZAR CORES -->
+<!-- MODAL PERSONALIZAR (WHITE-LABEL) -->
 <div class="mbg" id="modalCustom">
   <div class="pop-custom">
+
     <!-- HEADER -->
     <div class="pop-custom-hd">
       <span class="mi" style="font-size:20px;color:var(--cp);">palette</span>
@@ -404,14 +401,57 @@ O tom deve ser humano, empático e focado em gerar urgência e agendamento.
       </button>
     </div>
 
+    <!-- SEÇÃO: FOTO DO PERFIL -->
+    <div class="pop-custom-sec">
+      <div class="pop-custom-label">Foto do perfil</div>
+      <div style="display:flex;align-items:center;gap:14px;">
+        <div style="position:relative;width:48px;height:48px;flex-shrink:0;">
+          <span class="ava" id="popupAvatarPreview" style="width:48px;height:48px;font-size:18px;"></span>
+          <button id="popupAvatarBtn" style="position:absolute;bottom:-2px;right:-2px;width:22px;height:22px;border-radius:50%;background:var(--cp);color:#fff;border:2px solid var(--cs);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;" title="Trocar foto" aria-label="Trocar foto">
+            <span class="mi" style="font-size:12px;">camera_alt</span>
+          </button>
+        </div>
+        <div style="display:flex;flex-direction:column;">
+          <span style="font-size:13px;font-weight:500;color:var(--ct);" id="popupAvatarName">Usuário</span>
+          <button onclick="window.removeAvatar()" style="background:none;border:none;cursor:pointer;color:var(--cre);font-size:11px;padding:0;text-align:left;font-family:var(--font);">Remover foto</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SEÇÃO: COR PRIMÁRIA -->
+    <div class="pop-custom-sec">
+      <div class="pop-custom-label">Cor principal do app</div>
+      <div class="pop-custom-pickers" style="gap:12px;">
+        <label class="pop-swatch pop-swatch-hd" title="Cor primária">
+          <input type="color" id="primaryColor" value="#ec6726">
+          <span class="pop-swatch-bg"></span>
+        </label>
+        <div style="display:flex;flex-direction:column;">
+          <span style="font-size:13px;font-weight:500;color:var(--ct);">Primária</span>
+          <span style="font-size:11px;font-family:monospace;color:var(--cts);" id="primaryColorLabel">#ec6726</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SEÇÃO: CABEÇALHO -->
+    <div class="pop-custom-sec">
+      <div class="pop-custom-label">Cor do cabeçalho</div>
+      <div class="pop-custom-pickers" style="gap:12px;">
+        <label class="pop-swatch pop-swatch-hd" title="Cabeçalho">
+          <input type="color" id="headColor" value="#111827">
+          <span class="pop-swatch-bg"></span>
+        </label>
+        <div style="display:flex;flex-direction:column;">
+          <span style="font-size:13px;font-weight:500;color:var(--ct);">Header</span>
+          <span style="font-size:11px;font-family:monospace;color:var(--cts);" id="headColorLabel">#111827</span>
+        </div>
+      </div>
+    </div>
+
     <!-- SEÇÃO: BARRA RGB -->
     <div class="pop-custom-sec">
       <div class="pop-custom-label">Barra RGB <span style="font-weight:400;color:var(--cts);">· 4 cores</span></div>
-
-      <!-- Preview da barra dentro do modal -->
       <div class="pop-rgb-preview" id="rgbPreview"></div>
-
-      <!-- Pickers lado a lado -->
       <div class="pop-custom-pickers">
         <label class="pop-swatch" title="Cor 1">
           <input type="color" id="rgbC1" value="#ff0066">
@@ -433,21 +473,6 @@ O tom deve ser humano, empático e focado em gerar urgência e agendamento.
           <span class="pop-swatch-bg"></span>
           <span class="pop-swatch-label">4</span>
         </label>
-      </div>
-    </div>
-
-    <!-- SEÇÃO: CABEÇALHO -->
-    <div class="pop-custom-sec">
-      <div class="pop-custom-label">Cor do cabeçalho</div>
-      <div class="pop-custom-pickers" style="gap:12px;">
-        <label class="pop-swatch pop-swatch-hd" title="Cabeçalho">
-          <input type="color" id="headColor" value="#111827">
-          <span class="pop-swatch-bg"></span>
-        </label>
-        <div style="display:flex;flex-direction:column;">
-          <span style="font-size:13px;font-weight:500;color:var(--ct);">Header</span>
-          <span style="font-size:11px;font-family:monospace;color:var(--cts);" id="headColorLabel">#111827</span>
-        </div>
       </div>
     </div>
 
