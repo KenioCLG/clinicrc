@@ -72,6 +72,22 @@ body{font-family:var(--font);font-size:14px;color:var(--ct);background:var(--cbg
 .sync-dot{width:8px;height:8px;border-radius:50%;background:currentColor;box-shadow:0 0 6px currentColor;}
 .ava{display:inline-flex;align-items:center;justify-content:center;border-radius:50%;background:linear-gradient(135deg, #EC6726, #c45420);color:#fff;font-weight:600;font-size:13px;width:32px;height:32px;text-transform:uppercase;box-shadow:0 2px 4px rgba(236,103,38,0.3);}
 
+/* DRAWER LINK ITEMS (desktop: inline row / mobile: full-width list) */
+.drawer-link{display:flex;align-items:center;gap:8px;color:rgba(255,255,255,.85);font-size:13px;font-weight:500;font-family:var(--font);text-decoration:none;padding:6px 12px;border-radius:6px;transition:background .2s;cursor:pointer;background:none;border:none;white-space:nowrap;position:relative;}
+.drawer-link:hover{background:rgba(255,255,255,.08);color:#fff;}
+.drawer-link .mi{font-size:18px;flex-shrink:0;}
+.drawer-label{/* shown always */}
+.drawer-divider{display:none;}
+.drawer-user{display:flex;align-items:center;gap:8px;padding:6px 12px;}
+.drawer-user-info{display:none;}
+.drawer-user-info strong{font-size:13px;color:rgba(255,255,255,.9);display:block;}
+.drawer-user-info small{font-size:11px;color:rgba(255,255,255,.5);}
+.drawer-logout{background:none;border:none;cursor:pointer;color:rgba(255,255,255,.6);display:flex;align-items:center;padding:6px;border-radius:6px;transition:all .2s;}
+.drawer-logout:hover{color:#fff;background:rgba(255,255,255,.08);}
+.drawer-clock{font-variant-numeric:tabular-nums;}
+.hdr-clinic-mobile{display:none;}
+.bell-count{position:absolute;top:2px;right:2px;background:#EF4444;color:#fff;font-size:9px;font-weight:700;min-width:15px;height:15px;border-radius:8px;display:flex;align-items:center;justify-content:center;line-height:1;padding:0 3px;border:1.5px solid var(--chbg);animation:bellPulse 2.0s infinite;}
+
 /* LOADING OVERLAY */
 .loading-overlay{position:fixed;inset:0;background:rgba(17,24,39,0.95);backdrop-filter:blur(8px);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity .4s ease;}
 .loading-overlay.hide{opacity:0;pointer-events:none;}
@@ -91,6 +107,10 @@ body{font-family:var(--font);font-size:14px;color:var(--ct);background:var(--cbg
 .sp-hd{background:#FFFFFF;color:var(--ct);padding:14px 16px;display:flex;align-items:center;gap:12px;flex-shrink:0;border-bottom:1px solid var(--cdiv);}
 .sp-hd h2{font-size:15px;font-weight:600;letter-spacing:-0.2px;}
 .sp-hd p{font-size:12px;color:var(--cts);margin-top:2px;font-weight:400;}
+/* Mobile-only elements inside sp-hd — hidden on desktop */
+.sp-mobile-menu{display:none;background:none;border:none;color:var(--ct);cursor:pointer;padding:4px;border-radius:6px;transition:background .2s;}
+.sp-mobile-menu:hover{background:rgba(0,0,0,.05);}
+.sp-mobile-ver{display:none;align-items:center;gap:3px;font-size:10px;color:var(--cts);letter-spacing:.3px;}
 .tbar{display:flex;gap:6px;padding:10px 16px;background:var(--cibg);border-bottom:1px solid var(--cdiv);flex-shrink:0;align-items:center;overflow-x:auto;}
 .tbar::-webkit-scrollbar{height:0px;}
 .tbar.tbar-active{background:#FFF3EE;border-bottom:2px solid var(--cp);box-shadow:inset 0 -1px 0 rgba(236,103,38,0.2);animation:tbarPulse 0.4s ease;}
@@ -157,27 +177,70 @@ body{font-family:var(--font);font-size:14px;color:var(--ct);background:var(--cbg
     height: auto !important;
   }
   
-  /* HEADER E-COMMERCE MOBILE (DRAWER) */
+  /* ═══ HEADER COMPACTO MOBILE ═══ */
   .hdr {
-    padding: 0 4px;
+    --hh: 36px;
+    height: 36px !important;
+    padding: 0 6px;
     justify-content: space-between;
   }
-  .mobile-menu-btn {
-    display: block;
+  .body { padding-top: 36px; }
+
+  /* Esconde hamburger e version do header (foram pro sp-hd) */
+  .mobile-menu-btn { display: none !important; }
+  .hdr-menu { display: none !important; }
+
+  /* Header: só mostra nome da clinica + sino + logout */
+  .hdr-r {
+    flex-direction: row !important;
+    align-items: center;
+    gap: 4px !important;
+    padding: 0 4px !important;
+    margin: 0 !important;
   }
-  .hdr-menu { 
-    border-right: none; 
-    padding: 0 8px; 
-    margin: 0 auto; /* Centraliza a logo */
+  /* ═══ HEADER TOP: so nome clinica + sino + logout ═══ */
+  .hdr-r > * { display: none !important; }
+  .hdr-r #bellBtn,
+  .hdr-r .drawer-logout { display: flex !important; }
+
+  /* Nome da clinica no header mobile */
+  .hdr-clinic-mobile {
+    display: block !important;
+    flex: 1;
+    color: rgba(255,255,255,.9);
+    font-size: 13px;
+    font-weight: 600;
+    font-family: var(--font);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: center;
   }
-  
-  /* GAVETA LATERAL */
+  /* Sino compacto no header */
+  .hdr-r #bellBtn { padding: 2px 6px !important; border-radius: 6px; }
+  .hdr-r #bellBtn .mi { font-size: 18px !important; }
+  .hdr-r #bellBtn .drawer-label { display: none !important; }
+  .hdr-r #bellBtn .bell-count { top: 0; right: 0; }
+  /* Logout compacto no header */
+  .hdr-r .drawer-logout { padding: 4px !important; color: rgba(255,255,255,.6) !important; }
+  .hdr-r .drawer-logout .mi { font-size: 16px !important; }
+
+  /* ═══ HAMBURGER + VERSION NO SP-HD ═══ */
+  .sp-mobile-menu { display: flex !important; }
+  .sp-mobile-ver { display: flex !important; }
+  .sp-desktop-icon { display: none !important; }
+  .sp-hd { padding: 8px 10px !important; gap: 8px !important; }
+  .sp-hd h2 { font-size: 13px !important; }
+  .sp-hd-sub { display: none !important; }
+
+  /* ═══ GAVETA LATERAL (abre do sp-hd) ═══ */
   .hdr-nav {
     position: fixed;
-    top: var(--hh);
+    top: 36px;
     left: -100%;
     width: 260px;
-    height: calc(100vh - var(--hh));
+    height: calc(100vh - 36px);
+    height: calc(100dvh - 36px);
     background: var(--chbg);
     flex-direction: column;
     justify-content: flex-start;
@@ -185,40 +248,34 @@ body{font-family:var(--font);font-size:14px;color:var(--ct);background:var(--cbg
     transition: left 0.3s ease;
     z-index: 2000;
     border-right: 1px solid rgba(255,255,255,0.1);
+    overflow-y: auto;
   }
-  .hdr-nav.open {
-    left: 0;
-  }
-  
-  /* OVERLAY ESCURO QUANDO MENU ABERTO */
+  .hdr-nav.open { left: 0; }
+
+  /* OVERLAY */
   .mobile-overlay {
     display: block;
     position: fixed;
-    top: var(--hh);
-    left: 0;
-    right: 0;
-    bottom: 0;
+    top: 36px;
+    left: 0; right: 0; bottom: 0;
     background: rgba(0,0,0,0.5);
     z-index: 1999;
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.3s ease;
   }
-  .mobile-overlay.open {
-    opacity: 1;
-    pointer-events: auto;
-  }
+  .mobile-overlay.open { opacity: 1; pointer-events: auto; }
 
   /* ABAS NA GAVETA */
-  .hdr-tabs { 
-    flex-direction: column; 
-    height: auto; 
+  .hdr-tabs {
+    flex-direction: column;
+    height: auto;
     padding: 10px 0;
     border-bottom: 1px solid rgba(255,255,255,0.1);
   }
-  .tab-btn { 
-    padding: 12px 20px; 
-    height: auto; 
+  .tab-btn {
+    padding: 12px 20px;
+    height: auto;
     justify-content: flex-start;
     border-bottom: none !important;
     border-left: 3px solid transparent;
@@ -227,43 +284,71 @@ body{font-family:var(--font);font-size:14px;color:var(--ct);background:var(--cbg
     border-left-color: var(--cp);
     background: rgba(236,103,38,0.1);
   }
-  
-  /* DIREITA (BOTÕES) NA GAVETA */
-  .hdr-r { 
-    flex-direction: column;
-    align-items: stretch;
-    padding: 10px 0;
-    gap: 0;
-    margin: 0;
+
+  /* ═══ GAVETA: itens como lista limpa ═══ */
+  .hdr-nav .hdr-r {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    padding: 0 !important;
+    gap: 0 !important;
   }
-  .sync-badge { padding: 12px 20px; border-radius: 0; justify-content: flex-start; }
-  
-  /* Ajuste botões de ação na gaveta para ficarem como lista */
-  a[href="upload.html"], #supportBtn, #pwaInstallBtn {
+  /* Mostra TODOS os itens dentro da gaveta */
+  .hdr-nav .hdr-r > * { display: flex !important; }
+  /* Esconde logout e sino do drawer (ja estao no header top) */
+  .hdr-nav .hdr-r > .drawer-logout { display: none !important; }
+
+  /* Drawer links: full-width rows */
+  .hdr-nav .drawer-link {
+    padding: 14px 20px !important;
+    border-radius: 0 !important;
+    font-size: 14px !important;
+    color: rgba(255,255,255,.8) !important;
+    border-bottom: 1px solid rgba(255,255,255,.05);
+  }
+  .hdr-nav .drawer-link:hover {
+    background: rgba(255,255,255,.06) !important;
+    color: #fff !important;
+  }
+  .hdr-nav .drawer-link .mi { font-size: 20px !important; width: 24px; text-align: center; }
+
+  /* Bell no drawer: mostra label */
+  .hdr-nav #bellBtn .drawer-label { display: inline !important; }
+  .hdr-nav #bellBtn .bell-count { position: static; border: none; margin-left: auto; }
+
+  /* Sync badge no drawer */
+  .hdr-nav .sync-badge {
     padding: 12px 20px !important;
     border-radius: 0 !important;
-    width: 100%;
-    justify-content: flex-start;
-    font-size: 14px !important;
+    justify-content: flex-start !important;
+    border-bottom: 1px solid rgba(255,255,255,.05);
   }
-  #pwaInstallBtn {
-    height: auto;
-    border: none;
-    background: transparent !important;
-    color: rgba(255,255,255,0.7);
+
+  /* Divider */
+  .hdr-nav .drawer-divider { display: block !important; height: 1px; background: rgba(255,255,255,.1); margin: 8px 0; }
+
+  /* User section at bottom of drawer */
+  .hdr-nav .drawer-user {
+    padding: 14px 20px !important;
+    display: flex !important;
+    gap: 10px;
+    align-items: center;
+    border-top: 1px solid rgba(255,255,255,.1);
+    margin-top: auto;
   }
-  #pwaInstallBtn:hover {
-    color: #fff;
-  }
-  
-  /* KANBAN COMO CARROSSEL (SNAP) NO MOBILE */
+  .hdr-nav .drawer-user-info { display: block !important; flex: 1; }
+  .hdr-nav .drawer-user-info strong { color: rgba(255,255,255,.9); font-size: 13px; }
+  .hdr-nav .drawer-user-info small { color: rgba(255,255,255,.45); font-size: 11px; }
+  .hdr-nav .drawer-user .drawer-logout { display: flex !important; color: rgba(255,255,255,.5); }
+  .hdr-nav .drawer-user .drawer-logout:hover { color: #EF4444; }
+
+  /* KANBAN CARROSSEL */
   .cols {
     scroll-snap-type: x mandatory;
     scroll-padding: 12px;
   }
   .col {
     flex: none !important;
-    width: 85vw !important; /* Quase a tela toda para o cartão */
+    width: 85vw !important;
     scroll-snap-align: center;
   }
 }

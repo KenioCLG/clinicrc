@@ -132,10 +132,12 @@ let tN = 1, pA = null, fId = null;
 let obsDebounce = {};
 let activeProc = null; // filtro de procedimento ativo
 
-// Mostra nome da clínica logada no header
+// Mostra nome da clínica logada no header e drawer
 const clinicName = localStorage.getItem('clinicrc_clinic');
 const clinicEl = document.getElementById('clinicNameDisplay');
+const clinicMobileEl = document.getElementById('clinicNameMobile');
 if (clinicEl && clinicName) clinicEl.textContent = clinicName;
+if (clinicMobileEl && clinicName) clinicMobileEl.textContent = clinicName;
 
 // Função de logout global
 window.doLogout = () => {
@@ -1141,18 +1143,18 @@ if (resizer && sp) {
 }
 
 // ─── RELÓGIO (HORÁRIO DE BRASÍLIA) ───────────────────────────────────────
-const clockEl = document.getElementById('liveClock');
-if (clockEl) {
+const clockTxtEl = document.getElementById('liveClockTxt');
+if (clockTxtEl) {
   const updateClock = () => {
     const d = new Date();
-    clockEl.textContent = d.toLocaleTimeString('pt-BR', {
+    clockTxtEl.textContent = d.toLocaleTimeString('pt-BR', {
       timeZone: 'America/Sao_Paulo',
       hour: '2-digit',
       minute: '2-digit',
       second: '2-digit'
     });
   };
-  updateClock(); // Chama imediatamente
+  updateClock();
   setInterval(updateClock, 1000);
 }
 
