@@ -1262,21 +1262,19 @@ if (resizer && sp) {
   let spExpanded = false;
   const pg0 = document.getElementById('pg0');
 
-  // Toggle: expande roteiro / esconde contatos
+  const kp = document.querySelector('.kp');
+
   const toggleFullScript = () => {
     if (window.innerWidth > 1000) return;
     spExpanded = !spExpanded;
     if (spExpanded) {
-      // Limpa inline styles do drag anterior que bloqueariam o CSS
-      sp.style.height = '';
-      sp.style.width = '';
+      sp.style.flex = '';
+      if (kp) kp.style.flex = '';
       pg0.classList.add('script-full');
       resizer.classList.add('collapsed');
     } else {
       pg0.classList.remove('script-full');
       resizer.classList.remove('collapsed');
-      sp.style.height = '40%';
-      sp.style.width = '100%';
     }
   };
 
@@ -1333,13 +1331,20 @@ if (resizer && sp) {
     const clientY = e.touches?.[0]?.clientY ?? e.clientY;
 
     if (window.innerWidth <= 1000) {
+      // Mobile: ajusta proporcao flex baseado na posicao Y
       const hdrH = 36;
-      let newHeight = Math.max(60, Math.min(clientY - hdrH, window.innerHeight - hdrH - 24));
-      sp.style.height = newHeight + 'px';
+      const resizerH = 24;
+      const totalH = window.innerHeight - hdrH - resizerH;
+      const spH = Math.max(60, Math.min(clientY - hdrH, totalH - 80));
+      const kpH = totalH - spH;
+      // Converte para flex-grow proporcional (base 10)
+      const spFlex = Math.round((spH / totalH) * 10 * 10) / 10;
+      const kpFlex = Math.round((kpH / totalH) * 10 * 10) / 10;
+      sp.style.flex = `${spFlex} 1 0%`;
+      if (kp) kp.style.flex = `${kpFlex} 1 0%`;
     } else {
       let newWidth = Math.max(280, Math.min(clientX, window.innerWidth - 400));
       sp.style.width = newWidth + 'px';
-      sp.style.height = '';
     }
   };
 
@@ -1360,10 +1365,11 @@ if (resizer && sp) {
 
   window.addEventListener('resize', () => {
     exitFullScript();
-    if (window.innerWidth <= 1000) {
-      sp.style.width = '100%';
-    } else {
-      sp.style.height = '';
+    // Reseta inline flex/width ao mudar orientacao
+    sp.style.flex = '';
+    sp.style.width = '';
+    if (kp) kp.style.flex = '';
+    if (window.innerWidth > 1000) {
       sp.style.width = '38%';
     }
   });
