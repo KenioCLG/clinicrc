@@ -44,11 +44,11 @@ if ('serviceWorker' in navigator && !localStorage.getItem('sw_cleaned')) {
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
-<script src="https://cdn.jsdelivr.net/npm/marked@15.0.4/marked.min.js" integrity="sha384-MQX6KLXAqxeh8gCqETDHfMWJbfuPTqOb0w25cRpYITn6mCnXU6OKcamXGNnPuGJ0" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked@15.0.4/marked.min.js" integrity="sha384-2NndlFAl0twi2nmu3w9mixodZFiN2fbxlakcYJF86bn1JeS1VB87/XqA7cqymzS+" crossorigin="anonymous"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde@2.18.0/dist/easymde.min.css">
 <script src="https://cdn.jsdelivr.net/npm/easymde@2.18.0/dist/easymde.min.js"></script>
-<link rel="stylesheet" href="css/styles-v4.css?v=7.3"/>
-<link rel="stylesheet" href="css/odontograma.css?v=7.3"/>
+<link rel="stylesheet" href="css/styles-v4.css?v=7.6"/>
+<link rel="stylesheet" href="css/odontograma.css?v=7.6"/>
   <link rel="icon" type="image/x-icon" href="favicon.ico">
   <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
   <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
@@ -75,7 +75,7 @@ if ('serviceWorker' in navigator && !localStorage.getItem('sw_cleaned')) {
   <span class="hdr-clinic-mobile" id="clinicNameMobile"></span>
   <button class="hdr-bell" id="bellBtnHdr" onclick="window.toggleBell()" title="Retornos">
     <span class="mi">notifications</span>
-    <span class="bell-count" id="bellCountHdr" style="display:none">0</span>
+    <span class="bell-count" id="bellCountHdr">0</span>
   </button>
   <button class="hdr-menu" id="menuVersion" title="Versão do sistema">
     <span class="mi">medical_services</span>
@@ -83,6 +83,9 @@ if ('serviceWorker' in navigator && !localStorage.getItem('sw_cleaned')) {
   </button>
   
   <div class="hdr-nav" id="hdrNav">
+    <button class="drawer-close" onclick="window.toggleMobileMenu()" aria-label="Fechar menu">
+      <span class="mi">close</span>
+    </button>
     <div class="hdr-tabs">
     <button class="tab-btn on" onclick="window.trocarAba(0, this)">
       <span class="mi" style="font-size:16px;">view_kanban</span>
@@ -92,12 +95,13 @@ if ('serviceWorker' in navigator && !localStorage.getItem('sw_cleaned')) {
       <span class="mi" style="font-size:16px;">analytics</span>
       Relatórios
     </button>
-    <button class="tab-btn" onclick="window.trocarAba(2, this)" style="display: none;">
+    <button class="tab-btn tab-odonto" onclick="window.trocarAba(2, this)">
       <span class="mi" style="font-size:16px;">medical_services</span>
       Odontograma
     </button>
   </div>
   <div class="hdr-r">
+    <div class="drawer-section-label">Ferramentas</div>
     <div class="sync-badge" id="syncBadge">
       <div class="sync-dot"></div>
       <span id="syncTxt">Conectando...</span>
@@ -114,12 +118,12 @@ if ('serviceWorker' in navigator && !localStorage.getItem('sw_cleaned')) {
     <button class="drawer-link" id="bellBtn" onclick="window.toggleBell()">
       <span class="mi">notifications</span>
       <span class="drawer-label">Retornos</span>
-      <span class="bell-count" id="bellCount" style="display:none">0</span>
+      <span class="bell-count" id="bellCount">0</span>
     </button>
     <span id="liveClock" class="drawer-link drawer-clock">
       <span class="mi">schedule</span> <span class="drawer-label" id="liveClockTxt">--:--:--</span>
     </span>
-    <div class="drawer-divider"></div>
+    <div class="drawer-divider" style="margin-top:auto;"></div>
     <div class="drawer-user">
       <span class="ava">D</span>
       <div class="drawer-user-info">
@@ -393,8 +397,8 @@ O tom deve ser humano, empático e focado em gerar urgência e agendamento.
 </script>
 
 <!-- JS ENTRYPOINT -->
-<script type="module" src="js/app.js?v=7.3"></script>
-<script src="js/odontograma-anat.js?v=7.3" defer></script>
+<script src="js/app.js?v=7.6"></script>
+<script src="js/odontograma-anat.js?v=7.6" defer></script>
 
 <!-- Fechar modais com ESC + fechar drawer ao trocar aba -->
 <script>
@@ -411,6 +415,21 @@ document.querySelectorAll('.tab-btn').forEach(function(btn) {
     if (ov) ov.classList.remove('open');
   });
 });
+
+// Mostra aba Odontograma se o módulo estiver carregado
+(function() {
+  var checkOdonto = function() {
+    var tab = document.querySelector('.tab-odonto');
+    if (tab && (window.Odontogram || window.odontogramaInstance)) {
+      tab.classList.add('visible');
+    }
+  };
+  if (document.querySelector('.tab-odonto')) {
+    // Tenta imediatamente e novamente após carregamento dos scripts
+    checkOdonto();
+    setTimeout(checkOdonto, 2000);
+  }
+})();
 </script>
 
 </body>

@@ -1,4 +1,88 @@
-import ClinicrcApiClient from './api-client.js';
+/**
+ * api-client.js (inlined) — Cliente da API ClinicRC
+ *
+ * ANALOGIA: É o "telefone" do frontend.
+ * Sempre que o Kanban precisa salvar ou buscar dados,
+ * ele usa este módulo para ligar para o servidor (backend).
+ *
+ * Agora usa nossa API Node.js + JWT para a versão multi-clínica.
+ */
+
+class ClinicrcApiClient {
+  constructor() {
+    // URL base da API — em produção, vai ser o domínio do Railway
+    this.base = window.location.origin;
+
+    // Token JWT salvo no login
+    this.token = localStorage.getItem('clinicrc_token');
+
+    // Se não tem token, manda para o login
+    if (!this.token) {
+      window.location.href = 'index.html';
+    }
+  }
+
+  /**
+   * Headers padrão com autenticação
+   */
+  get headers() {
+    return {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${this.token}`,
+    };
+  }
+
+  /**
+   * Busca todos os pacientes da clínica logada
+   */
+  async getPatients() {
+    const res = await fetch(`${this.base}/patients`, {
+      headers: this.headers,
+      signal: AbortSignal.timeout(15000)
+    });
+
+    if (res.status === 401) {
+      // Token expirado — volta para login
+      localStorage.clear();
+      window.location.href = 'index.html';
+      return [];
+    }
+
+    if (!res.ok) throw new Error(`Erro ${res.status}`);
+    return await res.json();
+  }
+
+  /**
+   * Atualiza dados de um paciente (progresso no Kanban)
+   * Usa o telefone como identificador único
+   */
+  async updatePatient(id, updates) {
+    // Busca o paciente pelo ID para obter o tel
+    const patient = window._E?.find(p => p.id === id);
+    const tel = patient?.tel;
+
+    if (!tel) throw new Error('Telefone não encontrado para ID: ' + id);
+
+    const res = await fetch(`${this.base}/patients/${tel}`, {
+      method: 'PUT',
+      headers: this.headers,
+      body: JSON.stringify(updates),
+      signal: AbortSignal.timeout(15000)
+    });
+
+    if (res.status === 401) {
+      localStorage.clear();
+      window.location.href = 'index.html';
+    }
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `Erro ${res.status}`);
+    }
+
+    return await res.json();
+  }
+}
 
 // XSS protection — escapa HTML em dados do usuário
 function esc(str) {
@@ -191,9 +275,52 @@ const VER_KEY = 'clinicrc_ver';
 window.toggleMobileMenu = function() {
   const nav = document.getElementById('hdrNav');
   const overlay = document.getElementById('mobileOverlay');
+  const isOpen = nav?.classList.contains('open');
+  
   if(nav) nav.classList.toggle('open');
   if(overlay) overlay.classList.toggle('open');
+  
+  // Body scroll lock
+  if (nav) {
+    document.body.style.overflow = isOpen ? '' : 'hidden';
+  }
+  
+  // Aria expanded
+  const menuBtn = document.querySelector('.mobile-menu-btn');
+  if (menuBtn) menuBtn.setAttribute('aria-expanded', String(!isOpen));
 };
+
+// Swipe to close drawer
+let touchStartX = 0;
+document.addEventListener('touchstart', (e) => {
+  const nav = document.getElementById('hdrNav');
+  const drawerOpen = nav?.classList.contains('open');
+  if (!drawerOpen) return;
+  
+  if (e.touches[0].clientX < 300 || e.target.closest('#hdrNav')) {
+    touchStartX = e.touches[0].clientX;
+  }
+}, { passive: true });
+
+document.addEventListener('touchmove', (e) => {
+  // No-op: distance is calculated in touchend
+  // Do NOT modify drawer transform here — it cancels click events on mobile
+}, { passive: true });
+
+document.addEventListener('touchend', (e) => {
+  const nav = document.getElementById('hdrNav');
+  if (!touchStartX || !nav?.classList.contains('open')) return;
+  
+  const diff = e.changedTouches[0].clientX - touchStartX;
+  nav.style.transform = '';
+  nav.style.transition = '';
+  
+  if (diff < -60) {
+    window.toggleMobileMenu();
+  }
+  
+  touchStartX = 0;
+}, { passive: true });
 
 (function initVersion() {
   const verEl = document.getElementById('verNum');
@@ -233,9 +360,11 @@ function renderBell() {
   const ativos = retornos.filter(r => r.dt > agora);
   const vencidos = retornos.filter(r => r.dt <= agora);
   if (!count) return;
-  count.style.display = retornos.length ? 'flex' : 'none';
+  count.style.display = 'flex';
   count.textContent = retornos.length;
-  if (countHdr) { countHdr.style.display = retornos.length ? 'flex' : 'none'; countHdr.textContent = retornos.length; }
+  count.style.opacity = retornos.length ? '1' : '.35';
+  count.style.animation = retornos.length ? 'bellPulse 2.0s infinite' : 'none';
+  if (countHdr) { countHdr.style.display = 'flex'; countHdr.textContent = retornos.length; countHdr.style.opacity = retornos.length ? '1' : '.35'; countHdr.style.animation = retornos.length ? 'bellPulse 2.0s infinite' : 'none'; }
   if (!retornos.length) {
     list.innerHTML = '<div class="bell-empty">Nenhum retorno agendado</div>';
     return;
@@ -1006,11 +1135,12 @@ function trocarAba(i, b) {
   document.querySelectorAll('.tab-btn').forEach((x, j) => x.classList.toggle('on', j === i));
   document.querySelectorAll('.pg').forEach((x, j) => x.classList.toggle('on', j === i));
   if (i === 1) rel();
-  // Fecha drawer no mobile
+  // Fecha drawer no mobile + restaura scroll
   const nav = document.getElementById('hdrNav');
   const ov = document.getElementById('mobileOverlay');
   if (nav) nav.classList.remove('open');
   if (ov) ov.classList.remove('open');
+  document.body.style.overflow = '';
 }
 window.trocarAba = trocarAba;
 

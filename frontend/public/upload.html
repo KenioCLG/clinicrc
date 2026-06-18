@@ -169,6 +169,44 @@
   .empty-hist{text-align:center;padding:24px;color:var(--cts);font-size:13px;}
 
   @keyframes fadeIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+
+  @media (max-width: 1000px) {
+    .hdr-back span:last-child { display: inline; }
+    .clinic-label { display: inline; }
+  }
+
+  @media (max-width: 600px) {
+    .stats { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; }
+    .stat { padding: 10px !important; }
+    .stat .num { font-size: 18px !important; }
+
+    .hist-card { overflow-x: auto !important; -webkit-overflow-scrolling: touch; }
+    .hist-card table { min-width: 500px; }
+
+    .main { padding: 20px 14px !important; }
+    .page-title { font-size: 18px !important; }
+    .page-sub { font-size: 13px !important; }
+
+    .dropzone { padding: 28px 16px !important; }
+    .dropzone .dz-icon .mi { font-size: 36px !important; }
+
+    .hdr { padding: 0 10px !important; }
+    .hdr-left .logo { font-size: 14px !important; }
+    .clinic-label { display: none !important; }
+    .btn-logout span.mi { font-size: 18px; }
+    .btn-logout span:last-child { display: none !important; }
+
+    .system-info { padding: 10px 12px !important; }
+    .si-badge { font-size: 10px !important; padding: 2px 8px !important; }
+
+    .btn-upload { padding: 12px !important; font-size: 14px !important; }
+  }
+
+  @media (max-width: 400px) {
+    .stats { grid-template-columns: 1fr 1fr !important; }
+    .hdr-back .mi { font-size: 18px; }
+    .hdr-back span:last-child { display: none; }
+  }
 </style>
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
