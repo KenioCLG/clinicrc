@@ -48,7 +48,7 @@ if ('serviceWorker' in navigator && !localStorage.getItem('sw_cleaned')) {
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde@2.18.0/dist/easymde.min.css">
 <script src="https://cdn.jsdelivr.net/npm/easymde@2.18.0/dist/easymde.min.js"></script>
 <link rel="stylesheet" href="css/styles-v4.css?v=7.10"/>
-<link rel="stylesheet" href="css/odontograma.css?v=7.10"/>
+    <!-- EM DESENVOLVIMENTO: <link rel="stylesheet" href="css/odontograma.css?v=7.10"/> -->
   <link rel="icon" type="image/x-icon" href="favicon.ico">
   <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
   <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
@@ -95,10 +95,12 @@ if ('serviceWorker' in navigator && !localStorage.getItem('sw_cleaned')) {
       <span class="mi" style="font-size:16px;">analytics</span>
       Relatórios
     </button>
+    <!-- EM DESENVOLVIMENTO:
     <button class="tab-btn tab-odonto" onclick="window.trocarAba(2, this)">
-      <span class="mi" style="font-size:16px;">medical_services</span>
+      <span class="mi">monitoring</span>
       Odontograma
     </button>
+    -->
   </div>
   <div class="hdr-r">
     <div class="drawer-section-label">Ferramentas</div>
@@ -228,8 +230,7 @@ if ('serviceWorker' in navigator && !localStorage.getItem('sw_cleaned')) {
 
   <!-- ABA 2: ODONTOGRAMA -->
   <div class="pg" id="pg2" style="flex:1; overflow-y:auto; padding:20px;">
-    <!-- Container onde o JavaScript vai injetar o Odontograma -->
-    <div id="odontograma-container"></div>
+    <!-- EM DESENVOLVIMENTO: <div id="odontograma-container"></div> -->
   </div>
 </div>
 
@@ -400,7 +401,7 @@ O tom deve ser humano, empático e focado em gerar urgência e agendamento.
 
 <!-- JS ENTRYPOINT -->
 <script src="js/app.js?v=7.10"></script>
-<script src="js/odontograma-anat.js?v=7.10" defer></script>
+<!-- EM DESENVOLVIMENTO: <script src="js/odontograma-anat.js?v=7.10" defer></script> -->
 
 <!-- Fechar modais com ESC + fechar drawer ao trocar aba -->
 <script>
@@ -418,7 +419,7 @@ document.querySelectorAll('.tab-btn').forEach(function(btn) {
   });
 });
 
-// Mostra aba Odontograma se o módulo estiver carregado
+/* EM DESENVOLVIMENTO:
 (function() {
   var checkOdonto = function() {
     var tab = document.querySelector('.tab-odonto');
@@ -427,11 +428,11 @@ document.querySelectorAll('.tab-btn').forEach(function(btn) {
     }
   };
   if (document.querySelector('.tab-odonto')) {
-    // Tenta imediatamente e novamente após carregamento dos scripts
     checkOdonto();
     setTimeout(checkOdonto, 2000);
   }
 })();
+*/
 </script>
 
 </body>

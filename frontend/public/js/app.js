@@ -692,10 +692,11 @@ async function init() {
     renderTbar();
     initEditor();
 
-    // Inicializa o Odontograma (Flyweight Pattern)
+    /* EM DESENVOLVIMENTO:
     if (window.Odontogram) {
       window.odontogramaInstance = new window.Odontogram('odontograma-container');
     }
+    */
 
     E = await api.getPatients();
     window._E = E;
