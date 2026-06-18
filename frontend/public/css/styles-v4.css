@@ -89,6 +89,20 @@ body{font-family:var(--font);font-size:14px;color:var(--ct);background:var(--cbg
 .drawer-logout{background:none;border:none;cursor:pointer;color:rgba(255,255,255,.6);display:flex;align-items:center;padding:6px;border-radius:6px;transition:all .2s;}
 .drawer-logout:hover{color:#fff;background:rgba(255,255,255,.08);}
 .drawer-clock{font-variant-numeric:tabular-nums;}
+
+/* PAINEL PERSONALIZAR CORES */
+.custom-panel{padding:4px 12px 12px;}
+.custom-group{margin-bottom:8px;}
+.custom-label{display:block;font-size:11px;color:rgba(255,255,255,.5);margin-bottom:4px;letter-spacing:.3px;text-transform:uppercase;}
+.custom-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.custom-swatch{position:relative;width:32px;height:32px;border-radius:8px;cursor:pointer;overflow:hidden;border:2px solid rgba(255,255,255,.15);transition:border-color .2s;flex-shrink:0;}
+.custom-swatch:hover{border-color:rgba(255,255,255,.4);}
+.custom-swatch input[type="color"]{position:absolute;top:-4px;left:-4px;width:40px;height:40px;cursor:pointer;border:none;padding:0;opacity:0;}
+.swatch-bg{display:block;width:100%;height:100%;border-radius:6px;}
+.custom-swatch input[type="color"]:hover+.swatch-bg,.custom-swatch input[type="color"]:focus+.swatch-bg{outline:2px solid rgba(255,255,255,.3);}
+.custom-reset{background:rgba(255,255,255,.08);border:none;color:rgba(255,255,255,.6);font-size:11px;padding:6px 12px;border-radius:6px;cursor:pointer;font-family:var(--font);transition:all .2s;white-space:nowrap;}
+.custom-reset:hover{background:rgba(255,255,255,.15);color:#fff;}
+
 .hdr-clinic-mobile{display:none;}
 .hdr-bell{display:none;background:none;border:none;cursor:pointer;color:rgba(255,255,255,.7);padding:4px 6px;border-radius:6px;position:relative;transition:all .2s;}
 .hdr-bell:hover{background:rgba(255,255,255,.1);color:#fff;}

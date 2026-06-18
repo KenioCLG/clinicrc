@@ -130,6 +130,31 @@ if ('serviceWorker' in navigator && !localStorage.getItem('sw_cleaned')) {
     <span id="liveClock" class="drawer-link drawer-clock">
       <span class="mi">schedule</span> <span class="drawer-label" id="liveClockTxt">--:--:--</span>
     </span>
+
+    <!-- PERSONALIZAR CORES -->
+    <button class="drawer-link" onclick="window.toggleCustomColors()" id="customToggle" title="Personalizar cores">
+      <span class="mi">palette</span> <span class="drawer-label">Personalizar</span>
+      <span class="mi" id="customArrow" style="margin-left:auto;font-size:16px;transition:transform .2s;">expand_more</span>
+    </button>
+    <div id="customPanel" class="custom-panel" style="display:none;">
+      <div class="custom-group">
+        <span class="custom-label">Barra RGB — 4 cores</span>
+        <div class="custom-row">
+          <label class="custom-swatch" title="Cor 1"><input type="color" id="rgbC1" value="#ff0066"><span class="swatch-bg"></span></label>
+          <label class="custom-swatch" title="Cor 2"><input type="color" id="rgbC2" value="#00ffcc"><span class="swatch-bg"></span></label>
+          <label class="custom-swatch" title="Cor 3"><input type="color" id="rgbC3" value="#ffcc00"><span class="swatch-bg"></span></label>
+          <label class="custom-swatch" title="Cor 4"><input type="color" id="rgbC4" value="#9933ff"><span class="swatch-bg"></span></label>
+        </div>
+      </div>
+      <div class="custom-group">
+        <span class="custom-label">Cor do cabeçalho</span>
+        <div class="custom-row">
+          <label class="custom-swatch" title="Header"><input type="color" id="headColor" value="#111827"><span class="swatch-bg"></span></label>
+          <button class="custom-reset" onclick="window.resetColors()" title="Restaurar padrão">Padrão</button>
+        </div>
+      </div>
+    </div>
+
     <div class="drawer-divider" style="margin-top:auto;"></div>
     <div class="drawer-user">
       <span class="ava" id="userAvatar"></span>
