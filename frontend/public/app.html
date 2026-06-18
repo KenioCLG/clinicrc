@@ -5,15 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, shrink-to-fit=no"/>
 <title>Retorno de Pacientes — ClinicRC</title>
 
-<!-- FORCE KILL OLD SERVICE WORKER - executa ANTES de qualquer coisa -->
+<!-- Limpa SW legado (one-time only) -->
 <script>
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.getRegistrations().then(function(registrations) {
-    registrations.forEach(function(registration) { registration.unregister(); });
+if ('serviceWorker' in navigator && !localStorage.getItem('sw_cleaned')) {
+  navigator.serviceWorker.getRegistrations().then(function(r) {
+    r.forEach(function(reg) { reg.unregister(); });
   });
-  caches.keys().then(function(names) {
-    names.forEach(function(name) { caches.delete(name); });
+  caches.keys().then(function(n) {
+    n.forEach(function(name) { caches.delete(name); });
   });
+  localStorage.setItem('sw_cleaned', '1');
 }
 </script>
 
@@ -125,8 +126,8 @@ if ('serviceWorker' in navigator) {
 <script src="https://cdn.jsdelivr.net/npm/marked@15.0.4/marked.min.js" integrity="sha384-MQX6KLXAqxeh8gCqETDHfMWJbfuPTqOb0w25cRpYITn6mCnXU6OKcamXGNnPuGJ0" crossorigin="anonymous"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde@2.18.0/dist/easymde.min.css">
 <script src="https://cdn.jsdelivr.net/npm/easymde@2.18.0/dist/easymde.min.js"></script>
-<link rel="stylesheet" href="css/styles-v4.css?v=6.0"/>
-<link rel="stylesheet" href="css/odontograma.css?v=6.0"/>
+<link rel="stylesheet" href="css/styles-v4.css?v=7.0"/>
+<link rel="stylesheet" href="css/odontograma.css?v=7.0"/>
   <link rel="icon" type="image/x-icon" href="favicon.ico">
   <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
   <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
@@ -455,8 +456,8 @@ O tom deve ser humano, empático e focado em gerar urgência e agendamento.
 </script>
 
 <!-- JS ENTRYPOINT -->
-<script type="module" src="js/app.js?v=6.0"></script>
-<script src="js/odontograma-anat.js?v=6.0" defer></script>
+<script type="module" src="js/app.js?v=7.0"></script>
+<script src="js/odontograma-anat.js?v=7.0" defer></script>
 
 <!-- Fechar modais com ESC + fechar drawer ao trocar aba -->
 <script>

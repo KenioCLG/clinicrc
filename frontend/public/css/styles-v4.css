@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-
 :root{
   --cp:#EC6726;--cpd:#c45420;
   --chbg:#111827; /* Modern very dark gray for header */
@@ -618,15 +616,104 @@ tbody tr:hover{background:rgba(236,103,38,.05);}
   background: #E2E8F0;
   transform: scale(1.1);
 }
-/ *   R E S P O N S I V I D A D E   D O   P A I N E L   D E   R O T E I R O   ( C O N T A I N E R   Q U E R I E S )   * / 
- @ c o n t a i n e r   s p - p a n e l   ( m a x - w i d t h :   3 8 0 p x )   { 
-     . s p - h d   {   p a d d i n g :   1 0 p x   8 p x ;   g a p :   6 p x ;   } 
-     . s p - h d   . m i   {   f o n t - s i z e :   1 8 p x ;   } 
-     . s p - h d   h 2   {   f o n t - s i z e :   1 3 p x ;   w h i t e - s p a c e :   n o w r a p ;   o v e r f l o w :   h i d d e n ;   t e x t - o v e r f l o w :   e l l i p s i s ;   } 
-     . s p - h d   p   {   d i s p l a y :   n o n e ;   } 
-     . s p - b t n - e d i t   {   p a d d i n g :   6 p x ;   m i n - w i d t h :   2 8 p x ;   h e i g h t :   2 8 p x ;   j u s t i f y - c o n t e n t :   c e n t e r ;   m a r g i n - r i g h t :   2 p x   ! i m p o r t a n t ;   } 
-     . s p - b t n - e d i t   s p a n : n o t ( . m i )   {   d i s p l a y :   n o n e ;   } 
-     . p b a r - b t n   {   p a d d i n g :   6 p x   ! i m p o r t a n t ;   m i n - w i d t h :   2 8 p x ;   j u s t i f y - c o n t e n t :   c e n t e r ;   } 
-     . p b a r - b t n   . p b a r - b t n - t x t   {   d i s p l a y :   n o n e ;   } 
- }  
- 
+
+/* RESPONSIVIDADE DO PAINEL DE ROTEIRO (CONTAINER QUERIES) */
+@container sp-panel (max-width: 380px) {
+  .sp-hd { padding: 10px 8px; gap: 6px; }
+  .sp-hd .mi { font-size: 18px; }
+  .sp-hd h2 { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sp-hd p { display: none; }
+  .sp-btn-edit { padding: 6px; min-width: 28px; height: 28px; justify-content: center; margin-right: 2px !important; }
+  .sp-btn-edit span:not(.mi) { display: none; }
+  .pbar-btn { padding: 6px !important; min-width: 28px; justify-content: center; }
+  .pbar-btn .pbar-btn-txt { display: none; }
+}
+
+/* TAB TRANSITION (fade entre abas) */
+.pg { opacity: 0; transition: opacity 0.25s ease; pointer-events: none; }
+.pg.on { opacity: 1; pointer-events: auto; }
+
+/* CARD ENTRANCE ANIMATION */
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.col-cards .card { animation: cardIn 0.3s ease both; }
+.col-cards .card:nth-child(2) { animation-delay: 0.03s; }
+.col-cards .card:nth-child(3) { animation-delay: 0.06s; }
+.col-cards .card:nth-child(4) { animation-delay: 0.09s; }
+.col-cards .card:nth-child(5) { animation-delay: 0.12s; }
+.col-cards .card:nth-child(n+6) { animation-delay: 0.15s; }
+
+/* TOAST EXIT — smooth fade out */
+.toast.out { opacity: 0 !important; transform: translateX(-50%) translateY(12px) scale(0.95); pointer-events: none; }
+
+/* LOADING OVERLAY — smooth fade */
+.loading-overlay { transition: opacity 0.5s ease; }
+
+/* SKELETON SHIMMER (para loading de conteudo) */
+@keyframes shimmer {
+  0% { background-position: -200px 0; }
+  100% { background-position: 200px 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 400px 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+}
+
+/* =============================================
+   MOBILE — Melhorias de responsividade
+   ============================================= */
+@media (max-width: 1000px) {
+  /* Report page mobile */
+  .kgrid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; }
+  .kcard .kv { font-size: 24px !important; }
+  .rp { padding: 12px !important; }
+  .rh { font-size: 16px !important; }
+  .twrap { font-size: 12px; }
+  .twrap table { min-width: 600px; }
+
+  /* Kanban toolbar mobile */
+  .ktb { flex-wrap: wrap; padding: 8px 10px !important; gap: 8px !important; }
+  .ksrch { max-width: 100% !important; min-width: 0 !important; }
+  .kmini { margin-left: 0 !important; flex-wrap: wrap; }
+  .kchip { font-size: 11px !important; padding: 3px 8px !important; }
+
+  /* Cards melhor uso de espaco */
+  .col-cards { padding: 6px !important; gap: 6px !important; }
+  .card { padding: 10px !important; }
+
+  /* Modal mobile */
+  .mbox { width: 95% !important; max-width: 95vw !important; max-height: 90vh; overflow-y: auto; }
+
+  /* Bell panel mobile */
+  .bell-panel { right: 8px !important; left: 8px !important; width: auto !important; }
+
+  /* Script panel mobile touch */
+  .sbody { padding: 14px !important; -webkit-overflow-scrolling: touch; }
+
+  /* Patient bar compact */
+  .pbar { padding: 8px 10px !important; gap: 8px !important; }
+  .pbar strong { font-size: 12px !important; }
+}
+
+@media (max-width: 480px) {
+  /* Report grid single column */
+  .kgrid { grid-template-columns: 1fr !important; }
+
+  /* Card buttons stack */
+  .cbtns { flex-direction: column; }
+  .cb { width: 100%; flex: none; height: 36px; font-size: 12px; }
+
+  /* Retorno modal presets */
+  .ret-presets { gap: 4px; }
+  .ret-preset-btn { min-width: 60px !important; font-size: 10px !important; }
+
+  /* Header clock hide on very small */
+  #liveClock { display: none !important; }
+
+  /* Kanban chips hide labels */
+  .kchip { padding: 2px 6px !important; font-size: 10px !important; }
+}

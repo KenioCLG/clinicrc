@@ -6,9 +6,19 @@ function esc(str) {
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 
-// Scripts dinâmicos
+// Scripts dinâmicos — cache em sessionStorage para sobreviver reload
 let scriptCache = {};
 let isEditingScript = false;
+
+// Restaura cache de scripts do sessionStorage
+try {
+  const cached = sessionStorage.getItem('clinicrc_scriptCache');
+  if (cached) scriptCache = JSON.parse(cached);
+} catch (_) {}
+
+function persistScriptCache() {
+  try { sessionStorage.setItem('clinicrc_scriptCache', JSON.stringify(scriptCache)); } catch (_) {}
+}
 
 async function fetchScript(attempt) {
   if (scriptCache[attempt]) return scriptCache[attempt];
@@ -19,6 +29,7 @@ async function fetchScript(attempt) {
     });
     const data = await res.json();
     scriptCache[attempt] = data.content || '';
+    persistScriptCache();
     return scriptCache[attempt];
   } catch (err) {
     return 'Erro ao carregar roteiro.';
@@ -35,6 +46,7 @@ async function saveScript(attempt, content) {
     });
     if(res.ok) {
       scriptCache[attempt] = content;
+      persistScriptCache();
       showToast('Roteiro salvo!', 'ok');
     }
   } catch(err) {
@@ -170,7 +182,7 @@ let maxAttempts = 1;
 let easyMDE = null;
 
 // ── VERSÃO DO SISTEMA ─────────────────────────────────────────────────────────
-const APP_VERSION = 'v1.2';
+const APP_VERSION = 'v7.0';
 const VER_KEY = 'clinicrc_ver';
 
 // Toggle Menu Mobile
@@ -412,7 +424,8 @@ window.deleteAttempt = async () => {
       const data = await res.json();
       maxAttempts = data.max_attempts;
       // Limpa cache para forçar recarregamento
-      scriptCache = {}; 
+      scriptCache = {};
+      persistScriptCache();
       
       // Volta uma aba se apagamos a última
       if (tN > maxAttempts) {
@@ -505,6 +518,7 @@ function initEditor() {
  * Inicializar a aplicação
  */
 async function init() {
+  const loadStart = Date.now();
   // Título dinâmico baseado na clínica logada
   const clinicName = localStorage.getItem('clinicrc_clinic') || 'ClinicRC';
   document.title = `Retorno de Pacientes — ${clinicName}`;
@@ -514,12 +528,12 @@ async function init() {
     await fetchConfig();
     renderTbar();
     initEditor();
-    
+
     // Inicializa o Odontograma (Flyweight Pattern)
     if (window.Odontogram) {
       window.odontogramaInstance = new window.Odontogram('odontograma-container');
     }
-    
+
     E = await api.getPatients();
     window._E = E; // Sincroniza referência global
     setSyncStatus('ok', `Conectado · ${E.length} pacientes`);
@@ -527,8 +541,25 @@ async function init() {
     console.warn('Erro ao conectar na API. Utilizando localStorage como fallback...', err);
     fallbackMode();
   } finally {
-    document.getElementById('loadingOverlay').classList.add('hide');
+    // Garante tempo mínimo de 500ms no loading para evitar flash
+    const elapsed = Date.now() - loadStart;
+    const remaining = Math.max(0, 500 - elapsed);
+    setTimeout(() => {
+      document.getElementById('loadingOverlay').classList.add('hide');
+    }, remaining);
+
     render();
+
+    // Restaura paciente selecionado do sessionStorage
+    const savedPacId = sessionStorage.getItem('clinicrc_selectedPac');
+    if (savedPacId) {
+      const found = E.find(x => x.id === savedPacId);
+      if (found) {
+        pA = found;
+        updP();
+      }
+    }
+
     selT(1); // Load default attempt 1 script
   }
 }
@@ -576,7 +607,8 @@ function showToast(msg, type='ok') {
   
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => {
-    t.classList.remove('on');
+    t.classList.add('out');
+    setTimeout(() => { t.classList.remove('on', 'out'); }, 350);
   }, 2500);
 }
 
@@ -841,6 +873,7 @@ window._sO = (id, v) => {
 window._sP = (id) => {
   pA = E.find(x => x.id === id);
   tN = 1; // Sempre usa o script master único
+  sessionStorage.setItem('clinicrc_selectedPac', id);
   render(); updP();
 };
 
@@ -1026,7 +1059,6 @@ function rel() {
 }
 
 // ─── INÍCIO ────────────────────────────────────────────────────────────────
-updS();
 init();
 window.render = render;
 
