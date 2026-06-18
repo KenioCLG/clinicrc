@@ -277,28 +277,31 @@ body{font-family:var(--font);font-size:14px;color:var(--ct);background:var(--cbg
 
   /* ABAS NA GAVETA */
   .hdr-tabs {
-    flex-direction: column;
-    height: auto;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    height: auto !important;
     padding: 8px 0;
     border-bottom: 1px solid rgba(255,255,255,0.08);
   }
   .tab-btn {
-    padding: 14px 20px;
-    height: auto;
-    justify-content: flex-start;
-    gap: 12px;
+    padding: 14px 20px !important;
+    height: auto !important;
+    justify-content: flex-start !important;
+    gap: 12px !important;
     border-bottom: none !important;
     border-left: 3px solid transparent;
-    font-size: 14px;
-    color: rgba(255,255,255,.6);
-    transition: all .15s ease;
+    font-size: 14px !important;
+    color: rgba(255,255,255,.6) !important;
+    width: 100% !important;
+    text-align: left !important;
   }
-  .tab-btn .mi { font-size: 20px; opacity: .6; }
-  .tab-btn:hover { color: rgba(255,255,255,.9); background: rgba(255,255,255,.04); }
+  .tab-btn .mi { font-size: 20px !important; opacity: .6; width: 24px; text-align: center; }
+  .tab-btn:hover { color: rgba(255,255,255,.9) !important; background: rgba(255,255,255,.04); }
   .tab-btn.on {
-    border-left-color: var(--cp);
-    background: rgba(236,103,38,0.08);
-    color: #fff;
+    border-left-color: var(--cp) !important;
+    background: rgba(236,103,38,0.08) !important;
+    color: #fff !important;
   }
   .tab-btn.on .mi { opacity: 1; color: var(--cp); }
 
@@ -318,12 +321,16 @@ body{font-family:var(--font);font-size:14px;color:var(--ct);background:var(--cbg
 
   /* Drawer links: linhas limpas full-width */
   .hdr-nav .hdr-r .drawer-link {
+    display: flex !important;
+    align-items: center !important;
     padding: 14px 20px !important;
     border-radius: 0 !important;
     font-size: 14px !important;
     color: rgba(255,255,255,.75) !important;
     border-bottom: 1px solid rgba(255,255,255,.06);
     gap: 12px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
   }
   .hdr-nav .hdr-r .drawer-link:hover,
   .hdr-nav .hdr-r .drawer-link:active {
@@ -332,14 +339,13 @@ body{font-family:var(--font);font-size:14px;color:var(--ct);background:var(--cbg
   }
   .hdr-nav .hdr-r .drawer-link .mi {
     font-size: 20px !important;
-    width: 24px;
-    text-align: center;
-    flex-shrink: 0;
+    width: 24px !important;
+    text-align: center !important;
+    flex-shrink: 0 !important;
     opacity: .7;
   }
   .hdr-nav .hdr-r .drawer-link .drawer-label {
     display: inline !important;
-    flex: 1;
   }
 
   /* Bell no drawer: mostra label + count alinhado */
@@ -356,11 +362,12 @@ body{font-family:var(--font);font-size:14px;color:var(--ct);background:var(--cbg
 
   /* Sync badge no drawer */
   .hdr-nav .hdr-r .sync-badge {
-    padding: 12px 20px !important;
+    padding: 10px 20px !important;
     border-radius: 0 !important;
     justify-content: flex-start !important;
-    border-bottom: 1px solid rgba(255,255,255,.06);
+    border-bottom: 1px solid rgba(255,255,255,.08);
     font-size: 12px;
+    background: rgba(255,255,255,.03) !important;
   }
 
   /* Clock no drawer */
@@ -379,14 +386,13 @@ body{font-family:var(--font);font-size:14px;color:var(--ct);background:var(--cbg
     margin: 6px 0;
   }
 
-  /* User section — fixo no bottom da gaveta */
+  /* User section — bottom da gaveta */
   .hdr-nav .drawer-user {
     padding: 16px 20px !important;
     display: flex !important;
     gap: 12px;
     align-items: center;
     border-top: 1px solid rgba(255,255,255,.1);
-    margin-top: auto;
     background: rgba(0,0,0,.15);
   }
   .hdr-nav .drawer-user .ava {
