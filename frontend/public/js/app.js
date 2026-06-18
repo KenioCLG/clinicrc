@@ -242,6 +242,58 @@ const clinicMobileEl = document.getElementById('clinicNameMobile');
 if (clinicEl && clinicName) clinicEl.textContent = clinicName;
 if (clinicMobileEl && clinicName) clinicMobileEl.textContent = clinicName;
 
+// Avatar do usuário — iniciais ou foto salva
+(function initAvatar() {
+  const el = document.getElementById('userAvatar');
+  if (!el) return;
+  const name = clinicName || 'C';
+  const user = localStorage.getItem('clinicrc_user') || '';
+  const savedUrl = localStorage.getItem('clinicrc_avatar');
+
+  if (savedUrl) {
+    el.style.background = 'none';
+    el.style.boxShadow = 'none';
+    el.innerHTML = '<img src="' + savedUrl.replace(/"/g,'&quot;') + '" alt="" style="width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;">';
+    el.title = 'Clique para trocar a foto';
+  } else {
+    // Iniciais a partir do nome da clínica (máx 2 letras)
+    var parts = name.split(/\s+/);
+    var initials = '';
+    for (var i = 0; i < parts.length && initials.length < 2; i++) {
+      if (parts[i][0]) initials += parts[i][0].toUpperCase();
+    }
+    initials = initials || 'C';
+
+    // Cor HSL consistente a partir do username
+    var hash = 0;
+    for (var j = 0; j < user.length; j++) hash = user.charCodeAt(j) + ((hash << 5) - hash);
+    var hue = Math.abs(hash) % 360;
+    el.style.background = 'linear-gradient(135deg, hsl(' + hue + ', 60%, 45%), hsl(' + hue + ', 50%, 35%))';
+    el.textContent = initials;
+    el.title = '';
+  }
+
+  // Clique para definir/remover foto via URL
+  el.style.cursor = 'pointer';
+  el.onclick = function(e) {
+    e.stopPropagation();
+    var cur = localStorage.getItem('clinicrc_avatar') || '';
+    if (cur) {
+      if (confirm('Remover foto do perfil?')) {
+        localStorage.removeItem('clinicrc_avatar');
+        initAvatar();
+      }
+    } else {
+      var url = prompt('URL da foto do perfil (pode ser Google Drive, Imgur, etc.):');
+      if (url === null) return;
+      if (url.trim()) {
+        localStorage.setItem('clinicrc_avatar', url.trim());
+        initAvatar();
+      }
+    }
+  };
+})();
+
 // Função de logout global
 window.doLogout = () => {
   localStorage.clear();
