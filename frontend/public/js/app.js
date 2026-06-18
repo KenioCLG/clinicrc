@@ -285,7 +285,8 @@ function renderAvatar(el, name, user) {
     _avatarFileInput = document.createElement('input');
     _avatarFileInput.type = 'file';
     _avatarFileInput.accept = 'image/*';
-    _avatarFileInput.style.cssText = 'position:fixed;top:0;left:0;opacity:0;width:1px;height:1px;z-index:-1;pointer-events:none;';
+    _avatarFileInput.id = 'avatarFileInput';
+    _avatarFileInput.style.cssText = 'display:none;';
     document.body.appendChild(_avatarFileInput);
     _avatarFileInput.addEventListener('change', function() {
       var file = _avatarFileInput.files && _avatarFileInput.files[0];
@@ -463,9 +464,6 @@ window.openCustomPopup = function() {
   renderAvatar(document.getElementById('popupAvatarPreview'), clinicName, localStorage.getItem('clinicrc_user'));
   var nameEl = document.getElementById('popupAvatarName');
   if (nameEl) nameEl.textContent = clinicName || 'Usuário';
-  // Botão de trocar foto no popup
-  var btn = document.getElementById('popupAvatarBtn');
-  if (btn) btn.onclick = function(e) { e.stopPropagation(); window.changeAvatar(); };
   document.getElementById('modalCustom').classList.add('on');
 };
 
