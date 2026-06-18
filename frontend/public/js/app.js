@@ -1070,10 +1070,37 @@ const sp = document.querySelector('.sp');
 let isResizing = false;
 
 if (resizer && sp) {
+  let spExpanded = false; // Track se roteiro esta fullscreen
+
+  // Double-tap/click no resizer: toggle fullscreen do roteiro
+  let lastTap = 0;
+  const toggleFullScript = () => {
+    if (window.innerWidth > 1000) return;
+    spExpanded = !spExpanded;
+    if (spExpanded) {
+      // Expande roteiro para quase tela toda
+      sp.style.height = (window.innerHeight - 36 - 12) + 'px';
+    } else {
+      // Volta ao 40% padrão
+      sp.style.height = '40%';
+    }
+  };
+
+  resizer.addEventListener('dblclick', toggleFullScript);
+  resizer.addEventListener('touchend', (e) => {
+    const now = Date.now();
+    if (now - lastTap < 300) {
+      e.preventDefault();
+      toggleFullScript();
+    }
+    lastTap = now;
+  });
+
   const startResize = (e) => {
     isResizing = true;
+    spExpanded = false; // Reset fullscreen state ao arrastar
     resizer.classList.add('active');
-    document.body.style.userSelect = 'none'; // Evita selecionar texto ao arrastar
+    document.body.style.userSelect = 'none';
     if (window.innerWidth <= 1000) {
       document.body.style.cursor = 'row-resize';
     } else {
@@ -1083,33 +1110,33 @@ if (resizer && sp) {
 
   const doResize = (e) => {
     if (!isResizing) return;
-    
-    // Suporte para touch e mouse
+
     const clientX = e.touches && e.touches.length > 0 ? e.touches[0].clientX : e.clientX;
     const clientY = e.touches && e.touches.length > 0 ? e.touches[0].clientY : e.clientY;
 
     if (window.innerWidth <= 1000) {
       // MODO MOBILE: Ajuste Vertical
-      const minHeight = 60; // Colapsado (só header do roteiro)
-      const maxHeight = window.innerHeight - 150; // Deixa espaço para o Kanban
-      let newHeight = clientY - 56; // Abate a altura do header principal (56px)
-      
+      const hdrH = 36; // Header compacto mobile
+      const minHeight = 60; // Colapsado
+      const maxHeight = window.innerHeight - hdrH - 24; // Quase tela toda
+      let newHeight = clientY - hdrH;
+
       if (newHeight < minHeight) newHeight = minHeight;
       if (newHeight > maxHeight) newHeight = maxHeight;
-      
+
       sp.style.height = newHeight + 'px';
-      sp.style.width = '100%'; // Garante que a largura fica 100%
+      sp.style.width = '100%';
     } else {
       // MODO DESKTOP: Ajuste Horizontal
-      const minWidth = 280; // Mínimo para o roteiro
-      const maxWidth = window.innerWidth - 400; // Mínimo para o Kanban
+      const minWidth = 280;
+      const maxWidth = window.innerWidth - 400;
       let newWidth = clientX;
-      
+
       if (newWidth < minWidth) newWidth = minWidth;
       if (newWidth > maxWidth) newWidth = maxWidth;
-      
+
       sp.style.width = newWidth + 'px';
-      sp.style.height = ''; // Remove altura fixa do mobile
+      sp.style.height = '';
     }
   };
 

@@ -141,15 +141,17 @@ body{font-family:var(--font);font-size:14px;color:var(--ct);background:var(--cbg
   }
   .sp {
     width: 100% !important;
-    height: 40% !important; /* Altura inicial no mobile */
-    min-height: 60px !important; /* Quando colapsado para cima */
-    max-height: calc(100vh - 150px) !important;
+    height: 40% !important;
+    min-height: 60px !important;
+    max-height: calc(100vh - 60px) !important;
+    max-height: calc(100dvh - 60px) !important;
     border-right: none !important;
-    border-bottom: 1px solid var(--cdiv) !important;
+    border-bottom: none !important;
+    transition: height 0.15s ease;
   }
   .resizer {
     width: 100% !important;
-    height: 12px; /* Área de toque maior no mobile */
+    height: 20px;
     cursor: row-resize !important;
     border-left: none;
     border-right: none;
@@ -159,17 +161,26 @@ body{font-family:var(--font);font-size:14px;color:var(--ct);background:var(--cbg
     display: flex;
     align-items: center;
     justify-content: center;
+    touch-action: none;
   }
-  /* Um pequeno 'handle' visual no resizer para mobile */
   .resizer::after {
     content: '';
-    width: 40px;
-    height: 4px;
+    width: 48px;
+    height: 5px;
     background: #CBD5E1;
-    border-radius: 4px;
+    border-radius: 3px;
+    transition: background .2s;
   }
   .resizer:hover::after, .resizer.active::after {
     background: var(--cp);
+  }
+  /* Hint visual: seta dupla */
+  .resizer::before {
+    content: '';
+    position: absolute;
+    font-family: 'Material Icons';
+    font-size: 14px;
+    color: #9CA3AF;
   }
   .kp {
     width: 100% !important;
