@@ -694,6 +694,9 @@ tbody tr:hover{background:rgba(236,103,38,.05);}
   /* Script panel mobile touch */
   .sbody { padding: 14px !important; -webkit-overflow-scrolling: touch; }
 
+  /* Hide tbar on mobile */
+  .tbar { display: none !important; }
+
   /* Patient bar compact */
   .pbar { padding: 8px 10px !important; gap: 8px !important; }
   .pbar strong { font-size: 12px !important; }
