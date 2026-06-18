@@ -347,6 +347,21 @@ function applyCustomColors(colors) {
   var root = document.documentElement;
   // Cor primária — afeta toda a UI via var(--cp)
   root.style.setProperty('--cp', colors.primaryColor);
+  // --cpr: componentes RGB para usar em rgba(var(--cpr), 0.x)
+  var hex = colors.primaryColor.replace('#','');
+  var r = parseInt(hex.substring(0,2), 16);
+  var g = parseInt(hex.substring(2,4), 16);
+  var b = parseInt(hex.substring(4,6), 16);
+  root.style.setProperty('--cpr', r+','+g+','+b);
+  // --cpd: versão mais escura da primária (75% do brilho)
+  var darkR = Math.round(r * 0.75);
+  var darkG = Math.round(g * 0.75);
+  var darkB = Math.round(b * 0.75);
+  var darkHex = '#' + [darkR,darkG,darkB].map(function(c){ return ('0'+c.toString(16)).slice(-2); }).join('');
+  root.style.setProperty('--cpd', darkHex);
+  // theme-color do browser (chrome mobile)
+  var meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.setAttribute('content', colors.primaryColor);
   // Cores da barra RGB
   root.style.setProperty('--rgb-c1', colors.rgbC1);
   root.style.setProperty('--rgb-c2', colors.rgbC2);

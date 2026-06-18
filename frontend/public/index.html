@@ -904,7 +904,16 @@ if('serviceWorker' in navigator){navigator.serviceWorker.getRegistrations().then
       try { s = JSON.parse(localStorage.getItem('clinicrc_customColors')); } catch(e){}
       if (s) {
         var r = document.documentElement;
-        if (s.primaryColor) r.style.setProperty('--cp', s.primaryColor);
+        if (s.primaryColor) {
+          r.style.setProperty('--cp', s.primaryColor);
+          // Calcula --cpr (componentes RGB para rgba)
+          var h = s.primaryColor.replace('#','');
+          var rc = parseInt(h.substring(0,2),16), gc = parseInt(h.substring(2,4),16), bc = parseInt(h.substring(4,6),16);
+          r.style.setProperty('--cpr', rc+','+gc+','+bc);
+          // Calcula --cpd (75% do brilho)
+          var dk = '#'+[rc,gc,bc].map(function(c){ return ('0'+Math.round(c*0.75).toString(16)).slice(-2); }).join('');
+          r.style.setProperty('--cpd', dk);
+        }
         if (s.rgbC1) r.style.setProperty('--rgb-c1', s.rgbC1);
         if (s.rgbC2) r.style.setProperty('--rgb-c2', s.rgbC2);
         if (s.rgbC3) r.style.setProperty('--rgb-c3', s.rgbC3);

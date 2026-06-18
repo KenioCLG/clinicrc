@@ -18,7 +18,7 @@
 <style>
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
   :root{
-    --cp:#EC6726;--cpd:#c45420;
+    --cp:#EC6726;--cpd:#c45420;--cpr:236,103,38;
     --chbg:#292D36;--cbg:#F0F0F0;--cs:#FFFFFF;
     --ct:#333333;--cts:rgba(0,0,0,.54);
     --cdiv:#E0E0E0;--cibg:#EAEAEB;
@@ -123,7 +123,7 @@
     font-family:inherit;font-size:15px;font-weight:600;
     cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;
     transition:background .2s,transform .1s;
-    box-shadow:0 4px 15px rgba(236,103,38,.3);
+    box-shadow:0 4px 15px rgba(var(--cpr),.3);
     margin-bottom:28px;
   }
   .btn-upload:hover:not(:disabled){background:var(--cpd);transform:translateY(-1px);}
@@ -478,6 +478,28 @@
         navigator.serviceWorker.register('sw.js').then(reg => console.log('SW registrado', reg.scope)).catch(err => console.log('Erro SW', err));
       });
     }
+  </script>
+  <!-- Carrega cores personalizadas do white-label -->
+  <script>
+    (function(){
+      var s;
+      try { s = JSON.parse(localStorage.getItem('clinicrc_customColors')); } catch(e){}
+      if (s) {
+        var r = document.documentElement;
+        if (s.primaryColor) {
+          r.style.setProperty('--cp', s.primaryColor);
+          var h = s.primaryColor.replace('#','');
+          var rc = parseInt(h.substring(0,2),16), gc = parseInt(h.substring(2,4),16), bc = parseInt(h.substring(4,6),16);
+          r.style.setProperty('--cpr', rc+','+gc+','+bc);
+          var dk = '#'+[rc,gc,bc].map(function(c){ return ('0'+Math.round(c*0.75).toString(16)).slice(-2); }).join('');
+          r.style.setProperty('--cpd', dk);
+        }
+        if (s.rgbC1) r.style.setProperty('--rgb-c1', s.rgbC1);
+        if (s.rgbC2) r.style.setProperty('--rgb-c2', s.rgbC2);
+        if (s.rgbC3) r.style.setProperty('--rgb-c3', s.rgbC3);
+        if (s.rgbC4) r.style.setProperty('--rgb-c4', s.rgbC4);
+      }
+    })();
   </script>
 </body>
 </html>
