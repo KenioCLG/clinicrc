@@ -285,7 +285,7 @@ function renderAvatar(el, name, user) {
     _avatarFileInput = document.createElement('input');
     _avatarFileInput.type = 'file';
     _avatarFileInput.accept = 'image/*';
-    _avatarFileInput.style.cssText = 'position:fixed;opacity:0;width:0;height:0;pointer-events:none;z-index:-1;';
+    _avatarFileInput.style.cssText = 'position:fixed;top:0;left:0;opacity:0;width:1px;height:1px;z-index:-1;pointer-events:none;';
     document.body.appendChild(_avatarFileInput);
     _avatarFileInput.addEventListener('change', function() {
       var file = _avatarFileInput.files && _avatarFileInput.files[0];
@@ -293,11 +293,25 @@ function renderAvatar(el, name, user) {
       if (file.size > 5 * 1024 * 1024) { alert('A imagem deve ter no máximo 5MB.'); return; }
       var reader = new FileReader();
       reader.onload = function(ev) {
-        localStorage.setItem('clinicrc_avatar', ev.target.result);
-        _avatarFileInput.value = '';
-        // Re-renderiza ambos os lugares
-        renderAvatar(document.getElementById('userAvatar'), clinicName, localStorage.getItem('clinicrc_user'));
-        renderAvatar(document.getElementById('popupAvatarPreview'), clinicName, localStorage.getItem('clinicrc_user'));
+        // Redimensiona para 200×200 antes de salvar (evita localStorage lotado)
+        var img = new Image();
+        img.onload = function() {
+          var MAX = 200;
+          var w = img.width, h = img.height;
+          if (w > MAX || h > MAX) {
+            if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+            else { w = Math.round(w * MAX / h); h = MAX; }
+          }
+          var c = document.createElement('canvas');
+          c.width = w; c.height = h;
+          var ctx = c.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+          localStorage.setItem('clinicrc_avatar', c.toDataURL('image/jpeg', 0.85));
+          _avatarFileInput.value = '';
+          renderAvatar(document.getElementById('userAvatar'), clinicName, localStorage.getItem('clinicrc_user'));
+          renderAvatar(document.getElementById('popupAvatarPreview'), clinicName, localStorage.getItem('clinicrc_user'));
+        };
+        img.src = ev.target.result;
       };
       reader.onerror = function() { alert('Erro ao ler o arquivo.'); };
       reader.readAsDataURL(file);
