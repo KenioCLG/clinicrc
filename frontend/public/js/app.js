@@ -991,7 +991,7 @@ async function conf(res) {
       pA = null;
       const el = document.getElementById('pbar');
       el.classList.add('empty');
-      el.innerHTML = '<span class="mi" style="color:var(--cp)">touch_app</span><div><strong>Nenhum paciente selecionado</strong><span>Clique em um cartão ao lado</span></div>';
+      el.innerHTML = '<span class="mi" style="color:var(--cp)">touch_app</span><div><strong>Nenhum paciente selecionado</strong><span>Selecione um paciente abaixo</span></div>';
     }
   }
   fModal();
