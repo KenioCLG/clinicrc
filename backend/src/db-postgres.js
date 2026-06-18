@@ -142,9 +142,29 @@ const db = {
   // transaction(fn) → executa fn dentro de uma transação
   async transaction(fn) {
     const client = await pool.connect();
+    // Wrap client com helpers compatíveis (queryOne, run, queryAll)
+    const tx = {
+      async query(sql, params = []) {
+        let idx = 0;
+        const pgSql = sql.replace(/\?/g, () => `$${++idx}`);
+        return client.query(pgSql, params);
+      },
+      async queryOne(sql, params = []) {
+        const result = await tx.query(sql, params);
+        return result.rows[0];
+      },
+      async queryAll(sql, params = []) {
+        const result = await tx.query(sql, params);
+        return result.rows;
+      },
+      async run(sql, params = []) {
+        const result = await tx.query(sql, params);
+        return { changes: result.rowCount, lastInsertRowid: result.rows[0]?.id };
+      },
+    };
     try {
       await client.query('BEGIN');
-      await fn(client);
+      await fn(tx);
       await client.query('COMMIT');
     } catch (err) {
       await client.query('ROLLBACK');
