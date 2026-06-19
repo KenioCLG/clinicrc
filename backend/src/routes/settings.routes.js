@@ -4,11 +4,11 @@
 
 const express = require('express');
 const router = express.Router();
-const { authenticateJWT } = require('../middleware/auth.middleware');
+const authMiddleware = require('../middleware/auth.middleware');
 const db = require('../db-postgres');
 
 // GET /settings — Carrega configurações da clínica logada
-router.get('/', authenticateJWT, async (req, res) => {
+router.get('/', authMiddleware, async (req, res) => {
   try {
     const row = await db.queryOne(
       'SELECT settings FROM clinic_settings WHERE clinic_id = ?',
@@ -23,7 +23,7 @@ router.get('/', authenticateJWT, async (req, res) => {
 });
 
 // PUT /settings — Salva configurações da clínica logada
-router.put('/', authenticateJWT, async (req, res) => {
+router.put('/', authMiddleware, async (req, res) => {
   try {
     const { settings } = req.body;
     if (!settings || typeof settings !== 'object') {

@@ -21,12 +21,8 @@ if ('serviceWorker' in navigator && !localStorage.getItem('sw_cleaned')) {
 <!-- CSS MOBILE CRITICO — previne layout shift no primeiro render -->
 <style>
 @media (max-width: 1000px) {
-  .hdr { height: 36px !important; padding: 0 8px !important; }
+  .hdr { height: 36px !important; }
   .body { padding-top: 36px !important; }
-  .hdr-menu { display: none !important; }
-  .pg.on { flex-direction: column !important; }
-  .sp { width: 100% !important; height: 40% !important; min-height: 60px !important; }
-  .kp { width: 100% !important; flex: 1 !important; }
 }
 </style>
 
@@ -47,7 +43,7 @@ if ('serviceWorker' in navigator && !localStorage.getItem('sw_cleaned')) {
 <script src="https://cdn.jsdelivr.net/npm/marked@15.0.4/marked.min.js" integrity="sha384-2NndlFAl0twi2nmu3w9mixodZFiN2fbxlakcYJF86bn1JeS1VB87/XqA7cqymzS+" crossorigin="anonymous"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde@2.18.0/dist/easymde.min.css">
 <script src="https://cdn.jsdelivr.net/npm/easymde@2.18.0/dist/easymde.min.js"></script>
-<link rel="stylesheet" href="css/styles-v4.css?v=7.10"/>
+<link rel="stylesheet" href="css/styles-v4.css?v=7.12"/>
     <!-- EM DESENVOLVIMENTO: <link rel="stylesheet" href="css/odontograma.css?v=7.10"/> -->
   <link rel="icon" type="image/x-icon" href="favicon.ico">
   <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
@@ -134,7 +130,7 @@ if ('serviceWorker' in navigator && !localStorage.getItem('sw_cleaned')) {
 
     <div class="drawer-divider" style="margin-top:auto;"></div>
     <div class="drawer-user">
-      <span class="ava" id="userAvatar"></span>
+      <span class="ava" id="userAvatar" onclick="window.openCustomPopup()"></span>
       <div class="drawer-user-info">
         <strong id="clinicNameDisplay"></strong>
         <small>Logado</small>
@@ -145,9 +141,8 @@ if ('serviceWorker' in navigator && !localStorage.getItem('sw_cleaned')) {
     </div>
   </div> <!-- end hdr-r -->
   </div> <!-- end hdr-nav -->
+  <div class="mobile-overlay" id="mobileOverlay" onclick="window.toggleMobileMenu()"></div>
 </header>
-
-<div class="mobile-overlay" id="mobileOverlay" onclick="window.toggleMobileMenu()"></div>
 
 <!-- MAIN CONTAINER -->
 <div class="body">
@@ -407,10 +402,9 @@ O tom deve ser humano, empático e focado em gerar urgência e agendamento.
       <div style="display:flex;align-items:center;gap:14px;">
         <div style="position:relative;width:48px;height:48px;flex-shrink:0;">
           <span class="ava" id="popupAvatarPreview" style="width:48px;height:48px;font-size:18px;"></span>
-          <button id="popupAvatarBtn" style="position:absolute;bottom:-2px;right:-2px;width:22px;height:22px;border-radius:50%;background:var(--cp);color:#fff;border:2px solid var(--cs);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;" title="Trocar foto" aria-label="Trocar foto">
-            <label for="avatarFileInput" style="position:absolute;inset:0;cursor:pointer;border-radius:50%;"></label>
+          <label id="popupAvatarBtn" for="avatarFileInput" style="position:absolute;bottom:-2px;right:-2px;width:22px;height:22px;border-radius:50%;background:var(--cp);color:#fff;border:2px solid var(--cs);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;z-index:2;" title="Trocar foto" aria-label="Trocar foto">
             <span class="mi" style="font-size:12px;pointer-events:none;">camera_alt</span>
-          </button>
+          </label>
         </div>
         <div style="display:flex;flex-direction:column;">
           <span style="font-size:13px;font-weight:500;color:var(--ct);" id="popupAvatarName">Usuário</span>
@@ -506,7 +500,7 @@ O tom deve ser humano, empático e focado em gerar urgência e agendamento.
 </script>
 
 <!-- JS ENTRYPOINT -->
-<script src="js/app.js?v=7.10"></script>
+<script src="js/app.js?v=7.12"></script>
 <!-- EM DESENVOLVIMENTO: <script src="js/odontograma-anat.js?v=7.10" defer></script> -->
 
 <!-- Fechar modais com ESC + fechar drawer ao trocar aba -->

@@ -498,6 +498,13 @@
         if (s.rgbC2) r.style.setProperty('--rgb-c2', s.rgbC2);
         if (s.rgbC3) r.style.setProperty('--rgb-c3', s.rgbC3);
         if (s.rgbC4) r.style.setProperty('--rgb-c4', s.rgbC4);
+        if (s.headColor) {
+          r.style.setProperty('--chbg', s.headColor);
+          var hh = s.headColor.replace('#','');
+          var hhr = parseInt(hh.substring(0,2),16), hhg = parseInt(hh.substring(2,4),16), hhb = parseInt(hh.substring(4,6),16);
+          var hlum = (0.299*hhr + 0.587*hhg + 0.114*hhb) / 255;
+          r.style.setProperty('--hdr-inv', hlum > 0.5 ? '0,0,0' : '255,255,255');
+        }
       }
     })();
   </script>

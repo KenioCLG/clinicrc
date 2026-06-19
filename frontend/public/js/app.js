@@ -318,14 +318,6 @@ function renderAvatar(el, name, user) {
       reader.readAsDataURL(file);
     });
   }
-
-  // Clique no avatar → abre popup personalizar (não mais upload direto)
-  el.style.cursor = 'pointer';
-  el.title = 'Personalizar';
-  el.onclick = function(e) {
-    e.stopPropagation();
-    window.openCustomPopup();
-  };
 })();
 
 // Função chamada pelo popup para trocar foto
@@ -382,9 +374,17 @@ function applyCustomColors(colors) {
   root.style.setProperty('--rgb-c2', colors.rgbC2);
   root.style.setProperty('--rgb-c3', colors.rgbC3);
   root.style.setProperty('--rgb-c4', colors.rgbC4);
-  // Header
+  // Header — seta variável --chbg para todos elementos que a referenciam
+  root.style.setProperty('--chbg', colors.headColor);
   var chbg = document.querySelector('.hdr');
   if (chbg) chbg.style.background = colors.headColor;
+  // --hdr-inv: contraste automático para textos/ícones no header
+  var hdrHex = colors.headColor.replace('#','');
+  var hr = parseInt(hdrHex.substring(0,2), 16);
+  var hg = parseInt(hdrHex.substring(2,4), 16);
+  var hb = parseInt(hdrHex.substring(4,6), 16);
+  var lum = (0.299*hr + 0.587*hg + 0.114*hb) / 255;
+  root.style.setProperty('--hdr-inv', lum > 0.5 ? '0,0,0' : '255,255,255');
 }
 
 function syncSwatches(colors) {
