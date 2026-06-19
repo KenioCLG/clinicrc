@@ -1547,20 +1547,30 @@ if (resizer && sp) {
     touchMoved = false;
   }, { passive: true });
 
+  // Touch drag handler unificado no resizer (não no window)
   resizer.addEventListener('touchmove', (e) => {
+    e.preventDefault(); // impede scroll da página
     if (!touchMoved) {
-      // Primeiro pixel de movimento: inicia drag
       exitFullScript();
       isResizing = true;
       resizer.classList.add('active');
       document.body.style.userSelect = 'none';
     }
     touchMoved = true;
-  }, { passive: true });
+    // Calcula e aplica resize diretamente aqui
+    const clientY = e.touches[0].clientY;
+    const hdrH = 36;
+    const spH = Math.max(60, Math.min(clientY - hdrH, window.innerHeight - hdrH - 104));
+    pg0.style.setProperty('--sp-h', spH + 'px');
+  }, { passive: false }); // passive: false para permitir preventDefault
 
   resizer.addEventListener('touchend', (e) => {
+    if (isResizing) {
+      isResizing = false;
+      resizer.classList.remove('active');
+      document.body.style.userSelect = '';
+    }
     if (!touchMoved && window.innerWidth <= 1000) {
-      // Foi tap, nao drag
       e.preventDefault();
       toggleFullScript();
     }
@@ -1577,11 +1587,10 @@ if (resizer && sp) {
 
   const doResize = (e) => {
     if (!isResizing) return;
-    const clientX = e.touches?.[0]?.clientX ?? e.clientX;
-    const clientY = e.touches?.[0]?.clientY ?? e.clientY;
+    const clientX = e.clientX;
+    const clientY = e.clientY;
 
     if (window.innerWidth <= 1000) {
-      // Mobile: muda CSS variable no grid container
       const hdrH = 36;
       const spH = Math.max(60, Math.min(clientY - hdrH, window.innerHeight - hdrH - 104));
       pg0.style.setProperty('--sp-h', spH + 'px');
@@ -1602,9 +1611,7 @@ if (resizer && sp) {
 
   resizer.addEventListener('mousedown', startResize);
   window.addEventListener('mousemove', doResize);
-  window.addEventListener('touchmove', doResize, { passive: true });
   window.addEventListener('mouseup', stopResize);
-  window.addEventListener('touchend', stopResize);
 
   window.addEventListener('resize', () => {
     exitFullScript();
