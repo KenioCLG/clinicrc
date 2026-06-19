@@ -374,10 +374,8 @@ function applyCustomColors(colors) {
   root.style.setProperty('--rgb-c2', colors.rgbC2);
   root.style.setProperty('--rgb-c3', colors.rgbC3);
   root.style.setProperty('--rgb-c4', colors.rgbC4);
-  // Header — seta variável --chbg para todos elementos que a referenciam
+  // Header — seta variável --chbg (referenciada pelo CSS da .hdr)
   root.style.setProperty('--chbg', colors.headColor);
-  var chbg = document.querySelector('.hdr');
-  if (chbg) chbg.style.background = colors.headColor;
   // --hdr-inv: contraste automático para textos/ícones no header
   var hdrHex = colors.headColor.replace('#','');
   var hr = parseInt(hdrHex.substring(0,2), 16);
@@ -404,12 +402,14 @@ function syncSwatches(colors) {
   }
 }
 
+var _saveTimer = null;
 function saveCustomColors(colors) {
   localStorage.setItem(CUSTOM_KEY, JSON.stringify(colors));
   applyCustomColors(colors);
   syncSwatches(colors);
-  // Persiste no backend (assíncrono, sem travar a UI)
-  saveColorsToBackend(colors);
+  // Debounce: só persiste no backend após 800ms sem mudança
+  clearTimeout(_saveTimer);
+  _saveTimer = setTimeout(function() { saveColorsToBackend(colors); }, 800);
 }
 
 // ── Sincronização com Backend ──
@@ -497,12 +497,7 @@ window.resetColors = function() {
 
 // Função de logout global
 window.doLogout = () => {
-  // Preserva configurações de cor e avatar ao sair
-  var keep = ['clinicrc_customColors','clinicrc_avatar'];
-  var saved = {};
-  keep.forEach(function(k) { try { saved[k] = localStorage.getItem(k); } catch(e){} });
   localStorage.clear();
-  keep.forEach(function(k) { if (saved[k]) try { localStorage.setItem(k, saved[k]); } catch(e){} });
   window.location.href = 'index.html';
 };
 

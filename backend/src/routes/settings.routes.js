@@ -12,7 +12,7 @@ router.get('/', authMiddleware, async (req, res) => {
   try {
     const row = await db.queryOne(
       'SELECT settings FROM clinic_settings WHERE clinic_id = ?',
-      [req.user.clinic_id]
+      [req.clinic.id]
     );
     const settings = row?.settings || {};
     return res.json({ settings });
@@ -36,7 +36,7 @@ router.put('/', authMiddleware, async (req, res) => {
        VALUES (?, ?::jsonb, NOW())
        ON CONFLICT (clinic_id)
        DO UPDATE SET settings = ?::jsonb, updated_at = NOW()`,
-      [req.user.clinic_id, JSON.stringify(settings), JSON.stringify(settings)]
+      [req.clinic.id, JSON.stringify(settings), JSON.stringify(settings)]
     );
 
     return res.json({ ok: true, settings });
