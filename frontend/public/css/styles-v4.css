@@ -789,125 +789,224 @@ tbody tr:hover{background:rgba(var(--cpr),.05);}
 /* ========================================================
    ODONTOGRAMA (Flyweight / UI Premium)
    ======================================================== */
+/* ─── ODONTOGRAMA PROFISSIONAL ──────────────────────────────────────────────── */
 .odonto-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 30px;
+  gap: 24px;
   align-items: center;
-  padding: 20px;
+  padding: 24px 16px;
   background: var(--cs);
   border-radius: 12px;
   box-shadow: var(--scard);
-  max-width: 900px;
+  max-width: 960px;
   margin: 0 auto;
 }
 
-.arcada-title {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--ct);
-  letter-spacing: -0.3px;
-  text-transform: uppercase;
-  border-bottom: 2px solid var(--cp);
-  padding-bottom: 6px;
-}
-
-.odonto-row {
+/* Legend */
+.odonto-legend {
   display: flex;
-  gap: 12px;
+  gap: 16px;
   flex-wrap: wrap;
   justify-content: center;
+  padding: 8px 16px;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  font-size: 12px;
+  color: var(--cts);
+}
+.odonto-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 500;
+}
+.odonto-legend-sw {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  flex-shrink: 0;
 }
 
+/* Arcada sections */
+.arcada-section {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.arcada-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ct);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  border-bottom: 2px solid var(--cp);
+  padding-bottom: 4px;
+  margin-bottom: 4px;
+}
+.arcada-labels {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--cts);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  opacity: 0.7;
+}
+.arcada-gap {
+  height: 6px;
+}
+
+/* Row and quadrant layout */
+.odonto-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0;
+}
+.odonto-quadrant {
+  display: flex;
+  gap: 3px;
+  padding: 0 4px;
+}
+.odonto-midline {
+  width: 2px;
+  height: 64px;
+  background: var(--cp);
+  border-radius: 1px;
+  opacity: 0.5;
+  flex-shrink: 0;
+  margin: 0 2px;
+}
+
+/* Tooth wrapper */
 .tooth-wrapper {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-  width: 48px;
+  gap: 2px;
+  width: 44px;
   position: relative;
-  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.15s ease;
 }
 .tooth-wrapper:hover {
-  transform: translateY(-3px);
+  transform: scale(1.12);
+  z-index: 2;
+}
+.tooth-wrapper.tooth-ant {
+  width: 34px;
 }
 
 .tooth-label {
-  font-size: 13px;
+  font-size: 10px;
   font-weight: 700;
   color: var(--cts);
+  line-height: 1;
+  user-select: none;
 }
 
-/* Base SVG styling */
+/* SVG tooth */
 .tooth-svg {
-  width: 48px;
-  height: 48px;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
   overflow: visible;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.08));
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.06));
 }
 
-/* Face Styling */
+/* Face styling */
 .face {
   fill: #FFFFFF;
   stroke: #CBD5E1;
-  stroke-width: 1.5;
+  stroke-width: 0.8;
   cursor: pointer;
-  transition: fill 0.3s ease-out, stroke 0.3s ease-out, stroke-width 0.2s;
+  transition: fill 0.2s, stroke 0.2s;
 }
-
 .face:hover {
-  fill: #F8FAFC;
+  fill: #FFF7ED;
   stroke: var(--cp);
-  stroke-width: 2;
+  stroke-width: 1.2;
 }
 
 /* Status Colors */
-.st-carie { fill: #EF4444 !important; stroke: #B91C1C !important; }
-.st-restaurado { fill: #3B82F6 !important; stroke: #1D4ED8 !important; }
+.st-carie { fill: #EF4444 !important; stroke: #DC2626 !important; }
+.st-restaurado { fill: #3B82F6 !important; stroke: #2563EB !important; }
 
 /* Ausente State */
+.tooth-wrapper.ausente .tooth-svg {
+  opacity: 0.35;
+}
 .tooth-wrapper.ausente .face {
   fill: #E2E8F0 !important;
   stroke: #94A3B8 !important;
-  opacity: 0.5;
+  cursor: default;
 }
 .tooth-wrapper.ausente::after {
-  content: '❌';
+  content: '';
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 24px;
+  width: 28px;
+  height: 2px;
+  background: #EF4444;
+  transform: translate(-50%, -50%) rotate(-45deg);
   pointer-events: none;
-  opacity: 0.8;
+  border-radius: 1px;
+}
+.tooth-wrapper.ausente::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 28px;
+  height: 2px;
+  background: #EF4444;
+  transform: translate(-50%, -50%) rotate(45deg);
+  pointer-events: none;
+  border-radius: 1px;
+}
+.tooth-wrapper.ausente .btn-ausente {
+  color: #EF4444;
 }
 
-/* Actions */
-.tooth-actions {
-  opacity: 0;
-  margin-top: 8px; /* Afasta o botão da face inferior */
-  transform: translateY(5px);
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.tooth-wrapper:hover .tooth-actions {
-  opacity: 1;
-  transform: translateY(0);
-}
-
+/* Absent toggle button */
 .btn-ausente {
   background: transparent;
   border: none;
   cursor: pointer;
-  font-size: 12px;
-  padding: 4px;
+  padding: 2px;
+  color: #94A3B8;
+  line-height: 0;
   border-radius: 50%;
-  background: #F1F5F9;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  opacity: 0;
+  transform: scale(0.8);
   transition: all 0.15s;
 }
+.tooth-wrapper:hover .btn-ausente {
+  opacity: 1;
+  transform: scale(1);
+}
 .btn-ausente:hover {
-  background: #E2E8F0;
-  transform: scale(1.1);
+  color: #EF4444;
+  background: #FEF2F2;
+}
+
+/* Mobile responsive */
+@media (max-width: 700px) {
+  .odonto-wrapper { padding: 12px 4px; gap: 16px; }
+  .odonto-quadrant { gap: 1px; padding: 0 2px; }
+  .tooth-wrapper { width: 28px; }
+  .tooth-wrapper.tooth-ant { width: 22px; }
+  .tooth-label { font-size: 8px; }
+  .odonto-midline { height: 44px; }
+  .arcada-labels { gap: 20px; font-size: 8px; }
+  .odonto-legend { font-size: 10px; gap: 10px; padding: 6px 10px; }
 }
 
 /* RESPONSIVIDADE DO PAINEL DE ROTEIRO (CONTAINER QUERIES) */
@@ -1163,12 +1262,6 @@ tbody tr:hover{background:rgba(var(--cpr),.05);}
   white-space: nowrap;
 }
 
-/* GRID DO ODONTOGRAMA */
-@media (max-width: 900px) {
-  .odonto-grid {
-    grid-template-columns: 1fr !important;
-  }
-}
 
 /* LISTA DE PROCEDIMENTOS CLINICOS */
 .proc-clinico-item {
