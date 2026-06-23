@@ -221,10 +221,10 @@ let searchDebounce = null;
 
 // Novas configurações de Colunas Dinâmicas do Kanban (CRM)
 let kanbanCols = [
-  { id: 'ligar', name: 'Para Ligar', color: '#EC6726', require_odonto: false },
-  { id: 'contato', name: 'Em Contato', color: '#3B82F6', require_odonto: false },
-  { id: 'agendado', name: 'Agendado', color: '#10B981', require_odonto: false },
-  { id: 'final', name: 'Finalizado', color: '#6B7280', require_odonto: false }
+  { id: 'ligar', name: 'Para Ligar', color: '#EC6726' },
+  { id: 'contato', name: 'Em Contato', color: '#3B82F6' },
+  { id: 'agendado', name: 'Agendado', color: '#10B981' },
+  { id: 'final', name: 'Finalizado', color: '#6B7280' }
 ];
 
 // Filtros adicionais do CRM
@@ -1341,12 +1341,14 @@ function mkC(p) {
     inactiveHtml = `<div class="lead-inactive-days" title="Sem contato há ${diffDays} dias"><span class="mi" style="font-size:12px;">warning</span>Sem contato há ${diffDays} d</div>`;
   }
 
-  // Botão de abrir odontograma se o lead tiver procedimentos em aberto ou se a coluna exigir
-  const colConfig = kanbanCols.find(c => c.id === p.col);
-  let odontoBtn = '';
-  if (colConfig?.require_odonto || (p.procedimentos_abertos && JSON.parse(p.procedimentos_abertos).length > 0)) {
-    odontoBtn = `<button class="cb" style="background:#EEF2F6;color:#1E293B;border:1px solid #CBD5E1;width:100%;margin-bottom:6px;" onclick="window.abrirOdontogramaPaciente('${p.id}',event)"><span class="mi" style="font-size:13px;vertical-align:middle;margin-right:4px;">dentistry</span>Odontograma</button>`;
-  }
+  // Botão de abrir odontograma — sempre disponível como ação secundária
+  let hasProcs = false;
+  try { hasProcs = p.procedimentos_abertos && JSON.parse(p.procedimentos_abertos).length > 0; } catch(e) {}
+  const odontoStyle = hasProcs
+    ? 'background:#FEF3C7;color:#92400E;border:1px solid #FCD34D;'
+    : 'background:#F8FAFC;color:#94A3B8;border:1px solid #E2E8F0;';
+  const odontoLabel = hasProcs ? 'Odontograma (procedimentos em aberto)' : 'Odontograma';
+  const odontoBtn = `<button class="cb" style="${odontoStyle}width:100%;margin-bottom:6px;font-size:12px;" onclick="window.abrirOdontogramaPaciente('${p.id}',event)"><span class="mi" style="font-size:13px;vertical-align:middle;margin-right:4px;">dentistry</span>${odontoLabel}</button>`;
 
   // Botoes de transicao: Avancar, Voltar e Nova Tentativa (hierarquia logica)
   let b = '';
@@ -1645,25 +1647,40 @@ let isResizing = false;
 
 if (resizer && sp) {
   let spExpanded = false;
-  let lastWidth = '38%'; // Guarda a última largura antes de colapsar
   const pg0 = document.getElementById('pg0');
+
+  const toggleScriptPanel = (forceState) => {
+    let isCollapsed;
+    if (typeof forceState === 'boolean') {
+      isCollapsed = forceState;
+      if (isCollapsed) {
+        pg0.classList.add('sp-collapsed');
+      } else {
+        pg0.classList.remove('sp-collapsed');
+      }
+    } else {
+      isCollapsed = pg0.classList.toggle('sp-collapsed');
+    }
+    localStorage.setItem('clinicrc_script_collapsed', isCollapsed);
+    const toggleScriptBtn = document.getElementById('toggleScriptBtn');
+    if (toggleScriptBtn) {
+      if (isCollapsed) {
+        toggleScriptBtn.classList.add('collapsed');
+      } else {
+        toggleScriptBtn.classList.remove('collapsed');
+      }
+    }
+  };
+  window.toggleScriptPanel = toggleScriptPanel;
+
+  // Restore initial collapse state
+  if (localStorage.getItem('clinicrc_script_collapsed') === 'true') {
+    toggleScriptPanel(true);
+  }
 
   const toggleFullScript = () => {
     if (window.innerWidth > 1000) {
-      // Comportamento desktop: colapsar totalmente ou restaurar largura
-      const currentWidth = sp.style.width || getComputedStyle(sp).width;
-      if (currentWidth !== '0px') {
-        lastWidth = currentWidth;
-        sp.style.width = '0px';
-        sp.style.borderRight = 'none';
-        resizer.style.borderLeft = 'none';
-        resizer.style.borderRight = 'none';
-      } else {
-        sp.style.width = lastWidth && lastWidth !== '0px' ? lastWidth : '38%';
-        sp.style.removeProperty('border-right');
-        resizer.style.removeProperty('border-left');
-        resizer.style.removeProperty('border-right');
-      }
+      toggleScriptPanel();
     } else {
       // Comportamento mobile (original)
       spExpanded = !spExpanded;
@@ -1709,8 +1726,17 @@ if (resizer && sp) {
     // Calcula e aplica resize diretamente aqui
     const clientY = e.touches[0].clientY;
     const hdrH = 36;
-    const spH = Math.max(60, Math.min(clientY - hdrH, window.innerHeight - hdrH - 104));
-    pg0.style.setProperty('--sp-h', spH + 'px');
+    if (clientY < 80) {
+      // Snap-collapse no mobile
+      toggleScriptPanel(true);
+      stopResize();
+    } else {
+      if (pg0.classList.contains('sp-collapsed')) {
+        toggleScriptPanel(false);
+      }
+      const spH = Math.max(60, Math.min(clientY - hdrH, window.innerHeight - hdrH - 104));
+      pg0.style.setProperty('--sp-h', spH + 'px');
+    }
   }, { passive: false }); // passive: false para permitir preventDefault
 
   resizer.addEventListener('touchend', (e) => {
@@ -1741,21 +1767,27 @@ if (resizer && sp) {
 
     if (window.innerWidth <= 1000) {
       const hdrH = 36;
-      const spH = Math.max(60, Math.min(clientY - hdrH, window.innerHeight - hdrH - 104));
-      pg0.style.setProperty('--sp-h', spH + 'px');
-    } else {
-      // Se arrastar para menos de 100px, snap para colapso total (0px)
-      if (clientX < 100) {
-        sp.style.width = '0px';
-        sp.style.borderRight = 'none';
-        resizer.style.borderLeft = 'none';
-        resizer.style.borderRight = 'none';
+      if (clientY < 80) {
+        toggleScriptPanel(true);
+        stopResize();
       } else {
+        if (pg0.classList.contains('sp-collapsed')) {
+          toggleScriptPanel(false);
+        }
+        const spH = Math.max(60, Math.min(clientY - hdrH, window.innerHeight - hdrH - 104));
+        pg0.style.setProperty('--sp-h', spH + 'px');
+      }
+    } else {
+      // Se arrastar para menos de 100px, snap para colapso total
+      if (clientX < 100) {
+        toggleScriptPanel(true);
+        stopResize();
+      } else {
+        if (pg0.classList.contains('sp-collapsed')) {
+          toggleScriptPanel(false);
+        }
         let newWidth = Math.max(280, Math.min(clientX, window.innerWidth - 400));
         sp.style.width = newWidth + 'px';
-        sp.style.removeProperty('border-right');
-        resizer.style.removeProperty('border-left');
-        resizer.style.removeProperty('border-right');
       }
     }
   };
@@ -1955,10 +1987,6 @@ function renderConfigKanban() {
         <span class="mi" style="cursor: grab; color: var(--cts);">drag_indicator</span>
         <input type="text" class="config-col-input" value="${esc(col.name)}" oninput="window.atualizarNomeColunaConfig(${index}, this.value)" placeholder="Nome da Fase" />
         <input type="color" class="config-col-color" value="${col.color}" onchange="window.atualizarCorColunaConfig(${index}, this.value)" title="Cor da Fase" />
-        <label class="config-col-check-label">
-          <input type="checkbox" ${col.require_odonto ? 'checked' : ''} onchange="window.atualizarOdontoColunaConfig(${index}, this.checked)" />
-          Exigir Odontograma
-        </label>
         <button class="btn-proc-action delete" onclick="window.removerColunaConfig(${index})" title="Remover Fase" style="width:32px;height:32px;">
           <span class="mi" style="font-size:16px;">delete</span>
         </button>
@@ -1975,17 +2003,13 @@ window.atualizarCorColunaConfig = (index, val) => {
   kanbanCols[index].color = val;
 };
 
-window.atualizarOdontoColunaConfig = (index, val) => {
-  kanbanCols[index].require_odonto = val;
-};
 
 window.adicionarColunaConfig = () => {
   const newId = 'fase_' + Date.now();
   kanbanCols.push({
     id: newId,
     name: 'Nova Fase',
-    color: '#3B82F6',
-    require_odonto: false
+    color: '#3B82F6'
   });
   renderConfigKanban();
 };
@@ -2010,10 +2034,10 @@ window.removerColunaConfig = (index) => {
 window.restaurarColunasPadrao = () => {
   if (confirm('Deseja restaurar as fases originais do Kanban? Os nomes customizados serão perdidos.')) {
     kanbanCols = [
-      { id: 'ligar', name: 'Para Ligar', color: '#EC6726', require_odonto: false },
-      { id: 'contato', name: 'Em Contato', color: '#3B82F6', require_odonto: false },
-      { id: 'agendado', name: 'Agendado', color: '#10B981', require_odonto: false },
-      { id: 'final', name: 'Finalizado', color: '#6B7280', require_odonto: false }
+      { id: 'ligar', name: 'Para Ligar', color: '#EC6726' },
+      { id: 'contato', name: 'Em Contato', color: '#3B82F6' },
+      { id: 'agendado', name: 'Agendado', color: '#10B981' },
+      { id: 'final', name: 'Finalizado', color: '#6B7280' }
     ];
     renderConfigKanban();
     window.salvarConfiguracaoColunas();

@@ -150,6 +150,25 @@ body{font-family:var(--font);font-size:14px;color:var(--ct);background:var(--cbg
 .sp{width:38%;background:var(--cs);display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;box-shadow:1px 0 10px rgba(0,0,0,0.03);z-index:2;container-type:inline-size;container-name:sp-panel;}
 .resizer{width:6px;background:var(--cbg);border-left:1px solid var(--cdiv);border-right:1px solid var(--cdiv);cursor:col-resize;flex-shrink:0;transition:all .2s ease;}
 .resizer:hover, .resizer.active{background:rgba(var(--cpr),0.1);border-color:var(--cp);}
+
+/* COLLAPSED STATE (Desktop & General) */
+.pg.on.sp-collapsed .sp {
+  width: 0px !important;
+  border-right: none !important;
+  box-shadow: none !important;
+  overflow: hidden !important;
+}
+.pg.on.sp-collapsed .resizer {
+  width: 0px !important;
+  border: none !important;
+  pointer-events: none !important;
+}
+#toggleScriptBtn.collapsed {
+  background: var(--cibg);
+  color: var(--cp);
+  border-color: var(--cp);
+}
+
 .sp-hd{background:#FFFFFF;color:var(--ct);padding:14px 16px;display:flex;align-items:center;gap:12px;flex-shrink:0;border-bottom:1px solid var(--cdiv);}
 .sp-hd h2{font-size:15px;font-weight:600;letter-spacing:-0.2px;}
 .sp-hd p{font-size:12px;color:var(--cts);margin-top:2px;font-weight:400;}
@@ -187,6 +206,9 @@ body{font-family:var(--font);font-size:14px;color:var(--ct);background:var(--cbg
     grid-template-rows: var(--sp-h, 40%) 24px 1fr !important;
     grid-template-columns: 1fr !important;
     flex-direction: unset !important;
+  }
+  .pg.on.sp-collapsed {
+    grid-template-rows: 0px 0px 1fr !important;
   }
   .sp {
     width: 100% !important;

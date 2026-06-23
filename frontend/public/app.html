@@ -193,6 +193,9 @@ if ('serviceWorker' in navigator && !localStorage.getItem('sw_cleaned')) {
       <div class="ktb">
         <div style="display:flex; align-items:center; gap:6px;">
           <input id="searchPatient" name="searchPatient" class="ksrch" type="text" aria-label="Buscar paciente" placeholder="Buscar paciente..." oninput="clearTimeout(searchDebounce); searchDebounce = setTimeout(window.render, 300)">
+          <button id="toggleScriptBtn" class="pf-clear-btn" onclick="window.toggleScriptPanel()" title="Alternar Roteiro de Chamadas" style="height:34px;width:34px; display:flex; align-items:center; justify-content:center;">
+            <span class="mi" style="font-size:20px">record_voice_over</span>
+          </button>
           <button id="toggleFilterBtn" class="pf-clear-btn" onclick="window._toggleFilterPanel()" title="Mostrar Filtros" style="height:34px;width:34px;">
             <span class="mi" style="font-size:20px">tune</span>
           </button>
