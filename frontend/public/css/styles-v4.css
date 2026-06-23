@@ -789,15 +789,13 @@ tbody tr:hover{background:rgba(var(--cpr),.05);}
 /* ========================================================
    ODONTOGRAMA (Flyweight / UI Premium)
    ======================================================== */
-/* ─── ODONTOGRAMA (Figma-faithful) ─────────────────────────────────────────── */
+/* ─── ODONTOGRAMA ──────────────────────────────────────────────────────────── */
 .odonto-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
   align-items: center;
-  padding: 24px 12px;
-  background: #1E1E1E;
-  border-radius: 12px;
+  padding: 16px 8px;
   max-width: 100%;
   overflow-x: auto;
 }
@@ -809,8 +807,11 @@ tbody tr:hover{background:rgba(var(--cpr),.05);}
   flex-wrap: wrap;
   justify-content: center;
   padding: 8px 16px;
+  background: var(--cbg);
+  border: 1px solid var(--cdiv);
+  border-radius: 8px;
   font-size: 12px;
-  color: #9E9E9E;
+  color: var(--cts);
 }
 .odonto-legend-item { display: flex; align-items: center; gap: 5px; font-weight: 500; }
 .odonto-legend-sw { display: inline-block; width: 12px; height: 12px; border-radius: 2px; flex-shrink: 0; }
@@ -824,20 +825,20 @@ tbody tr:hover{background:rgba(var(--cpr),.05);}
   gap: 0;
 }
 .arcada-title {
-  font-size: 13px;
-  font-weight: 600;
-  color: #BDBDBD;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ct);
   letter-spacing: 0.5px;
   text-transform: uppercase;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
-/* Dashed separator between upper/lower arches (like Figma) */
+/* Dashed separator between upper/lower arches */
 .arcada-separator {
   width: 90%;
   max-width: 700px;
   height: 0;
-  border-top: 1.5px dashed #555;
+  border-top: 1.5px dashed var(--cdiv);
   margin: 4px 0;
 }
 
@@ -850,14 +851,15 @@ tbody tr:hover{background:rgba(var(--cpr),.05);}
 .odonto-quad {
   display: flex;
   gap: 2px;
-  padding: 0 6px;
+  padding: 0 4px;
 }
 
 /* Vertical midline */
 .odonto-midline {
   width: 1.5px;
   align-self: stretch;
-  background: #666;
+  background: var(--cp);
+  opacity: 0.4;
   flex-shrink: 0;
   margin: 0 4px;
 }
@@ -877,13 +879,13 @@ tbody tr:hover{background:rgba(var(--cpr),.05);}
 /* Tooth number */
 .tooth-num {
   font-size: 10px;
-  font-weight: 600;
-  color: #BDBDBD;
+  font-weight: 700;
+  color: var(--cts);
   line-height: 1.4;
   user-select: none;
 }
 
-/* 5-face grid (small — Figma has it compact above/below anatomy) */
+/* 5-face grid (compact) */
 .tooth-faces {
   width: 24px;
   height: 24px;
@@ -891,7 +893,7 @@ tbody tr:hover{background:rgba(var(--cpr),.05);}
   flex-shrink: 0;
 }
 
-/* Anatomical tooth silhouette (MAIN element — large like Figma) */
+/* Anatomical tooth silhouette (large, main visual) */
 .tooth-anat {
   width: 100%;
   height: 70px;
@@ -899,40 +901,37 @@ tbody tr:hover{background:rgba(var(--cpr),.05);}
   flex-shrink: 0;
 }
 .tooth-anat path {
-  fill: none;
-  stroke: #D1D1D1;
+  fill: var(--cs);
+  stroke: var(--cts);
   stroke-width: 1.2;
 }
-.tooth-col:hover .tooth-anat path { stroke: #fff; }
+.tooth-col:hover .tooth-anat path { stroke: var(--cp); }
 .tooth-col.ausente .tooth-anat { opacity: 0.2; }
 
-/* Placeholder for teeth without anatomy data (deciduous) */
-.tooth-anat-placeholder {
-  width: 100%;
-  height: 30px;
-}
+/* Placeholder for teeth without anatomy (deciduous) */
+.tooth-anat-placeholder { width: 100%; height: 30px; }
 
 /* Face styling */
 .face {
-  fill: transparent;
-  stroke: #888;
+  fill: #FFFFFF;
+  stroke: #CBD5E1;
   stroke-width: 0.8;
   cursor: pointer;
   transition: fill 0.15s, stroke 0.15s;
 }
 .face:hover {
-  fill: rgba(255,255,255,0.15);
-  stroke: #fff;
-  stroke-width: 1;
+  fill: #FFF7ED;
+  stroke: var(--cp);
+  stroke-width: 1.2;
 }
 
 /* Status Colors */
-.st-carie { fill: #EF4444 !important; stroke: #EF4444 !important; }
-.st-restaurado { fill: #3B82F6 !important; stroke: #3B82F6 !important; }
+.st-carie { fill: #EF4444 !important; stroke: #DC2626 !important; }
+.st-restaurado { fill: #3B82F6 !important; stroke: #2563EB !important; }
 
 /* Ausente State */
-.tooth-col.ausente .tooth-faces { opacity: 0.2; }
-.tooth-col.ausente .face { fill: #555 !important; stroke: #666 !important; cursor: default; }
+.tooth-col.ausente .tooth-faces { opacity: 0.25; }
+.tooth-col.ausente .face { fill: #E2E8F0 !important; stroke: #94A3B8 !important; cursor: default; }
 .tooth-col.ausente .tooth-num { opacity: 0.4; }
 
 /* Absent toggle button */
@@ -941,7 +940,7 @@ tbody tr:hover{background:rgba(var(--cpr),.05);}
   border: none;
   cursor: pointer;
   padding: 2px;
-  color: #666;
+  color: var(--cts);
   line-height: 0;
   border-radius: 50%;
   opacity: 0;
@@ -953,7 +952,7 @@ tbody tr:hover{background:rgba(var(--cpr),.05);}
 
 /* ── Responsive ── */
 @media (max-width: 700px) {
-  .odonto-wrapper { padding: 12px 2px; gap: 12px; }
+  .odonto-wrapper { padding: 8px 2px; gap: 10px; }
   .odonto-quad { gap: 0; padding: 0 2px; }
   .tooth-col { width: 22px; }
   .tooth-col.tooth-ant { width: 18px; }
