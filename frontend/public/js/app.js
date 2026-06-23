@@ -364,7 +364,19 @@ function loadCustomColors() {
   };
   var colors = {};
   for (var k in def) colors[k] = saved[k] || def[k];
+  // Preserva kanban_columns se existir no localStorage
+  if (saved.kanban_columns && Array.isArray(saved.kanban_columns) && saved.kanban_columns.length > 0) {
+    colors.kanban_columns = saved.kanban_columns;
+  }
   return colors;
+}
+
+// Restaura kanbanCols a partir do objeto de settings (localStorage ou backend)
+function restoreKanbanCols(settings) {
+  if (settings && Array.isArray(settings.kanban_columns) && settings.kanban_columns.length > 0) {
+    kanbanCols = settings.kanban_columns;
+    recalcCounts();
+  }
 }
 
 function applyCustomColors(colors) {
@@ -455,6 +467,8 @@ function fetchColorsFromBackend() {
       localStorage.setItem(CUSTOM_KEY, JSON.stringify(data.settings));
       applyCustomColors(data.settings);
       syncSwatches(data.settings);
+      restoreKanbanCols(data.settings);
+      render();
       return data.settings;
     }
     return null;
@@ -464,11 +478,12 @@ function fetchColorsFromBackend() {
   });
 }
 
-// Inicializa cores salvas ao carregar
+// Inicializa cores e kanbanCols salvos ao carregar
 (function() {
   var colors = loadCustomColors();
   applyCustomColors(colors);
   syncSwatches(colors);
+  restoreKanbanCols(colors);
   // Tenta carregar versão mais recente do backend (em segundo plano)
   fetchColorsFromBackend();
 })();
@@ -1333,13 +1348,22 @@ function mkC(p) {
     odontoBtn = `<button class="cb" style="background:#EEF2F6;color:#1E293B;border:1px solid #CBD5E1;width:100%;margin-bottom:6px;" onclick="window.abrirOdontogramaPaciente('${p.id}',event)"><span class="mi" style="font-size:13px;vertical-align:middle;margin-right:4px;">dentistry</span>Odontograma</button>`;
   }
 
-  // Botões dinâmicos de transição de fase do Kanban
+  // Botoes de transicao: Avancar, Voltar e Nova Tentativa (hierarquia logica)
   let b = '';
-  kanbanCols.forEach(col => {
-    if (col.id !== p.col) {
-      b += `<button class="cb" style="border:1px solid ${col.color}; color:${col.color}; background:transparent;" onclick="window._mv('${p.id}','${col.id}',event)">${col.name}</button>`;
-    }
-  });
+  const colIdx = kanbanCols.findIndex(c => c.id === p.col);
+  const nextCol = kanbanCols[colIdx + 1];
+  const prevCol = kanbanCols[colIdx - 1];
+  const firstCol = kanbanCols[0];
+
+  if (nextCol) {
+    b += `<button class="cb" style="background:${nextCol.color}; color:#fff; border:none;" onclick="window._mv('${p.id}','${nextCol.id}',event)">${nextCol.name} <span class="mi" style="font-size:12px;vertical-align:middle;">arrow_forward</span></button>`;
+  }
+  if (prevCol) {
+    b += `<button class="cb" style="border:1px solid ${prevCol.color}; color:${prevCol.color}; background:transparent;" onclick="window._mv('${p.id}','${prevCol.id}',event)"><span class="mi" style="font-size:12px;vertical-align:middle;">arrow_back</span> ${prevCol.name}</button>`;
+  }
+  if (colIdx > 1 && firstCol) {
+    b += `<button class="cb" style="background:#FFF7ED;color:#92400E;border:1px solid #FED7AA;" onclick="window._mv('${p.id}','${firstCol.id}',event)" title="Volta para ${firstCol.name} e registra nova tentativa">Nova Tentativa</button>`;
+  }
 
   return `<div class="card ${sel}" onclick="window._sP('${esc(p.id)}')">
     <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:4px;">
@@ -1376,12 +1400,16 @@ window._mv = (id, col, e) => {
   if (!p) return;
   const updates = { col };
 
-  if (col === 'ligar') {
-    // Ao reabrir, registramos a tentativa atual e limpamos o status
-    // para que o indicador reflita que estamos na próxima rodada de contato
+  const firstCol = kanbanCols[0]?.id;
+  const curIdx = kanbanCols.findIndex(c => c.id === p.col);
+  const newIdx = kanbanCols.findIndex(c => c.id === col);
+
+  if (col === firstCol && curIdx > 0) {
+    // Voltou para a primeira fase = nova tentativa
     updates.tent = (p.tent || 0) + 1;
     updates.res = null;
-  } else if (col === 'contato') {
+  } else if (newIdx < curIdx) {
+    // Voltou para fase anterior (nao a primeira) — limpa resultado
     updates.res = null;
   }
   updatePaciente(id, updates);
@@ -1397,8 +1425,11 @@ window._mT = (id, n, e) => {
     newTent = p.tent - 1;
   } else if (n === p.tent + 1) {
     newTent = n;
-    // Move automaticamente para "Em Contato" na 1ª tentativa
-    if (p.col === 'ligar') newCol = 'contato';
+    // Move automaticamente para a proxima fase na 1a tentativa
+    const curIdx = kanbanCols.findIndex(c => c.id === p.col);
+    if (curIdx === 0 && kanbanCols.length > 1) {
+      newCol = kanbanCols[1].id;
+    }
   }
   updatePaciente(id, { tent: newTent, col: newCol });
   if (pA?.id === id) { pA = E.find(x => x.id === id); updS(); }
@@ -1614,17 +1645,35 @@ let isResizing = false;
 
 if (resizer && sp) {
   let spExpanded = false;
+  let lastWidth = '38%'; // Guarda a última largura antes de colapsar
   const pg0 = document.getElementById('pg0');
 
   const toggleFullScript = () => {
-    if (window.innerWidth > 1000) return;
-    spExpanded = !spExpanded;
-    if (spExpanded) {
-      pg0.classList.add('script-full');
-      resizer.classList.add('collapsed');
+    if (window.innerWidth > 1000) {
+      // Comportamento desktop: colapsar totalmente ou restaurar largura
+      const currentWidth = sp.style.width || getComputedStyle(sp).width;
+      if (currentWidth !== '0px') {
+        lastWidth = currentWidth;
+        sp.style.width = '0px';
+        sp.style.borderRight = 'none';
+        resizer.style.borderLeft = 'none';
+        resizer.style.borderRight = 'none';
+      } else {
+        sp.style.width = lastWidth && lastWidth !== '0px' ? lastWidth : '38%';
+        sp.style.removeProperty('border-right');
+        resizer.style.removeProperty('border-left');
+        resizer.style.removeProperty('border-right');
+      }
     } else {
-      pg0.classList.remove('script-full');
-      resizer.classList.remove('collapsed');
+      // Comportamento mobile (original)
+      spExpanded = !spExpanded;
+      if (spExpanded) {
+        pg0.classList.add('script-full');
+        resizer.classList.add('collapsed');
+      } else {
+        pg0.classList.remove('script-full');
+        resizer.classList.remove('collapsed');
+      }
     }
   };
 
@@ -1695,8 +1744,19 @@ if (resizer && sp) {
       const spH = Math.max(60, Math.min(clientY - hdrH, window.innerHeight - hdrH - 104));
       pg0.style.setProperty('--sp-h', spH + 'px');
     } else {
-      let newWidth = Math.max(280, Math.min(clientX, window.innerWidth - 400));
-      sp.style.width = newWidth + 'px';
+      // Se arrastar para menos de 100px, snap para colapso total (0px)
+      if (clientX < 100) {
+        sp.style.width = '0px';
+        sp.style.borderRight = 'none';
+        resizer.style.borderLeft = 'none';
+        resizer.style.borderRight = 'none';
+      } else {
+        let newWidth = Math.max(280, Math.min(clientX, window.innerWidth - 400));
+        sp.style.width = newWidth + 'px';
+        sp.style.removeProperty('border-right');
+        resizer.style.removeProperty('border-left');
+        resizer.style.removeProperty('border-right');
+      }
     }
   };
 
@@ -1819,7 +1879,7 @@ window.salvarLead = async () => {
     return;
   }
 
-  const leadData = { nome, tel, proc, valor, source, lead_temperature, obs };
+  const leadData = { nome, tel, proc, valor, source, lead_temperature, obs, col: kanbanCols[0]?.id || 'ligar' };
 
   try {
     setSyncStatus('ok', 'Salvando lead...');
@@ -1956,6 +2016,7 @@ window.restaurarColunasPadrao = () => {
       { id: 'final', name: 'Finalizado', color: '#6B7280', require_odonto: false }
     ];
     renderConfigKanban();
+    window.salvarConfiguracaoColunas();
   }
 };
 
