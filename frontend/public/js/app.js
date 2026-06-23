@@ -1758,9 +1758,6 @@ const isIos = () => {
 };
 const isInStandaloneMode = () => ('standalone' in window.navigator) && (window.navigator.standalone);
 
-  });
-}
-
 // ============================================================================
 // CRM & LEAD MANAGEMENT (Novo Lead, Edição e Exclusão)
 // ============================================================================

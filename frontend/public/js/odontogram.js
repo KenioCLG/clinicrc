@@ -160,7 +160,6 @@ class Odontogram {
     }
   }
 }
-}
 
 // Expõe para uso no app.js
 window.Odontogram = Odontogram;
