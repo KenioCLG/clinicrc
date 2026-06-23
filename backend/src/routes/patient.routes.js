@@ -12,7 +12,7 @@ router.use(authMiddleware);
 // POST /patients — Cadastra um novo Lead/Paciente manual
 router.post('/', async (req, res) => {
   const clinicId = req.clinic.id;
-  const { id, nome, tel, proc, valor, col, source, lead_temperature, obs, odonto_state, procedimentos_abertos } = req.body;
+  const { id, nome, tel, proc, valor, col, source, lead_temperature, strategy, obs, odonto_state, procedimentos_abertos } = req.body;
 
   if (!nome || !tel) {
     return res.status(400).json({ error: 'Nome e Telefone são obrigatórios.' });
@@ -33,6 +33,7 @@ router.post('/', async (req, res) => {
     const finalCol = col || 'ligar';
     const finalSource = source || 'manual';
     const finalTemp = lead_temperature || 'warm';
+    const finalStrategy = strategy || 'default';
     const finalValor = valor || 'R$ 0,00';
     const finalProc = proc || '';
     const finalObs = obs || '';
@@ -40,13 +41,13 @@ router.post('/', async (req, res) => {
     const finalProcs = procedimentos_abertos || '[]';
 
     await run(
-      `INSERT INTO patients (id, clinic_id, nome, tel, proc, valor, col, tent, obs, source, lead_temperature, odonto_state, procedimentos_abertos)
-       VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?)`,
-      [newId, clinicId, nome, tel, finalProc, finalValor, finalCol, finalObs, finalSource, finalTemp, finalOdonto, finalProcs]
+      `INSERT INTO patients (id, clinic_id, nome, tel, proc, valor, col, tent, obs, source, lead_temperature, strategy, odonto_state, procedimentos_abertos)
+       VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?)`,
+      [newId, clinicId, nome, tel, finalProc, finalValor, finalCol, finalObs, finalSource, finalTemp, finalStrategy, finalOdonto, finalProcs]
     );
 
     const created = await queryOne(
-      'SELECT id, nome, tel, proc, valor, col, tent, obs, res, dt, source, source_status, profissional, data_orcamento, lead_temperature, odonto_state, procedimentos_abertos, created_at FROM patients WHERE clinic_id = ? AND id = ?',
+      'SELECT id, nome, tel, proc, valor, col, tent, obs, res, dt, source, source_status, profissional, data_orcamento, lead_temperature, strategy, odonto_state, procedimentos_abertos, created_at FROM patients WHERE clinic_id = ? AND id = ?',
       [clinicId, newId]
     );
 
@@ -68,7 +69,7 @@ router.get('/', async (req, res) => {
     const total = totalRow.cnt;
 
     const patients = await queryAll(
-      'SELECT id, nome, tel, proc, valor, col, tent, obs, res, dt, source, source_status, profissional, data_orcamento, lead_temperature, odonto_state, procedimentos_abertos, created_at FROM patients WHERE clinic_id = ? ORDER BY created_at ASC LIMIT ? OFFSET ?',
+      'SELECT id, nome, tel, proc, valor, col, tent, obs, res, dt, source, source_status, profissional, data_orcamento, lead_temperature, strategy, odonto_state, procedimentos_abertos, created_at FROM patients WHERE clinic_id = ? ORDER BY created_at ASC LIMIT ? OFFSET ?',
       [req.clinic.id, limit, offset]
     );
 
@@ -86,7 +87,7 @@ router.get('/', async (req, res) => {
 router.put('/:tel', async (req, res) => {
   const clinicId = req.clinic.id;
   const tel = req.params.tel;
-  const { col, tent, obs, res: resultado, dt, lead_temperature, source, nome, tel: newTel, proc, valor, odonto_state, procedimentos_abertos } = req.body || {};
+  const { col, tent, obs, res: resultado, dt, lead_temperature, strategy, source, nome, tel: newTel, proc, valor, odonto_state, procedimentos_abertos } = req.body || {};
 
   // Validação flexível de coluna do Kanban (para suportar colunas personalizadas)
   if (col !== undefined && (typeof col !== 'string' || col.length > 50)) {
@@ -126,6 +127,7 @@ router.put('/:tel', async (req, res) => {
     if (tent !== undefined)             { sets.push('tent = ?'); params.push(tent); }
     if (obs !== undefined)              { sets.push('obs = ?');  params.push(obs); }
     if (lead_temperature !== undefined) { sets.push('lead_temperature = ?'); params.push(lead_temperature); }
+    if (strategy !== undefined)         { sets.push('strategy = ?'); params.push(strategy); }
     if (source !== undefined)           { sets.push('source = ?'); params.push(source); }
     if (nome !== undefined)             { sets.push('nome = ?'); params.push(nome); }
     if (newTel !== undefined)           { sets.push('tel = ?'); params.push(newTel); }
@@ -145,7 +147,7 @@ router.put('/:tel', async (req, res) => {
 
     const targetTel = newTel || tel;
     const updated = await queryOne(
-      'SELECT id, nome, tel, proc, valor, col, tent, obs, res, dt, source, source_status, profissional, data_orcamento, lead_temperature, odonto_state, procedimentos_abertos FROM patients WHERE clinic_id = ? AND tel = ?',
+      'SELECT id, nome, tel, proc, valor, col, tent, obs, res, dt, source, source_status, profissional, data_orcamento, lead_temperature, strategy, odonto_state, procedimentos_abertos FROM patients WHERE clinic_id = ? AND tel = ?',
       [clinicId, targetTel]
     );
     return res.json(updated);

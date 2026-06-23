@@ -77,6 +77,7 @@ async function initSchema() {
       lead_temperature TEXT DEFAULT 'warm',
       odonto_state     TEXT DEFAULT '{}',
       procedimentos_abertos TEXT DEFAULT '[]',
+      strategy        TEXT DEFAULT 'default',
       created_at      TIMESTAMPTZ DEFAULT NOW(),
       updated_at      TIMESTAMPTZ DEFAULT NOW(),
       PRIMARY KEY (id, clinic_id),
@@ -86,6 +87,7 @@ async function initSchema() {
     ALTER TABLE patients ADD COLUMN IF NOT EXISTS lead_temperature TEXT DEFAULT 'warm';
     ALTER TABLE patients ADD COLUMN IF NOT EXISTS odonto_state TEXT DEFAULT '{}';
     ALTER TABLE patients ADD COLUMN IF NOT EXISTS procedimentos_abertos TEXT DEFAULT '[]';
+    ALTER TABLE patients ADD COLUMN IF NOT EXISTS strategy TEXT DEFAULT 'default';
 
     CREATE TABLE IF NOT EXISTS uploads (
       id           SERIAL PRIMARY KEY,

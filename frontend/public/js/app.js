@@ -230,6 +230,7 @@ let kanbanCols = [
 // Filtros adicionais do CRM
 let activeTempFilter = null; // 'hot', 'warm', 'cold'
 let activeSourceFilter = null; // 'whatsapp', 'instagram', 'google', etc.
+let activeStrategyFilter = null; // 'default', 'ligacao', 'whatsapp', etc.
 
 // Cache de contagens por coluna — atualizado incrementalmente
 let colCounts = {};
@@ -643,6 +644,41 @@ document.addEventListener('touchend', (e) => {
     });
   } else {
     localStorage.setItem(VER_KEY, APP_VERSION);
+  }
+})();
+
+(function initDragToScrollTabs() {
+  const tabsContainer = document.querySelector('.hdr-tabs');
+  if (tabsContainer) {
+    let isDown = false;
+    let startX;
+    let scrollLeft;
+
+    tabsContainer.addEventListener('mousedown', (e) => {
+      if (window.innerWidth <= 1000) return;
+      isDown = true;
+      tabsContainer.classList.add('active-drag');
+      startX = e.pageX - tabsContainer.offsetLeft;
+      scrollLeft = tabsContainer.scrollLeft;
+    });
+
+    tabsContainer.addEventListener('mouseleave', () => {
+      isDown = false;
+      tabsContainer.classList.remove('active-drag');
+    });
+
+    tabsContainer.addEventListener('mouseup', () => {
+      isDown = false;
+      tabsContainer.classList.remove('active-drag');
+    });
+
+    tabsContainer.addEventListener('mousemove', (e) => {
+      if (!isDown) return;
+      e.preventDefault();
+      const x = e.pageX - tabsContainer.offsetLeft;
+      const walk = (x - startX) * 1.5;
+      tabsContainer.scrollLeft = scrollLeft - walk;
+    });
   }
 })();
 
@@ -1119,8 +1155,9 @@ function render() {
     const matchProc   = !activeProc || getCachedProcCategories(p).includes(activeProc);
     const matchTemp   = !activeTempFilter || p.lead_temperature === activeTempFilter;
     const matchSource = !activeSourceFilter || p.source === activeSourceFilter;
+    const matchStrategy = !activeStrategyFilter || (p.strategy || 'default') === activeStrategyFilter;
     
-    if (matchSearch && matchProc && matchTemp && matchSource) {
+    if (matchSearch && matchProc && matchTemp && matchSource && matchStrategy) {
       // Se a coluna do paciente não existir, bota na primeira por segurança
       const targetCol = C[p.col] ? p.col : kanbanCols[0].id;
       C[targetCol].push(p);
@@ -1274,6 +1311,15 @@ window._toggleProc = (proc) => {
 
 window._clearProcFilter = () => {
   activeProc = null;
+  activeTempFilter = null;
+  activeSourceFilter = null;
+  activeStrategyFilter = null;
+  
+  // Limpa classes .on dos chips
+  document.querySelectorAll('#tempChips .temp-chip').forEach(btn => btn.classList.remove('on'));
+  document.querySelectorAll('#sourceChips .src-chip').forEach(btn => btn.classList.remove('on'));
+  document.querySelectorAll('#strategyChips .strat-chip').forEach(btn => btn.classList.remove('on'));
+  
   render();
 };
 
@@ -1332,6 +1378,18 @@ function mkC(p) {
   const srcCfg = sourceIcons[src] || sourceIcons.manual;
   const srcBadgeHtml = `<span class="lead-source-badge" title="Origem: ${srcCfg.label}" style="border-color:${srcCfg.color}; color:${srcCfg.color};"><span class="mi" style="font-size:11px;color:${srcCfg.color};margin-right:2px;">${srcCfg.icon}</span>${srcCfg.label}</span>`;
 
+  const strat = p.strategy || 'default';
+  const strategyIcons = {
+    default: { icon: 'handshake', label: 'Padrão' },
+    ligacao: { icon: 'phone', label: '📞 Ligação' },
+    whatsapp: { icon: 'chat', label: '💬 WhatsApp' },
+    reativacao: { icon: 'autorenew', label: '🔄 Reativação' },
+    pos_operatorio: { icon: 'local_hospital', label: '🏥 Pós-Op' },
+    retorno_preventivo: { icon: 'event', label: '🗓️ Preventivo' }
+  };
+  const stratCfg = strategyIcons[strat] || strategyIcons.default;
+  const strategyBadgeHtml = `<span class="lead-strategy-badge ${strat}" title="Estratégia: ${stratCfg.label}"><span class="mi" style="font-size:11px;margin-right:2px;">${stratCfg.icon}</span>${stratCfg.label}</span>`;
+
   // Cálculo de dias inativo (tempo ocioso)
   const updatedDate = p.updated_at ? new Date(p.updated_at) : (p.created_at ? new Date(p.created_at) : new Date());
   const diffTime = Math.abs(Date.now() - updatedDate.getTime());
@@ -1385,6 +1443,7 @@ function mkC(p) {
     <div style="margin-bottom: 8px; display:flex; flex-wrap:wrap; gap:4px; align-items:center;">
       ${tempBadgeHtml}
       ${srcBadgeHtml}
+      ${strategyBadgeHtml}
     </div>
     ${inactiveHtml}
     ${d}${chip}
@@ -1571,7 +1630,10 @@ async function conf(res) {
 window.conf = conf;
 
 function trocarAba(i, b) {
-  document.querySelectorAll('.tab-btn').forEach((x, j) => x.classList.toggle('on', j === i));
+  document.querySelectorAll('.tab-btn').forEach((x, j) => {
+    x.classList.toggle('on', j === i);
+    x.setAttribute('aria-selected', j === i ? 'true' : 'false');
+  });
   document.querySelectorAll('.pg').forEach((x, j) => x.classList.toggle('on', j === i));
   if (i === 1) rel();
   // Fecha drawer no mobile + restaura scroll
@@ -1871,6 +1933,7 @@ window.abrirModalLead = (id = null, event = null) => {
     document.getElementById('leadValor').value = p.valor || 'R$ 0,00';
     document.getElementById('leadSource').value = p.source || 'manual';
     document.getElementById('leadTemp').value = p.lead_temperature || 'warm';
+    document.getElementById('leadStrategy').value = p.strategy || 'default';
     document.getElementById('leadObs').value = p.obs || '';
     
     document.getElementById('modalLeadTitleText').textContent = 'Editar Dados do Lead';
@@ -1886,6 +1949,7 @@ window.abrirModalLead = (id = null, event = null) => {
     document.getElementById('leadValor').value = 'R$ 0,00';
     document.getElementById('leadSource').value = 'manual';
     document.getElementById('leadTemp').value = 'warm';
+    document.getElementById('leadStrategy').value = 'default';
     document.getElementById('leadObs').value = '';
     
     document.getElementById('modalLeadTitleText').textContent = 'Adicionar Novo Lead';
@@ -1904,6 +1968,7 @@ window.salvarLead = async () => {
   const valor = document.getElementById('leadValor').value.trim();
   const source = document.getElementById('leadSource').value;
   const lead_temperature = document.getElementById('leadTemp').value;
+  const strategy = document.getElementById('leadStrategy').value;
   const obs = document.getElementById('leadObs').value.trim();
 
   if (!nome || !tel) {
@@ -1911,7 +1976,7 @@ window.salvarLead = async () => {
     return;
   }
 
-  const leadData = { nome, tel, proc, valor, source, lead_temperature, obs, col: kanbanCols[0]?.id || 'ligar' };
+  const leadData = { nome, tel, proc, valor, source, lead_temperature, strategy, obs, col: kanbanCols[0]?.id || 'ligar' };
 
   try {
     setSyncStatus('ok', 'Salvando lead...');
@@ -1982,12 +2047,17 @@ function renderConfigKanban() {
   if (!container) return;
   
   container.innerHTML = kanbanCols.map((col, index) => {
+    const isCallingStrategy = col.id === 'ligar' || col.id === 'contato' || index < 2;
+    const strategyBadge = isCallingStrategy 
+      ? `<span class="strategy-badge" style="background:#FFF3CD; color:#856404; font-size:10px; padding:4px 8px; border-radius:6px; font-weight:600; margin-left:8px; border:1px solid #FFEBAA; display:inline-flex; align-items:center; gap:4px; white-space:nowrap;"><span class="mi" style="font-size:12px;">phone</span>Fase Agrupada (Estratégia de Ligação)</span>`
+      : '';
     return `
       <div class="config-col-item" data-index="${index}">
         <span class="mi" style="cursor: grab; color: var(--cts);">drag_indicator</span>
         <input type="text" class="config-col-input" value="${esc(col.name)}" oninput="window.atualizarNomeColunaConfig(${index}, this.value)" placeholder="Nome da Fase" />
         <input type="color" class="config-col-color" value="${col.color}" onchange="window.atualizarCorColunaConfig(${index}, this.value)" title="Cor da Fase" />
-        <button class="btn-proc-action delete" onclick="window.removerColunaConfig(${index})" title="Remover Fase" style="width:32px;height:32px;">
+        ${strategyBadge}
+        <button class="btn-proc-action delete" onclick="window.removerColunaConfig(${index})" title="Remover Fase" style="width:32px;height:32px; margin-left:auto;">
           <span class="mi" style="font-size:16px;">delete</span>
         </button>
       </div>
@@ -2371,6 +2441,17 @@ window._toggleSourceFilter = (source) => {
   
   document.querySelectorAll('#sourceChips .src-chip').forEach(btn => {
     const isTarget = btn.getAttribute('data-src') === activeSourceFilter;
+    btn.classList.toggle('on', isTarget);
+  });
+  
+  render();
+};
+
+window._toggleStrategyFilter = (strategy) => {
+  activeStrategyFilter = activeStrategyFilter === strategy ? null : strategy;
+  
+  document.querySelectorAll('#strategyChips .strat-chip').forEach(btn => {
+    const isTarget = btn.getAttribute('data-strat') === activeStrategyFilter;
     btn.classList.toggle('on', isTarget);
   });
   

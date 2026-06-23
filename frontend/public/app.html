@@ -84,20 +84,20 @@ if ('serviceWorker' in navigator && !localStorage.getItem('sw_cleaned')) {
     <button class="drawer-close" onclick="window.toggleMobileMenu()" aria-label="Fechar menu">
       <span class="mi">close</span>
     </button>
-    <div class="hdr-tabs">
-    <button class="tab-btn on" onclick="window.trocarAba(0, this)">
+    <div class="hdr-tabs" role="tablist">
+    <button class="tab-btn on" role="tab" aria-selected="true" aria-controls="pg0" id="tabCrmBtn" onclick="window.trocarAba(0, this)">
       <span class="mi" style="font-size:16px;">view_kanban</span>
       Painel de CRM
     </button>
-    <button class="tab-btn" onclick="window.trocarAba(1, this)">
+    <button class="tab-btn" role="tab" aria-selected="false" aria-controls="pg1" id="tabRelBtn" onclick="window.trocarAba(1, this)">
       <span class="mi" style="font-size:16px;">analytics</span>
       Relatórios
     </button>
-    <button class="tab-btn tab-odonto" id="tabOdontoBtn" onclick="window.trocarAba(2, this)" style="display: none;">
+    <button class="tab-btn tab-odonto" id="tabOdontoBtn" role="tab" aria-selected="false" aria-controls="pg2" onclick="window.trocarAba(2, this)" style="display: none;">
       <span class="mi" style="font-size:16px;">dentistry</span>
       Odontograma
     </button>
-    <button class="tab-btn" onclick="window.trocarAba(3, this)">
+    <button class="tab-btn" role="tab" aria-selected="false" aria-controls="pg3" id="tabConfigBtn" onclick="window.trocarAba(3, this)">
       <span class="mi" style="font-size:16px;">settings_suggest</span>
       Configurar Kanban
     </button>
@@ -148,7 +148,7 @@ if ('serviceWorker' in navigator && !localStorage.getItem('sw_cleaned')) {
 <!-- MAIN CONTAINER -->
 <div class="body">
   <!-- ABA 0: KANBAN & ROTEIROS -->
-  <div class="pg on" id="pg0">
+  <div class="pg on" id="pg0" role="tabpanel" aria-labelledby="tabCrmBtn">
     <!-- ROTEIRO -->
     <div class="sp">
       <div class="sp-hd">
@@ -240,6 +240,17 @@ if ('serviceWorker' in navigator && !localStorage.getItem('sw_cleaned')) {
                 <button class="pf-chip src-chip" data-src="manual" onclick="window._toggleSourceFilter('manual')" style="border: 1px solid #6B7280; color:#374151; background:transparent; padding:2px 8px; border-radius:12px; font-size:11px; cursor:pointer;">Manual</button>
               </div>
             </div>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span class="pf-label" style="font-size:12px;font-weight:600;"><span class="mi" style="font-size:14px">handshake</span> Estratégia:</span>
+              <div class="pf-chips" id="strategyChips" style="display:flex;gap:4px;flex-wrap:wrap;">
+                <button class="pf-chip strat-chip" data-strat="default" onclick="window._toggleStrategyFilter('default')" style="border: 1px solid #6B7280; color:#374151; background:transparent; padding:2px 8px; border-radius:12px; font-size:11px; cursor:pointer;">Padrão</button>
+                <button class="pf-chip strat-chip" data-strat="ligacao" onclick="window._toggleStrategyFilter('ligacao')" style="border: 1px solid #EC6726; color:#C2410C; background:transparent; padding:2px 8px; border-radius:12px; font-size:11px; cursor:pointer;">📞 Ligação</button>
+                <button class="pf-chip strat-chip" data-strat="whatsapp" onclick="window._toggleStrategyFilter('whatsapp')" style="border: 1px solid #10B981; color:#047857; background:transparent; padding:2px 8px; border-radius:12px; font-size:11px; cursor:pointer;">💬 WhatsApp</button>
+                <button class="pf-chip strat-chip" data-strat="reativacao" onclick="window._toggleStrategyFilter('reativacao')" style="border: 1px solid #3B82F6; color:#1D4ED8; background:transparent; padding:2px 8px; border-radius:12px; font-size:11px; cursor:pointer;">🔄 Reativação</button>
+                <button class="pf-chip strat-chip" data-strat="pos_operatorio" onclick="window._toggleStrategyFilter('pos_operatorio')" style="border: 1px solid #8B5CF6; color:#6D28D9; background:transparent; padding:2px 8px; border-radius:12px; font-size:11px; cursor:pointer;">🏥 Pós-Op</button>
+                <button class="pf-chip strat-chip" data-strat="retorno_preventivo" onclick="window._toggleStrategyFilter('retorno_preventivo')" style="border: 1px solid #F59E0B; color:#B45309; background:transparent; padding:2px 8px; border-radius:12px; font-size:11px; cursor:pointer;">🗓️ Preventivo</button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -251,12 +262,12 @@ if ('serviceWorker' in navigator && !localStorage.getItem('sw_cleaned')) {
   </div>
 
   <!-- ABA 1: RELATÓRIOS -->
-  <div class="pg" id="pg1">
+  <div class="pg" id="pg1" role="tabpanel" aria-labelledby="tabRelBtn">
     <div class="rp" id="rbody"></div>
   </div>
 
   <!-- ABA 2: ODONTOGRAMA -->
-  <div class="pg" id="pg2" style="flex:1; overflow-y:auto; padding: 24px; background: var(--cbg);">
+  <div class="pg" id="pg2" role="tabpanel" aria-labelledby="tabOdontoBtn" style="flex:1; overflow-y:auto; padding: 24px; background: var(--cbg);">
     <div style="max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px;">
       <!-- CABEÇALHO DO ODONTOGRAMA -->
       <div style="background: var(--cs); padding: 20px 24px; border-radius: 12px; box-shadow: var(--ssm); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
@@ -321,15 +332,15 @@ if ('serviceWorker' in navigator && !localStorage.getItem('sw_cleaned')) {
   </div>
 
   <!-- ABA 3: CONFIGURAR KANBAN -->
-  <div class="pg" id="pg3" style="flex:1; overflow-y:auto; padding: 24px; background: var(--cbg);">
+  <div class="pg" id="pg3" role="tabpanel" aria-labelledby="tabConfigBtn" style="flex:1; overflow-y:auto; padding: 24px; background: var(--cbg);">
     <div style="max-width: 800px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px;">
       <div style="background: var(--cs); padding: 24px; border-radius: 12px; box-shadow: var(--ssm);">
         <h2 style="margin: 0 0 4px 0; font-size: 20px; color: var(--ct); display: flex; align-items: center; gap: 8px;">
           <span class="mi" style="color: var(--cp); font-size: 24px;">settings_suggest</span>
           Configurar Funil do Kanban (CRM)
         </h2>
-        <p style="margin: 0 0 20px 0; color: var(--cts); font-size: 13px;">
-          Crie, ordene ou altere as fases do seu CRM clínico. Defina quais colunas exigem o preenchimento de Odontograma.
+        <p style="margin: 0 0 20px 0; color: var(--cts); font-size: 13px; line-height: 1.5;">
+          Personalize as fases do seu funil comercial. As fases iniciais (como <em>Para Ligar</em> e <em>Em Contato</em>) são agrupadas sob a <strong>estratégia de ligação ativa</strong> para controle de tentativas de contato. Arraste para reordenar, mude cores ou crie novas fases.
         </p>
 
         <!-- LISTA DE COLUNAS -->
@@ -671,6 +682,19 @@ O tom deve ser humano, empático e focado em gerar urgência e agendamento.
             <option value="hot">🔥 Quente (Decidido/Urgente)</option>
           </select>
         </div>
+      </div>
+
+      <!-- ESTRATÉGIA DE ABORDAGEM -->
+      <div style="margin-bottom: 16px;">
+        <label for="leadStrategy" style="font-size:11px;font-weight:700;color:var(--cts);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;display:block;">Estratégia de Abordagem</label>
+        <select id="leadStrategy" style="width:100%;padding:10px 14px;border:1px solid var(--cdiv);border-radius:8px;font-size:14px;font-family:var(--font);outline:none;color:var(--ct);background:var(--cibg);cursor:pointer;">
+          <option value="default">Abordagem Padrão</option>
+          <option value="ligacao">📞 Ligação Imediata</option>
+          <option value="whatsapp">💬 WhatsApp Direct</option>
+          <option value="reativacao">🔄 Campanha de Reativação</option>
+          <option value="pos_operatorio">🏥 Pós-Operatório</option>
+          <option value="retorno_preventivo">🗓️ Retorno Preventivo</option>
+        </select>
       </div>
 
       <!-- OBSERVAÇÕES INICIAIS -->
