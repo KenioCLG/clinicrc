@@ -636,7 +636,7 @@ document.addEventListener('touchend', (e) => {
     // Nova versão detectada — indica update pendente
     if (dotEl) dotEl.classList.add('update');
     const btn = document.getElementById('menuVersion');
-    if (btn) btn.title = `🔄 Nova versão disponível! Clique para atualizar.`;
+    if (btn) btn.title = `Nova versão disponível! Clique para atualizar.`;
     btn?.addEventListener('click', () => {
       localStorage.setItem(VER_KEY, APP_VERSION);
       dotEl?.classList.remove('update');
@@ -1356,7 +1356,7 @@ function mkC(p) {
   // ── Botão "Retornar" separado (linha própria, largura total) ─────────────
   let retBtn = '';
   if (p.col === 'contato' || p.col === 'agendado') {
-    retBtn = `<button class="cb cbb cb-retornar" onclick="window.abrirModalRetorno('${p.id}',event)"><span class="mi" style="font-size:12px;vertical-align:middle;margin-right:4px;">event_note</span>Retornar</button>`;
+    retBtn = `<button class="cb-retornar" onclick="window.abrirModalRetorno('${p.id}',event)"><span class="mi" style="font-size:12px;vertical-align:middle;margin-right:4px;">event_note</span>Retornar</button>`;
   }
 
   // ── CRM de Leads: Temperatura, Origem e Inatividade ───────────
@@ -1381,11 +1381,11 @@ function mkC(p) {
   const strat = p.strategy || 'default';
   const strategyIcons = {
     default: { icon: 'handshake', label: 'Padrão' },
-    ligacao: { icon: 'phone', label: '📞 Ligação' },
-    whatsapp: { icon: 'chat', label: '💬 WhatsApp' },
-    reativacao: { icon: 'autorenew', label: '🔄 Reativação' },
-    pos_operatorio: { icon: 'local_hospital', label: '🏥 Pós-Op' },
-    retorno_preventivo: { icon: 'event', label: '🗓️ Preventivo' }
+    ligacao: { icon: 'phone', label: 'Ligação' },
+    whatsapp: { icon: 'chat', label: 'WhatsApp' },
+    reativacao: { icon: 'autorenew', label: 'Reativação' },
+    pos_operatorio: { icon: 'local_hospital', label: 'Pós-Op' },
+    retorno_preventivo: { icon: 'event', label: 'Preventivo' }
   };
   const stratCfg = strategyIcons[strat] || strategyIcons.default;
   const strategyBadgeHtml = `<span class="lead-strategy-badge ${strat}" title="Estratégia: ${stratCfg.label}"><span class="mi" style="font-size:11px;margin-right:2px;">${stratCfg.icon}</span>${stratCfg.label}</span>`;
@@ -1399,14 +1399,13 @@ function mkC(p) {
     inactiveHtml = `<div class="lead-inactive-days" title="Sem contato há ${diffDays} dias"><span class="mi" style="font-size:12px;">warning</span>Sem contato há ${diffDays} d</div>`;
   }
 
-  // Botão de abrir odontograma — sempre disponível como ação secundária
+  // Botão de abrir odontograma — ação secundária compacta
   let hasProcs = false;
   try { hasProcs = p.procedimentos_abertos && JSON.parse(p.procedimentos_abertos).length > 0; } catch(e) {}
-  const odontoStyle = hasProcs
-    ? 'background:#FEF3C7;color:#92400E;border:1px solid #FCD34D;'
-    : 'background:#F8FAFC;color:#94A3B8;border:1px solid #E2E8F0;';
-  const odontoLabel = hasProcs ? 'Odontograma (procedimentos em aberto)' : 'Odontograma';
-  const odontoBtn = `<button class="cb" style="${odontoStyle}width:100%;margin-bottom:6px;font-size:12px;" onclick="window.abrirOdontogramaPaciente('${p.id}',event)"><span class="mi" style="font-size:13px;vertical-align:middle;margin-right:4px;">dentistry</span>${odontoLabel}</button>`;
+  const odontoCls = hasProcs ? 'cb-odonto has-procs' : 'cb-odonto';
+  const odontoLabel = hasProcs ? 'Odontograma' : 'Odontograma';
+  const procsDot = hasProcs ? '<span class="odonto-dot"></span>' : '';
+  const odontoBtn = `<button class="${odontoCls}" onclick="window.abrirOdontogramaPaciente('${p.id}',event)" title="${hasProcs ? 'Procedimentos em aberto' : 'Abrir odontograma'}"><span class="mi" style="font-size:13px;">dentistry</span>${procsDot}${odontoLabel}</button>`;
 
   // Botoes de transicao: Avancar, Voltar e Nova Tentativa (hierarquia logica)
   let b = '';
@@ -1416,13 +1415,13 @@ function mkC(p) {
   const firstCol = kanbanCols[0];
 
   if (nextCol) {
-    b += `<button class="cb" style="background:${nextCol.color}; color:#fff; border:none;" onclick="window._mv('${p.id}','${nextCol.id}',event)">${nextCol.name} <span class="mi" style="font-size:12px;vertical-align:middle;">arrow_forward</span></button>`;
+    b += `<button class="cb cb-advance" style="--col-color:${nextCol.color};" onclick="window._mv('${p.id}','${nextCol.id}',event)">${nextCol.name} <span class="mi" style="font-size:12px;vertical-align:middle;">arrow_forward</span></button>`;
   }
   if (prevCol) {
-    b += `<button class="cb" style="border:1px solid ${prevCol.color}; color:${prevCol.color}; background:transparent;" onclick="window._mv('${p.id}','${prevCol.id}',event)"><span class="mi" style="font-size:12px;vertical-align:middle;">arrow_back</span> ${prevCol.name}</button>`;
+    b += `<button class="cb cb-back" style="--col-color:${prevCol.color};" onclick="window._mv('${p.id}','${prevCol.id}',event)"><span class="mi" style="font-size:12px;vertical-align:middle;">arrow_back</span> ${prevCol.name}</button>`;
   }
   if (colIdx > 1 && firstCol) {
-    b += `<button class="cb" style="background:#FFF7ED;color:#92400E;border:1px solid #FED7AA;" onclick="window._mv('${p.id}','${firstCol.id}',event)" title="Volta para ${firstCol.name} e registra nova tentativa">Nova Tentativa</button>`;
+    b += `<button class="cb cb-retry" onclick="window._mv('${p.id}','${firstCol.id}',event)" title="Volta para ${firstCol.name} e registra nova tentativa"><span class="mi" style="font-size:12px;vertical-align:middle;">refresh</span> Nova Tentativa</button>`;
   }
 
   return `<div class="card ${sel}" onclick="window._sP('${esc(p.id)}')">
@@ -1448,8 +1447,7 @@ function mkC(p) {
     ${inactiveHtml}
     ${d}${chip}
     <textarea id="obs-${esc(p.id)}" name="obs-${esc(p.id)}" class="cobs" aria-label="Anotações de ${esc(p.nome)}" placeholder="Anotações..." onclick="event.stopPropagation()" oninput="window._sO('${esc(p.id)}',this.value)">${esc(p.obs || '')}</textarea>
-    ${retBtn}
-    ${odontoBtn}
+    <div class="card-secondary-actions">${odontoBtn}${retBtn}</div>
     <div class="cbtns">${b}</div>
   </div>`;
 }

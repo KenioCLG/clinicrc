@@ -662,11 +662,23 @@ body{font-family:var(--font);font-size:14px;color:var(--ct);background:var(--cbg
 .cobs{width:100%;border:1px solid var(--cdiv);border-radius:6px;padding:6px 10px;font-family:var(--font);font-size:12px;background:var(--cibg);resize:none;height:36px;outline:none;color:var(--ct);margin-bottom:6px;transition:all .2s;}
 .cobs:focus{border-color:var(--cp);background:#fff;box-shadow:0 0 0 3px rgba(var(--cpr),0.1);}
 .cobs::placeholder{color:#9CA3AF;}
-/* Botão Retornar — linha própria, largura total */
-.cb-retornar{width:100%;flex:none;margin-bottom:6px;}
+/* Card secondary actions (odontogram + retornar) */
+.card-secondary-actions{display:flex;gap:6px;margin-bottom:6px;align-items:center;}
+.cb-odonto{display:inline-flex;align-items:center;gap:4px;padding:4px 8px;border-radius:4px;font-family:var(--font);font-size:11px;font-weight:500;cursor:pointer;transition:all .15s;background:#F8FAFC;color:var(--cts);border:1px solid var(--cdiv);white-space:nowrap;}
+.cb-odonto:hover{background:#F1F5F9;color:var(--ct);border-color:#CBD5E1;}
+.cb-odonto.has-procs{background:#FEF3C7;color:#92400E;border-color:#FCD34D;}
+.cb-odonto.has-procs:hover{background:#FDE68A;}
+.odonto-dot{width:6px;height:6px;border-radius:50%;background:#F59E0B;flex-shrink:0;}
+/* Botão Retornar */
+.cb-retornar{display:inline-flex;align-items:center;padding:4px 10px;border-radius:4px;font-family:var(--font);font-size:11px;font-weight:500;cursor:pointer;transition:all .15s;background:#E3F0F8;color:#0277BD;border:1px solid #B3D9F0;white-space:nowrap;flex:none;margin-left:auto;}
+.cb-retornar:hover{background:#DBEAFE;border-color:#93C5FD;}
 .cbtns{display:flex;gap:6px;flex-wrap:wrap;}
 .cb{flex:1;height:28px;border:1px solid transparent;border-radius:4px;font-family:var(--font);font-size:11px;font-weight:600;cursor:pointer;transition:all .2s;min-width:44px;white-space:nowrap;box-shadow:0 1px 2px rgba(0,0,0,0.05);}
 .cb:hover{transform:translateY(-1px);box-shadow:0 3px 6px rgba(0,0,0,0.1);}
+/* Transition button variants */
+.cb-advance{background:var(--col-color,var(--cp));color:#fff;border:none;}
+.cb-back{background:transparent;color:var(--col-color,var(--cts));border:1px solid var(--col-color,var(--cdiv));}
+.cb-retry{background:#FFF7ED;color:#92400E;border:1px solid #FED7AA;}
 .cbo{background:var(--cs);color:var(--cp);border:1px solid rgba(var(--cpr),0.2);}
 .cbg{background:#F1F8F2;color:#2E7D32;border:1px solid #C8E6CA;}
 .cbgr{background:#F5F5F5;color:#424242;border:1px solid #E0E0E0;}
@@ -1102,6 +1114,8 @@ tbody tr:hover{background:rgba(var(--cpr),.05);}
   /* Card buttons stack */
   .cbtns { flex-direction: column; }
   .cb { width: 100%; flex: none; height: 36px; font-size: 12px; }
+  .card-secondary-actions { flex-wrap: wrap; }
+  .cb-retornar { margin-left: 0; width: 100%; }
 
   /* Retorno modal presets */
   .ret-presets { gap: 4px; }
