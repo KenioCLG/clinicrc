@@ -1,0 +1,1957 @@
+<?xml version="1.0"?>
+<Document xmlns="http://www.evolus.vn/Namespace/Pencil"
+          xmlns:p="http://www.evolus.vn/Namespace/Pencil"
+          xmlns:svg="http://www.w3.org/2000/svg"
+          xmlns:xlink="http://www.w3.org/1999/xlink">
+
+<Properties>
+  <Property name="activePageId">pg_kanban</Property>
+</Properties>
+
+<!-- ============================================================ -->
+<!--  PAGE 1: LOGIN                                                -->
+<!-- ============================================================ -->
+<Page id="pg_login" name="01 - Login" width="1440" height="900" backgroundColor="#F3F4F6"
+      note="Tela de autenticacao Supabase Auth. Email + senha. Multi-tenant: cada clinica isolada por clinic_id.">
+  <Content>
+    <!-- Background -->
+    <p:Shape type="Builtin:RoundedRect" id="login_bg" locked="false">
+      <p:Property name="box">0,0,1440,900</p:Property>
+      <p:Property name="fillColor">#F3F4F6</p:Property>
+    </p:Shape>
+
+    <!-- Login Card -->
+    <p:Shape type="Builtin:RoundedRect" id="login_card" locked="false">
+      <p:Property name="box">470,200,500,420</p:Property>
+      <p:Property name="fillColor">#FFFFFF</p:Property>
+      <p:Property name="strokeColor">#E5E7EB</p:Property>
+      <p:Property name="radius">12</p:Property>
+      <p:Property name="shadow">true</p:Property>
+    </p:Shape>
+
+    <!-- Logo Area -->
+    <p:Shape type="Builtin:PlainText" id="login_logo">
+      <p:Property name="box">620,230,200,40</p:Property>
+      <p:Property name="textContent">ClinicRC</p:Property>
+      <p:Property name="textFont">Bold 24px sans-serif</p:Property>
+      <p:Property name="textColor">#EC6726</p:Property>
+      <p:Property name="textAlign">center</p:Property>
+    </p:Shape>
+
+    <p:Shape type="Builtin:PlainText" id="login_subtitle">
+      <p:Property name="box">570,270,300,20</p:Property>
+      <p:Property name="textContent">CRM Odontologico</p:Property>
+      <p:Property name="textFont">14px sans-serif</p:Property>
+      <p:Property name="textColor">#6B7280</p:Property>
+      <p:Property name="textAlign">center</p:Property>
+    </p:Shape>
+
+    <!-- Email Field -->
+    <p:Shape type="Builtin:PlainText" id="login_email_label">
+      <p:Property name="box">520,320,100,16</p:Property>
+      <p:Property name="textContent">Email</p:Property>
+      <p:Property name="textFont">600 12px sans-serif</p:Property>
+      <p:Property name="textColor">#374151</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:RoundedRect" id="login_email_input">
+      <p:Property name="box">520,340,400,40</p:Property>
+      <p:Property name="fillColor">#F9FAFB</p:Property>
+      <p:Property name="strokeColor">#D1D5DB</p:Property>
+      <p:Property name="radius">6</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="login_email_placeholder">
+      <p:Property name="box">532,350,200,20</p:Property>
+      <p:Property name="textContent">clinica@email.com</p:Property>
+      <p:Property name="textFont">13px sans-serif</p:Property>
+      <p:Property name="textColor">#9CA3AF</p:Property>
+    </p:Shape>
+
+    <!-- Password Field -->
+    <p:Shape type="Builtin:PlainText" id="login_pass_label">
+      <p:Property name="box">520,400,100,16</p:Property>
+      <p:Property name="textContent">Senha</p:Property>
+      <p:Property name="textFont">600 12px sans-serif</p:Property>
+      <p:Property name="textColor">#374151</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:RoundedRect" id="login_pass_input">
+      <p:Property name="box">520,420,400,40</p:Property>
+      <p:Property name="fillColor">#F9FAFB</p:Property>
+      <p:Property name="strokeColor">#D1D5DB</p:Property>
+      <p:Property name="radius">6</p:Property>
+    </p:Shape>
+
+    <!-- Login Button -->
+    <p:Shape type="Builtin:RoundedRect" id="login_btn">
+      <p:Property name="box">520,490,400,44</p:Property>
+      <p:Property name="fillColor">#EC6726</p:Property>
+      <p:Property name="strokeColor">#EC6726</p:Property>
+      <p:Property name="radius">6</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="login_btn_text">
+      <p:Property name="box">520,500,400,24</p:Property>
+      <p:Property name="textContent">Entrar</p:Property>
+      <p:Property name="textFont">600 14px sans-serif</p:Property>
+      <p:Property name="textColor">#FFFFFF</p:Property>
+      <p:Property name="textAlign">center</p:Property>
+    </p:Shape>
+
+    <!-- Footer -->
+    <p:Shape type="Builtin:PlainText" id="login_footer">
+      <p:Property name="box">520,560,400,16</p:Property>
+      <p:Property name="textContent">Esqueceu a senha? Contate o suporte</p:Property>
+      <p:Property name="textFont">12px sans-serif</p:Property>
+      <p:Property name="textColor">#9CA3AF</p:Property>
+      <p:Property name="textAlign">center</p:Property>
+    </p:Shape>
+  </Content>
+</Page>
+
+<!-- ============================================================ -->
+<!--  PAGE 2: CRM KANBAN (pg0) - MAIN SCREEN                     -->
+<!-- ============================================================ -->
+<Page id="pg_kanban" name="02 - CRM Kanban (pg0)" width="1440" height="900" backgroundColor="#F3F4F6"
+      note="Layout split: Script (38%) | Resizer | Kanban (62%). Header fixo com 4 tabs. Colunas dinamicas (clinic_settings.kanban_columns). Filtros por procedimento, temperatura, origem, estrategia.">
+  <Content>
+    <!-- RGB Top Bar -->
+    <p:Shape type="Builtin:RoundedRect" id="rgb_bar">
+      <p:Property name="box">0,0,1440,3</p:Property>
+      <p:Property name="fillColor">#EC6726</p:Property>
+      <p:Property name="note">Barra RGB animada gradient - 4 cores customizaveis via modal personalizar</p:Property>
+    </p:Shape>
+
+    <!-- Header -->
+    <p:Shape type="Builtin:RoundedRect" id="header">
+      <p:Property name="box">0,3,1440,56</p:Property>
+      <p:Property name="fillColor">#FFFFFF</p:Property>
+      <p:Property name="strokeColor">#E5E7EB</p:Property>
+      <p:Property name="note">Header fixo. z-index 2000. Shadow bottom.</p:Property>
+    </p:Shape>
+
+    <!-- Header Tabs -->
+    <p:Shape type="Builtin:RoundedRect" id="tab_crm">
+      <p:Property name="box">20,11,140,40</p:Property>
+      <p:Property name="fillColor">#FFF7ED</p:Property>
+      <p:Property name="strokeColor">#EC6726</p:Property>
+      <p:Property name="radius">8</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="tab_crm_text">
+      <p:Property name="box">20,21,140,20</p:Property>
+      <p:Property name="textContent">[view_kanban] CRM</p:Property>
+      <p:Property name="textFont">600 12px sans-serif</p:Property>
+      <p:Property name="textColor">#EC6726</p:Property>
+      <p:Property name="textAlign">center</p:Property>
+    </p:Shape>
+
+    <p:Shape type="Builtin:PlainText" id="tab_rel_text">
+      <p:Property name="box">170,21,140,20</p:Property>
+      <p:Property name="textContent">[analytics] Relatorios</p:Property>
+      <p:Property name="textFont">500 12px sans-serif</p:Property>
+      <p:Property name="textColor">#6B7280</p:Property>
+      <p:Property name="textAlign">center</p:Property>
+    </p:Shape>
+
+    <p:Shape type="Builtin:PlainText" id="tab_odonto_text">
+      <p:Property name="box">320,21,140,20</p:Property>
+      <p:Property name="textContent">[dentistry] Odontograma</p:Property>
+      <p:Property name="textFont">500 12px sans-serif</p:Property>
+      <p:Property name="textColor">#6B7280</p:Property>
+      <p:Property name="textAlign">center</p:Property>
+    </p:Shape>
+
+    <p:Shape type="Builtin:PlainText" id="tab_config_text">
+      <p:Property name="box">470,21,140,20</p:Property>
+      <p:Property name="textContent">[settings] Config</p:Property>
+      <p:Property name="textFont">500 12px sans-serif</p:Property>
+      <p:Property name="textColor">#6B7280</p:Property>
+      <p:Property name="textAlign">center</p:Property>
+    </p:Shape>
+
+    <!-- Header Right: clock, avatar, sync, support -->
+    <p:Shape type="Builtin:PlainText" id="hdr_clock">
+      <p:Property name="box">1200,21,60,20</p:Property>
+      <p:Property name="textContent">14:35</p:Property>
+      <p:Property name="textFont">500 12px sans-serif</p:Property>
+      <p:Property name="textColor">#6B7280</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:Ellipse" id="hdr_bell">
+      <p:Property name="box">1280,16,30,30</p:Property>
+      <p:Property name="fillColor">#F3F4F6</p:Property>
+      <p:Property name="strokeColor">#E5E7EB</p:Property>
+      <p:Property name="note">[notifications] Bell icon + badge count</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:Ellipse" id="hdr_avatar">
+      <p:Property name="box">1330,13,36,36</p:Property>
+      <p:Property name="fillColor">#EC6726</p:Property>
+      <p:Property name="note">Avatar iniciais usuario + logout dropdown</p:Property>
+    </p:Shape>
+
+    <!-- === SCRIPT PANEL (Left 38%) === -->
+    <p:Shape type="Builtin:RoundedRect" id="script_panel">
+      <p:Property name="box">0,59,540,841</p:Property>
+      <p:Property name="fillColor">#FFFFFF</p:Property>
+      <p:Property name="strokeColor">#E5E7EB</p:Property>
+      <p:Property name="note">Script Panel (.sp) - 38% width. Contains: header, attempt toolbar, patient bar, script body (markdown rendered).</p:Property>
+    </p:Shape>
+
+    <!-- Script Header -->
+    <p:Shape type="Builtin:PlainText" id="sp_title">
+      <p:Property name="box">20,75,100,20</p:Property>
+      <p:Property name="textContent">Roteiro</p:Property>
+      <p:Property name="textFont">700 16px sans-serif</p:Property>
+      <p:Property name="textColor">#1F2937</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="sp_subtitle">
+      <p:Property name="box">20,98,300,14</p:Property>
+      <p:Property name="textContent">Selecione a tentativa e clique no paciente</p:Property>
+      <p:Property name="textFont">12px sans-serif</p:Property>
+      <p:Property name="textColor">#9CA3AF</p:Property>
+    </p:Shape>
+
+    <!-- Attempt Toolbar -->
+    <p:Shape type="Builtin:RoundedRect" id="tbar">
+      <p:Property name="box">10,125,520,36</p:Property>
+      <p:Property name="fillColor">#F8FAFC</p:Property>
+      <p:Property name="strokeColor">#E2E8F0</p:Property>
+      <p:Property name="radius">6</p:Property>
+      <p:Property name="note">Toolbar de tentativas. Botoes: 1a, 2a, 3a tentativa. Destaque na selecionada.</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="tbar_label">
+      <p:Property name="box">20,133,80,20</p:Property>
+      <p:Property name="textContent">TENTATIVA:</p:Property>
+      <p:Property name="textFont">700 10px sans-serif</p:Property>
+      <p:Property name="textColor">#6B7280</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:RoundedRect" id="tbar_btn1">
+      <p:Property name="box">110,130,50,26</p:Property>
+      <p:Property name="fillColor">#EC6726</p:Property>
+      <p:Property name="radius">4</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="tbar_btn1_t">
+      <p:Property name="box">110,135,50,16</p:Property>
+      <p:Property name="textContent">1a</p:Property>
+      <p:Property name="textFont">600 11px sans-serif</p:Property>
+      <p:Property name="textColor">#FFFFFF</p:Property>
+      <p:Property name="textAlign">center</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:RoundedRect" id="tbar_btn2">
+      <p:Property name="box">168,130,50,26</p:Property>
+      <p:Property name="fillColor">#F3F4F6</p:Property>
+      <p:Property name="strokeColor">#D1D5DB</p:Property>
+      <p:Property name="radius">4</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="tbar_btn2_t">
+      <p:Property name="box">168,135,50,16</p:Property>
+      <p:Property name="textContent">2a</p:Property>
+      <p:Property name="textFont">600 11px sans-serif</p:Property>
+      <p:Property name="textColor">#6B7280</p:Property>
+      <p:Property name="textAlign">center</p:Property>
+    </p:Shape>
+
+    <!-- Patient Bar -->
+    <p:Shape type="Builtin:RoundedRect" id="pbar">
+      <p:Property name="box">10,170,520,36</p:Property>
+      <p:Property name="fillColor">#FFF7ED</p:Property>
+      <p:Property name="strokeColor">#FED7AA</p:Property>
+      <p:Property name="radius">6</p:Property>
+      <p:Property name="note">Barra do paciente selecionado. Mostra nome + telefone + procedimento.</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="pbar_text">
+      <p:Property name="box">20,178,400,20</p:Property>
+      <p:Property name="textContent">Maria Silva | (11) 99999-0000 | Implante</p:Property>
+      <p:Property name="textFont">500 12px sans-serif</p:Property>
+      <p:Property name="textColor">#92400E</p:Property>
+    </p:Shape>
+
+    <!-- Script Body -->
+    <p:Shape type="Builtin:RoundedRect" id="sbody">
+      <p:Property name="box">10,220,520,670</p:Property>
+      <p:Property name="fillColor">#FFFFFF</p:Property>
+      <p:Property name="strokeColor">#F3F4F6</p:Property>
+      <p:Property name="note">Area de conteudo do roteiro renderizado em Markdown. Suporta variaveis dinamicas (#nome, #procedimento, #valor, #promo). Editavel via textarea toggle.</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="sbody_sample">
+      <p:Property name="box">25,240,490,100</p:Property>
+      <p:Property name="textContent">Ola Maria!
+
+Estou ligando da Clinica ABC sobre o procedimento de Implante que conversamos.
+
+Temos uma condicao especial: de R$ 3.000 por R$ 2.100 (30% OFF).
+
+Gostaria de agendar?</p:Property>
+      <p:Property name="textFont">13px sans-serif</p:Property>
+      <p:Property name="textColor">#374151</p:Property>
+    </p:Shape>
+
+    <!-- === RESIZER === -->
+    <p:Shape type="Builtin:RoundedRect" id="resizer">
+      <p:Property name="box">540,59,6,841</p:Property>
+      <p:Property name="fillColor">#E5E7EB</p:Property>
+      <p:Property name="note">Resizer draggable. cursor: col-resize. Hover: var(--cp).</p:Property>
+    </p:Shape>
+
+    <!-- === KANBAN PANEL (Right 62%) === -->
+    <p:Shape type="Builtin:RoundedRect" id="kanban_panel">
+      <p:Property name="box">546,59,894,841</p:Property>
+      <p:Property name="fillColor">#F3F4F6</p:Property>
+      <p:Property name="note">Kanban Panel (.kp). Contains: toolbar (search + filters + add), counter header, columns.</p:Property>
+    </p:Shape>
+
+    <!-- Kanban Toolbar -->
+    <p:Shape type="Builtin:RoundedRect" id="ktb_search">
+      <p:Property name="box">556,69,300,36</p:Property>
+      <p:Property name="fillColor">#FFFFFF</p:Property>
+      <p:Property name="strokeColor">#D1D5DB</p:Property>
+      <p:Property name="radius">6</p:Property>
+      <p:Property name="note">Input busca: #searchPatient. Filtra cards por nome/telefone/procedimento.</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="ktb_search_ph">
+      <p:Property name="box">576,77,200,20</p:Property>
+      <p:Property name="textContent">[search] Buscar paciente...</p:Property>
+      <p:Property name="textFont">12px sans-serif</p:Property>
+      <p:Property name="textColor">#9CA3AF</p:Property>
+    </p:Shape>
+
+    <!-- Toggle buttons -->
+    <p:Shape type="Builtin:RoundedRect" id="ktb_toggle_script">
+      <p:Property name="box">870,69,80,36</p:Property>
+      <p:Property name="fillColor">#F8FAFC</p:Property>
+      <p:Property name="strokeColor">#E2E8F0</p:Property>
+      <p:Property name="radius">6</p:Property>
+      <p:Property name="note">Toggle Script panel visibility</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:RoundedRect" id="ktb_toggle_filter">
+      <p:Property name="box">958,69,80,36</p:Property>
+      <p:Property name="fillColor">#F8FAFC</p:Property>
+      <p:Property name="strokeColor">#E2E8F0</p:Property>
+      <p:Property name="radius">6</p:Property>
+      <p:Property name="note">Toggle Filter panel visibility</p:Property>
+    </p:Shape>
+
+    <!-- Add Lead Button -->
+    <p:Shape type="Builtin:RoundedRect" id="ktb_add_lead">
+      <p:Property name="box">1340,69,90,36</p:Property>
+      <p:Property name="fillColor">#F1F8F2</p:Property>
+      <p:Property name="strokeColor">#C8E6CA</p:Property>
+      <p:Property name="radius">6</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="ktb_add_lead_t">
+      <p:Property name="box">1340,77,90,20</p:Property>
+      <p:Property name="textContent">[+] Lead</p:Property>
+      <p:Property name="textFont">600 11px sans-serif</p:Property>
+      <p:Property name="textColor">#2E7D32</p:Property>
+      <p:Property name="textAlign">center</p:Property>
+    </p:Shape>
+
+    <!-- Counter Header -->
+    <p:Shape type="Builtin:RoundedRect" id="kmini">
+      <p:Property name="box">556,115,884,28</p:Property>
+      <p:Property name="fillColor">#FFFFFF</p:Property>
+      <p:Property name="strokeColor">#E5E7EB</p:Property>
+      <p:Property name="radius">6</p:Property>
+      <p:Property name="note">Mini contadores por coluna. Atualizam dinamicamente.</p:Property>
+    </p:Shape>
+
+    <!-- === KANBAN COLUMNS === -->
+    <!-- Column 1: Ligar -->
+    <p:Shape type="Builtin:RoundedRect" id="col_ligar">
+      <p:Property name="box">556,150,216,740</p:Property>
+      <p:Property name="fillColor">#FFFFFF</p:Property>
+      <p:Property name="strokeColor">#E5E7EB</p:Property>
+      <p:Property name="radius">8</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:RoundedRect" id="col_ligar_hd">
+      <p:Property name="box">556,150,216,40</p:Property>
+      <p:Property name="fillColor">#FAFAFA</p:Property>
+      <p:Property name="radius">8</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="col_ligar_t">
+      <p:Property name="box">570,160,140,20</p:Property>
+      <p:Property name="textContent">Ligar</p:Property>
+      <p:Property name="textFont">700 13px sans-serif</p:Property>
+      <p:Property name="textColor">#1F2937</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:Ellipse" id="col_ligar_badge">
+      <p:Property name="box">740,155,24,24</p:Property>
+      <p:Property name="fillColor">#3B82F6</p:Property>
+      <p:Property name="note">Badge com contagem de cards</p:Property>
+    </p:Shape>
+
+    <!-- Sample Card in Ligar -->
+    <p:Shape type="Builtin:RoundedRect" id="card_sample">
+      <p:Property name="box">564,200,200,320</p:Property>
+      <p:Property name="fillColor">#FFFFFF</p:Property>
+      <p:Property name="strokeColor">#E5E7EB</p:Property>
+      <p:Property name="radius">8</p:Property>
+      <p:Property name="shadow">true</p:Property>
+      <p:Property name="note">Card do Kanban. Selecionavel (onclick seleciona paciente para script). Anatomia completa abaixo.</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="card_nome">
+      <p:Property name="box">574,210,140,16</p:Property>
+      <p:Property name="textContent">Maria Silva</p:Property>
+      <p:Property name="textFont">700 13px sans-serif</p:Property>
+      <p:Property name="textColor">#1F2937</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="card_tel">
+      <p:Property name="box">574,230,140,14</p:Property>
+      <p:Property name="textContent">[phone] (11) 99999-0000</p:Property>
+      <p:Property name="textFont">12px sans-serif</p:Property>
+      <p:Property name="textColor">#6B7280</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:RoundedRect" id="card_proc">
+      <p:Property name="box">574,250,80,20</p:Property>
+      <p:Property name="fillColor">#EFF6FF</p:Property>
+      <p:Property name="radius">3</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="card_proc_t">
+      <p:Property name="box">574,253,80,14</p:Property>
+      <p:Property name="textContent">Implante</p:Property>
+      <p:Property name="textFont">600 10px sans-serif</p:Property>
+      <p:Property name="textColor">#3B82F6</p:Property>
+      <p:Property name="textAlign">center</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="card_valor">
+      <p:Property name="box">574,276,100,16</p:Property>
+      <p:Property name="textContent">R$ 3.000,00</p:Property>
+      <p:Property name="textFont">700 13px sans-serif</p:Property>
+      <p:Property name="textColor">#2E7D32</p:Property>
+    </p:Shape>
+
+    <!-- Badges row -->
+    <p:Shape type="Builtin:RoundedRect" id="card_badge_temp">
+      <p:Property name="box">574,298,50,18</p:Property>
+      <p:Property name="fillColor">#FEF2F2</p:Property>
+      <p:Property name="strokeColor">#FECACA</p:Property>
+      <p:Property name="radius">9</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="card_badge_temp_t">
+      <p:Property name="box">574,301,50,12</p:Property>
+      <p:Property name="textContent">Quente</p:Property>
+      <p:Property name="textFont">600 9px sans-serif</p:Property>
+      <p:Property name="textColor">#DC2626</p:Property>
+      <p:Property name="textAlign">center</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:RoundedRect" id="card_badge_src">
+      <p:Property name="box">630,298,70,18</p:Property>
+      <p:Property name="fillColor">#FFFFFF</p:Property>
+      <p:Property name="strokeColor">#10B981</p:Property>
+      <p:Property name="radius">9</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="card_badge_src_t">
+      <p:Property name="box">630,301,70,12</p:Property>
+      <p:Property name="textContent">WhatsApp</p:Property>
+      <p:Property name="textFont">600 9px sans-serif</p:Property>
+      <p:Property name="textColor">#10B981</p:Property>
+      <p:Property name="textAlign">center</p:Property>
+    </p:Shape>
+
+    <!-- Tentativas dots -->
+    <p:Shape type="Builtin:PlainText" id="card_tent_label">
+      <p:Property name="box">574,324,40,12</p:Property>
+      <p:Property name="textContent">TENT.:</p:Property>
+      <p:Property name="textFont">700 9px sans-serif</p:Property>
+      <p:Property name="textColor">#6B7280</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:Ellipse" id="card_dot1">
+      <p:Property name="box">618,320,20,20</p:Property>
+      <p:Property name="fillColor">#3B82F6</p:Property>
+      <p:Property name="note">Dot done (1a tentativa)</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:Ellipse" id="card_dot2">
+      <p:Property name="box">644,320,20,20</p:Property>
+      <p:Property name="fillColor">#FFFFFF</p:Property>
+      <p:Property name="strokeColor">#EC6726</p:Property>
+      <p:Property name="note">Dot next (2a tentativa)</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:Ellipse" id="card_dot3">
+      <p:Property name="box">670,320,20,20</p:Property>
+      <p:Property name="fillColor">#FFFFFF</p:Property>
+      <p:Property name="strokeColor">#E5E7EB</p:Property>
+      <p:Property name="note">Dot pending</p:Property>
+    </p:Shape>
+
+    <!-- Textarea obs -->
+    <p:Shape type="Builtin:RoundedRect" id="card_obs">
+      <p:Property name="box">574,348,188,36</p:Property>
+      <p:Property name="fillColor">#F9FAFB</p:Property>
+      <p:Property name="strokeColor">#E5E7EB</p:Property>
+      <p:Property name="radius">6</p:Property>
+      <p:Property name="note">Textarea anotacoes. Auto-save via oninput debounce.</p:Property>
+    </p:Shape>
+
+    <!-- Secondary actions row -->
+    <p:Shape type="Builtin:RoundedRect" id="card_odonto_btn">
+      <p:Property name="box">574,392,90,26</p:Property>
+      <p:Property name="fillColor">#F8FAFC</p:Property>
+      <p:Property name="strokeColor">#E2E8F0</p:Property>
+      <p:Property name="radius">4</p:Property>
+      <p:Property name="note">Botao odontograma (.cb-odonto). Compacto. Dot amarelo se tem procedimentos abertos.</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="card_odonto_btn_t">
+      <p:Property name="box">574,397,90,16</p:Property>
+      <p:Property name="textContent">[dent] Odonto</p:Property>
+      <p:Property name="textFont">500 10px sans-serif</p:Property>
+      <p:Property name="textColor">#94A3B8</p:Property>
+      <p:Property name="textAlign">center</p:Property>
+    </p:Shape>
+
+    <!-- Transition buttons -->
+    <p:Shape type="Builtin:RoundedRect" id="card_btn_advance">
+      <p:Property name="box">574,426,188,28</p:Property>
+      <p:Property name="fillColor">#10B981</p:Property>
+      <p:Property name="radius">4</p:Property>
+      <p:Property name="note">Botao avancar (.cb-advance). Cor da coluna destino. Acao primaria.</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="card_btn_advance_t">
+      <p:Property name="box">574,432,188,16</p:Property>
+      <p:Property name="textContent">Contato [arrow_forward]</p:Property>
+      <p:Property name="textFont">600 11px sans-serif</p:Property>
+      <p:Property name="textColor">#FFFFFF</p:Property>
+      <p:Property name="textAlign">center</p:Property>
+    </p:Shape>
+
+    <!-- Column 2: Contato -->
+    <p:Shape type="Builtin:RoundedRect" id="col_contato">
+      <p:Property name="box">780,150,216,740</p:Property>
+      <p:Property name="fillColor">#FFFFFF</p:Property>
+      <p:Property name="strokeColor">#E5E7EB</p:Property>
+      <p:Property name="radius">8</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:RoundedRect" id="col_contato_hd">
+      <p:Property name="box">780,150,216,40</p:Property>
+      <p:Property name="fillColor">#FAFAFA</p:Property>
+      <p:Property name="radius">8</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="col_contato_t">
+      <p:Property name="box">794,160,140,20</p:Property>
+      <p:Property name="textContent">Contato</p:Property>
+      <p:Property name="textFont">700 13px sans-serif</p:Property>
+      <p:Property name="textColor">#1F2937</p:Property>
+    </p:Shape>
+
+    <!-- Column 3: Agendado -->
+    <p:Shape type="Builtin:RoundedRect" id="col_agendado">
+      <p:Property name="box">1004,150,216,740</p:Property>
+      <p:Property name="fillColor">#FFFFFF</p:Property>
+      <p:Property name="strokeColor">#E5E7EB</p:Property>
+      <p:Property name="radius">8</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:RoundedRect" id="col_agendado_hd">
+      <p:Property name="box">1004,150,216,40</p:Property>
+      <p:Property name="fillColor">#FAFAFA</p:Property>
+      <p:Property name="radius">8</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="col_agendado_t">
+      <p:Property name="box">1018,160,140,20</p:Property>
+      <p:Property name="textContent">Agendado</p:Property>
+      <p:Property name="textFont">700 13px sans-serif</p:Property>
+      <p:Property name="textColor">#1F2937</p:Property>
+    </p:Shape>
+
+    <!-- Column 4: Final -->
+    <p:Shape type="Builtin:RoundedRect" id="col_final">
+      <p:Property name="box">1228,150,216,740</p:Property>
+      <p:Property name="fillColor">#FFFFFF</p:Property>
+      <p:Property name="strokeColor">#E5E7EB</p:Property>
+      <p:Property name="radius">8</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:RoundedRect" id="col_final_hd">
+      <p:Property name="box">1228,150,216,40</p:Property>
+      <p:Property name="fillColor">#FAFAFA</p:Property>
+      <p:Property name="radius">8</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="col_final_t">
+      <p:Property name="box">1242,160,140,20</p:Property>
+      <p:Property name="textContent">Final</p:Property>
+      <p:Property name="textFont">700 13px sans-serif</p:Property>
+      <p:Property name="textColor">#1F2937</p:Property>
+    </p:Shape>
+  </Content>
+</Page>
+
+<!-- ============================================================ -->
+<!--  PAGE 3: RELATORIOS (pg1)                                    -->
+<!-- ============================================================ -->
+<Page id="pg_relatorios" name="03 - Relatorios (pg1)" width="1440" height="900" backgroundColor="#F3F4F6"
+      note="Dashboard. KPI cards (5) + grafico barras procedimentos + tabela detalhada pacientes. Dados agregados por clinic_id.">
+  <Content>
+    <!-- Header (reused) -->
+    <p:Shape type="Builtin:RoundedRect" id="rel_header">
+      <p:Property name="box">0,0,1440,59</p:Property>
+      <p:Property name="fillColor">#FFFFFF</p:Property>
+      <p:Property name="strokeColor">#E5E7EB</p:Property>
+    </p:Shape>
+
+    <!-- Report Title -->
+    <p:Shape type="Builtin:PlainText" id="rel_title">
+      <p:Property name="box">40,80,300,24</p:Property>
+      <p:Property name="textContent">[analytics] Relatorio Geral</p:Property>
+      <p:Property name="textFont">600 18px sans-serif</p:Property>
+      <p:Property name="textColor">#1F2937</p:Property>
+    </p:Shape>
+
+    <!-- KPI Grid: 5 cards -->
+    <p:Shape type="Builtin:RoundedRect" id="kpi_1">
+      <p:Property name="box">40,120,250,100</p:Property>
+      <p:Property name="fillColor">#3B82F6</p:Property>
+      <p:Property name="radius">12</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="kpi_1_val">
+      <p:Property name="box">60,140,100,34</p:Property>
+      <p:Property name="textContent">47</p:Property>
+      <p:Property name="textFont">700 28px sans-serif</p:Property>
+      <p:Property name="textColor">#FFFFFF</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="kpi_1_label">
+      <p:Property name="box">60,178,180,16</p:Property>
+      <p:Property name="textContent">Total de Pacientes</p:Property>
+      <p:Property name="textFont">12px sans-serif</p:Property>
+      <p:Property name="textColor">#E0E7FF</p:Property>
+    </p:Shape>
+
+    <p:Shape type="Builtin:RoundedRect" id="kpi_2">
+      <p:Property name="box">310,120,250,100</p:Property>
+      <p:Property name="fillColor">#F59E0B</p:Property>
+      <p:Property name="radius">12</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="kpi_2_val">
+      <p:Property name="box">330,140,100,34</p:Property>
+      <p:Property name="textContent">12</p:Property>
+      <p:Property name="textFont">700 28px sans-serif</p:Property>
+      <p:Property name="textColor">#FFFFFF</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="kpi_2_label">
+      <p:Property name="box">330,178,180,16</p:Property>
+      <p:Property name="textContent">Agendaram</p:Property>
+      <p:Property name="textFont">12px sans-serif</p:Property>
+      <p:Property name="textColor">#FEF3C7</p:Property>
+    </p:Shape>
+
+    <p:Shape type="Builtin:RoundedRect" id="kpi_3">
+      <p:Property name="box">580,120,250,100</p:Property>
+      <p:Property name="fillColor">#10B981</p:Property>
+      <p:Property name="radius">12</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="kpi_3_val">
+      <p:Property name="box">600,140,200,34</p:Property>
+      <p:Property name="textContent">R$ 36.000</p:Property>
+      <p:Property name="textFont">700 28px sans-serif</p:Property>
+      <p:Property name="textColor">#FFFFFF</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="kpi_3_label">
+      <p:Property name="box">600,178,180,16</p:Property>
+      <p:Property name="textContent">Valor Agendado</p:Property>
+      <p:Property name="textFont">12px sans-serif</p:Property>
+      <p:Property name="textColor">#D1FAE5</p:Property>
+    </p:Shape>
+
+    <p:Shape type="Builtin:RoundedRect" id="kpi_4">
+      <p:Property name="box">850,120,250,100</p:Property>
+      <p:Property name="fillColor">#EF4444</p:Property>
+      <p:Property name="radius">12</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="kpi_4_val">
+      <p:Property name="box">870,140,100,34</p:Property>
+      <p:Property name="textContent">8</p:Property>
+      <p:Property name="textFont">700 28px sans-serif</p:Property>
+      <p:Property name="textColor">#FFFFFF</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="kpi_4_label">
+      <p:Property name="box">870,178,180,16</p:Property>
+      <p:Property name="textContent">Sem Interesse</p:Property>
+      <p:Property name="textFont">12px sans-serif</p:Property>
+      <p:Property name="textColor">#FEE2E2</p:Property>
+    </p:Shape>
+
+    <p:Shape type="Builtin:RoundedRect" id="kpi_5">
+      <p:Property name="box">1120,120,280,100</p:Property>
+      <p:Property name="fillColor">#6366F1</p:Property>
+      <p:Property name="radius">12</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="kpi_5_val">
+      <p:Property name="box">1140,140,100,34</p:Property>
+      <p:Property name="textContent">25.5%</p:Property>
+      <p:Property name="textFont">700 28px sans-serif</p:Property>
+      <p:Property name="textColor">#FFFFFF</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="kpi_5_label">
+      <p:Property name="box">1140,178,200,16</p:Property>
+      <p:Property name="textContent">Taxa de Conversao</p:Property>
+      <p:Property name="textFont">12px sans-serif</p:Property>
+      <p:Property name="textColor">#E0E7FF</p:Property>
+    </p:Shape>
+
+    <!-- Bar Chart Card -->
+    <p:Shape type="Builtin:RoundedRect" id="chart_card">
+      <p:Property name="box">40,240,660,360</p:Property>
+      <p:Property name="fillColor">#FFFFFF</p:Property>
+      <p:Property name="strokeColor">#E5E7EB</p:Property>
+      <p:Property name="radius">12</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="chart_title">
+      <p:Property name="box">60,260,300,20</p:Property>
+      <p:Property name="textContent">Pacientes por Procedimento</p:Property>
+      <p:Property name="textFont">600 14px sans-serif</p:Property>
+      <p:Property name="textColor">#1F2937</p:Property>
+    </p:Shape>
+    <!-- Bar placeholders -->
+    <p:Shape type="Builtin:RoundedRect" id="bar_1">
+      <p:Property name="box">60,300,400,24</p:Property>
+      <p:Property name="fillColor">#EC6726</p:Property>
+      <p:Property name="radius">4</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="bar_1_t">
+      <p:Property name="box">60,303,200,18</p:Property>
+      <p:Property name="textContent">  Implante — 15</p:Property>
+      <p:Property name="textFont">600 11px sans-serif</p:Property>
+      <p:Property name="textColor">#FFFFFF</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:RoundedRect" id="bar_2">
+      <p:Property name="box">60,332,280,24</p:Property>
+      <p:Property name="fillColor">#3B82F6</p:Property>
+      <p:Property name="radius">4</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:RoundedRect" id="bar_3">
+      <p:Property name="box">60,364,200,24</p:Property>
+      <p:Property name="fillColor">#10B981</p:Property>
+      <p:Property name="radius">4</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:RoundedRect" id="bar_4">
+      <p:Property name="box">60,396,120,24</p:Property>
+      <p:Property name="fillColor">#F59E0B</p:Property>
+      <p:Property name="radius">4</p:Property>
+    </p:Shape>
+
+    <!-- Table Card -->
+    <p:Shape type="Builtin:RoundedRect" id="table_card">
+      <p:Property name="box">720,240,680,360</p:Property>
+      <p:Property name="fillColor">#FFFFFF</p:Property>
+      <p:Property name="strokeColor">#E5E7EB</p:Property>
+      <p:Property name="radius">12</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="table_title">
+      <p:Property name="box">740,260,300,20</p:Property>
+      <p:Property name="textContent">Detalhamento por Paciente</p:Property>
+      <p:Property name="textFont">600 14px sans-serif</p:Property>
+      <p:Property name="textColor">#1F2937</p:Property>
+    </p:Shape>
+    <!-- Table header -->
+    <p:Shape type="Builtin:RoundedRect" id="table_hd">
+      <p:Property name="box">740,290,640,28</p:Property>
+      <p:Property name="fillColor">#F3F4F6</p:Property>
+      <p:Property name="radius">4</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="table_hd_t">
+      <p:Property name="box">750,295,620,18</p:Property>
+      <p:Property name="textContent">Nome          Telefone          Proc.          Valor          Fase          Resultado</p:Property>
+      <p:Property name="textFont">600 10px sans-serif</p:Property>
+      <p:Property name="textColor">#6B7280</p:Property>
+    </p:Shape>
+    <!-- Table rows -->
+    <p:Shape type="Builtin:RoundedRect" id="table_row1">
+      <p:Property name="box">740,322,640,28</p:Property>
+      <p:Property name="fillColor">#FFFFFF</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:RoundedRect" id="table_row2">
+      <p:Property name="box">740,350,640,28</p:Property>
+      <p:Property name="fillColor">#F9FAFB</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:RoundedRect" id="table_row3">
+      <p:Property name="box">740,378,640,28</p:Property>
+      <p:Property name="fillColor">#FFFFFF</p:Property>
+    </p:Shape>
+  </Content>
+</Page>
+
+<!-- ============================================================ -->
+<!--  PAGE 4: ODONTOGRAMA (pg2)                                   -->
+<!-- ============================================================ -->
+<Page id="pg_odontograma" name="04 - Odontograma (pg2)" width="1440" height="900" backgroundColor="#F3F4F6"
+      note="Grid 1.5fr 1fr. Odontograma SVG (FDI, 32 dentes permanentes + 20 deciduos, 5 faces clicaveis, ciclo saudavel/carie/restaurado/ausente). Procedimentos em aberto com total financeiro.">
+  <Content>
+    <!-- Header -->
+    <p:Shape type="Builtin:RoundedRect" id="odonto_header">
+      <p:Property name="box">0,0,1440,59</p:Property>
+      <p:Property name="fillColor">#FFFFFF</p:Property>
+      <p:Property name="strokeColor">#E5E7EB</p:Property>
+    </p:Shape>
+
+    <!-- Page Title -->
+    <p:Shape type="Builtin:PlainText" id="odonto_title">
+      <p:Property name="box">40,80,400,24</p:Property>
+      <p:Property name="textContent">[dentistry] Odontograma Clinico — Maria Silva</p:Property>
+      <p:Property name="textFont">600 16px sans-serif</p:Property>
+      <p:Property name="textColor">#1F2937</p:Property>
+    </p:Shape>
+
+    <!-- Back button -->
+    <p:Shape type="Builtin:RoundedRect" id="odonto_back">
+      <p:Property name="box">1300,76,100,32</p:Property>
+      <p:Property name="fillColor">#F3F4F6</p:Property>
+      <p:Property name="strokeColor">#D1D5DB</p:Property>
+      <p:Property name="radius">6</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="odonto_back_t">
+      <p:Property name="box">1300,82,100,20</p:Property>
+      <p:Property name="textContent">[arrow_back] Kanban</p:Property>
+      <p:Property name="textFont">500 12px sans-serif</p:Property>
+      <p:Property name="textColor">#6B7280</p:Property>
+      <p:Property name="textAlign">center</p:Property>
+    </p:Shape>
+
+    <!-- === ODONTOGRAM CARD === -->
+    <p:Shape type="Builtin:RoundedRect" id="odonto_card">
+      <p:Property name="box">40,120,860,740</p:Property>
+      <p:Property name="fillColor">#FFFFFF</p:Property>
+      <p:Property name="strokeColor">#E5E7EB</p:Property>
+      <p:Property name="radius">12</p:Property>
+    </p:Shape>
+
+    <!-- Legend -->
+    <p:Shape type="Builtin:RoundedRect" id="legend">
+      <p:Property name="box">60,140,800,30</p:Property>
+      <p:Property name="fillColor">#F8FAFC</p:Property>
+      <p:Property name="radius">6</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="legend_items">
+      <p:Property name="box">80,147,700,16</p:Property>
+      <p:Property name="textContent">[branco] Saudavel    [vermelho] Carie    [azul] Restaurado    [cinza] Ausente</p:Property>
+      <p:Property name="textFont">500 11px sans-serif</p:Property>
+      <p:Property name="textColor">#64748B</p:Property>
+    </p:Shape>
+
+    <!-- Arcada Permanente Title -->
+    <p:Shape type="Builtin:PlainText" id="arc_perm_title">
+      <p:Property name="box">60,185,200,16</p:Property>
+      <p:Property name="textContent">Permanentes</p:Property>
+      <p:Property name="textFont">700 12px sans-serif</p:Property>
+      <p:Property name="textColor">#94A3B8</p:Property>
+    </p:Shape>
+
+    <!-- Upper Arch (16 teeth: 18-11 | 21-28) -->
+    <p:Shape type="Builtin:RoundedRect" id="arch_upper">
+      <p:Property name="box">60,205,800,140</p:Property>
+      <p:Property name="fillColor">#FFFFFF</p:Property>
+      <p:Property name="note">Arcada superior permanente. 16 dentes (18-11 | 21-28). Cada dente: numero em cima, grid 5 faces no meio, silhueta anatomica embaixo. Midline entre 11 e 21.</p:Property>
+    </p:Shape>
+    <!-- Tooth placeholders (8 left + midline + 8 right) -->
+    <p:Shape type="Builtin:PlainText" id="teeth_upper_nums">
+      <p:Property name="box">70,208,780,14</p:Property>
+      <p:Property name="textContent">18   17   16   15   14   13   12   11   |   21   22   23   24   25   26   27   28</p:Property>
+      <p:Property name="textFont">700 10px monospace</p:Property>
+      <p:Property name="textColor">#64748B</p:Property>
+      <p:Property name="textAlign">center</p:Property>
+    </p:Shape>
+    <!-- 5-face grids (represented as small squares) -->
+    <p:Shape type="Builtin:RoundedRect" id="face_grid_sample">
+      <p:Property name="box">70,228,780,30</p:Property>
+      <p:Property name="fillColor">#F8FAFC</p:Property>
+      <p:Property name="strokeColor">#CBD5E1</p:Property>
+      <p:Property name="radius">4</p:Property>
+      <p:Property name="note">Zona dos grids 5-faces. Cada dente tem SVG 24x24 com 5 regioes clicaveis: T(vestibular), B(lingual), L(mesial), R(distal), C(oclusal/incisal). Click cycles: saudavel > carie > restaurado.</p:Property>
+    </p:Shape>
+    <!-- Anatomy silhouettes -->
+    <p:Shape type="Builtin:RoundedRect" id="anat_upper">
+      <p:Property name="box">70,264,780,70</p:Property>
+      <p:Property name="fillColor">#FAFAFA</p:Property>
+      <p:Property name="note">Silhuetas anatomicas SVG extraidas do Figma. 32 symbols unicos (#anat-11 a #anat-48). Cada um com viewBox proprio.</p:Property>
+    </p:Shape>
+
+    <!-- Separator -->
+    <p:Shape type="Builtin:RoundedRect" id="arch_separator">
+      <p:Property name="box">120,350,680,1</p:Property>
+      <p:Property name="fillColor">#E2E8F0</p:Property>
+      <p:Property name="note">Separador dashed entre arcadas superior e inferior</p:Property>
+    </p:Shape>
+
+    <!-- Lower Arch (16 teeth: 48-41 | 31-38) -->
+    <p:Shape type="Builtin:RoundedRect" id="arch_lower">
+      <p:Property name="box">60,360,800,140</p:Property>
+      <p:Property name="fillColor">#FFFFFF</p:Property>
+      <p:Property name="note">Arcada inferior permanente. Layout invertido: silhueta em cima, grid no meio, numero embaixo.</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="teeth_lower_nums">
+      <p:Property name="box">70,480,780,14</p:Property>
+      <p:Property name="textContent">48   47   46   45   44   43   42   41   |   31   32   33   34   35   36   37   38</p:Property>
+      <p:Property name="textFont">700 10px monospace</p:Property>
+      <p:Property name="textColor">#64748B</p:Property>
+      <p:Property name="textAlign">center</p:Property>
+    </p:Shape>
+
+    <!-- Arcada Decidua Title -->
+    <p:Shape type="Builtin:PlainText" id="arc_kid_title">
+      <p:Property name="box">60,520,200,16</p:Property>
+      <p:Property name="textContent">Deciduos</p:Property>
+      <p:Property name="textFont">700 12px sans-serif</p:Property>
+      <p:Property name="textColor">#94A3B8</p:Property>
+    </p:Shape>
+
+    <!-- Deciduous upper (10 teeth: 55-51 | 61-65) -->
+    <p:Shape type="Builtin:RoundedRect" id="arch_kid_upper">
+      <p:Property name="box">160,540,600,120</p:Property>
+      <p:Property name="fillColor">#FFFFFF</p:Property>
+      <p:Property name="note">Arcada decidua superior. 10 dentes (55-51 | 61-65).</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="teeth_kid_upper">
+      <p:Property name="box">180,545,560,14</p:Property>
+      <p:Property name="textContent">55   54   53   52   51   |   61   62   63   64   65</p:Property>
+      <p:Property name="textFont">700 10px monospace</p:Property>
+      <p:Property name="textColor">#64748B</p:Property>
+      <p:Property name="textAlign">center</p:Property>
+    </p:Shape>
+
+    <!-- Separator deciduous -->
+    <p:Shape type="Builtin:RoundedRect" id="arch_kid_sep">
+      <p:Property name="box">220,670,480,1</p:Property>
+      <p:Property name="fillColor">#E2E8F0</p:Property>
+    </p:Shape>
+
+    <!-- Deciduous lower (10 teeth: 85-81 | 71-75) -->
+    <p:Shape type="Builtin:RoundedRect" id="arch_kid_lower">
+      <p:Property name="box">160,680,600,120</p:Property>
+      <p:Property name="fillColor">#FFFFFF</p:Property>
+      <p:Property name="note">Arcada decidua inferior. 10 dentes (85-81 | 71-75).</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="teeth_kid_lower">
+      <p:Property name="box">180,785,560,14</p:Property>
+      <p:Property name="textContent">85   84   83   82   81   |   71   72   73   74   75</p:Property>
+      <p:Property name="textFont">700 10px monospace</p:Property>
+      <p:Property name="textColor">#64748B</p:Property>
+      <p:Property name="textAlign">center</p:Property>
+    </p:Shape>
+
+    <!-- === PROCEDURES CARD === -->
+    <p:Shape type="Builtin:RoundedRect" id="proc_card">
+      <p:Property name="box">920,120,480,740</p:Property>
+      <p:Property name="fillColor">#FFFFFF</p:Property>
+      <p:Property name="strokeColor">#E5E7EB</p:Property>
+      <p:Property name="radius">12</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="proc_card_title">
+      <p:Property name="box">940,140,300,20</p:Property>
+      <p:Property name="textContent">Procedimentos em Aberto</p:Property>
+      <p:Property name="textFont">600 14px sans-serif</p:Property>
+      <p:Property name="textColor">#1F2937</p:Property>
+    </p:Shape>
+
+    <!-- Add procedure button -->
+    <p:Shape type="Builtin:RoundedRect" id="proc_add_btn">
+      <p:Property name="box">1300,136,80,28</p:Property>
+      <p:Property name="fillColor">#F1F8F2</p:Property>
+      <p:Property name="strokeColor">#C8E6CA</p:Property>
+      <p:Property name="radius">6</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="proc_add_btn_t">
+      <p:Property name="box">1300,142,80,16</p:Property>
+      <p:Property name="textContent">[+] Novo</p:Property>
+      <p:Property name="textFont">600 11px sans-serif</p:Property>
+      <p:Property name="textColor">#2E7D32</p:Property>
+      <p:Property name="textAlign">center</p:Property>
+    </p:Shape>
+
+    <!-- Procedure item 1 -->
+    <p:Shape type="Builtin:RoundedRect" id="proc_item1">
+      <p:Property name="box">940,180,440,70</p:Property>
+      <p:Property name="fillColor">#F8FAFC</p:Property>
+      <p:Property name="strokeColor">#E2E8F0</p:Property>
+      <p:Property name="radius">8</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="proc_item1_title">
+      <p:Property name="box">955,190,200,16</p:Property>
+      <p:Property name="textContent">Implante</p:Property>
+      <p:Property name="textFont">600 13px sans-serif</p:Property>
+      <p:Property name="textColor">#1F2937</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="proc_item1_dente">
+      <p:Property name="box">955,210,100,14</p:Property>
+      <p:Property name="textContent">Dente: 36</p:Property>
+      <p:Property name="textFont">11px sans-serif</p:Property>
+      <p:Property name="textColor">#6B7280</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="proc_item1_valor">
+      <p:Property name="box">955,228,100,16</p:Property>
+      <p:Property name="textContent">R$ 3.000,00</p:Property>
+      <p:Property name="textFont">700 12px sans-serif</p:Property>
+      <p:Property name="textColor">#2E7D32</p:Property>
+    </p:Shape>
+
+    <!-- Procedure item 2 -->
+    <p:Shape type="Builtin:RoundedRect" id="proc_item2">
+      <p:Property name="box">940,260,440,70</p:Property>
+      <p:Property name="fillColor">#F8FAFC</p:Property>
+      <p:Property name="strokeColor">#E2E8F0</p:Property>
+      <p:Property name="radius">8</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="proc_item2_title">
+      <p:Property name="box">955,270,200,16</p:Property>
+      <p:Property name="textContent">Restauracao</p:Property>
+      <p:Property name="textFont">600 13px sans-serif</p:Property>
+      <p:Property name="textColor">#1F2937</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="proc_item2_dente">
+      <p:Property name="box">955,290,100,14</p:Property>
+      <p:Property name="textContent">Dente: 14</p:Property>
+      <p:Property name="textFont">11px sans-serif</p:Property>
+      <p:Property name="textColor">#6B7280</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="proc_item2_valor">
+      <p:Property name="box">955,308,100,16</p:Property>
+      <p:Property name="textContent">R$ 450,00</p:Property>
+      <p:Property name="textFont">700 12px sans-serif</p:Property>
+      <p:Property name="textColor">#2E7D32</p:Property>
+    </p:Shape>
+
+    <!-- Total -->
+    <p:Shape type="Builtin:RoundedRect" id="proc_total">
+      <p:Property name="box">940,810,440,40</p:Property>
+      <p:Property name="fillColor">#FFF7ED</p:Property>
+      <p:Property name="strokeColor">#FED7AA</p:Property>
+      <p:Property name="radius">8</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="proc_total_t">
+      <p:Property name="box">960,820,400,20</p:Property>
+      <p:Property name="textContent">Total: R$ 3.450,00</p:Property>
+      <p:Property name="textFont">700 14px sans-serif</p:Property>
+      <p:Property name="textColor">#92400E</p:Property>
+    </p:Shape>
+  </Content>
+</Page>
+
+<!-- ============================================================ -->
+<!--  PAGE 5: CONFIGURAR KANBAN (pg3)                             -->
+<!-- ============================================================ -->
+<Page id="pg_config" name="05 - Configurar Kanban (pg3)" width="1440" height="900" backgroundColor="#F3F4F6"
+      note="Gerenciamento das colunas do funil. Cada coluna: input nome + color picker + opcoes. Salva em clinic_settings.kanban_columns (JSONB). Max 8 colunas.">
+  <Content>
+    <p:Shape type="Builtin:RoundedRect" id="config_header">
+      <p:Property name="box">0,0,1440,59</p:Property>
+      <p:Property name="fillColor">#FFFFFF</p:Property>
+      <p:Property name="strokeColor">#E5E7EB</p:Property>
+    </p:Shape>
+
+    <p:Shape type="Builtin:PlainText" id="config_title">
+      <p:Property name="box">40,80,500,24</p:Property>
+      <p:Property name="textContent">[settings_suggest] Configurar Funil do Kanban (CRM)</p:Property>
+      <p:Property name="textFont">600 18px sans-serif</p:Property>
+      <p:Property name="textColor">#1F2937</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="config_desc">
+      <p:Property name="box">40,110,600,16</p:Property>
+      <p:Property name="textContent">Defina as etapas do seu funil de vendas. Arraste para reordenar.</p:Property>
+      <p:Property name="textFont">13px sans-serif</p:Property>
+      <p:Property name="textColor">#6B7280</p:Property>
+    </p:Shape>
+
+    <!-- Config Card -->
+    <p:Shape type="Builtin:RoundedRect" id="config_card">
+      <p:Property name="box">40,140,700,600</p:Property>
+      <p:Property name="fillColor">#FFFFFF</p:Property>
+      <p:Property name="strokeColor">#E5E7EB</p:Property>
+      <p:Property name="radius">12</p:Property>
+    </p:Shape>
+
+    <!-- Column config items -->
+    <p:Shape type="Builtin:RoundedRect" id="config_item1">
+      <p:Property name="box">60,160,660,50</p:Property>
+      <p:Property name="fillColor">#F8FAFC</p:Property>
+      <p:Property name="strokeColor">#E2E8F0</p:Property>
+      <p:Property name="radius">8</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:Ellipse" id="config_color1">
+      <p:Property name="box">75,172,26,26</p:Property>
+      <p:Property name="fillColor">#3B82F6</p:Property>
+      <p:Property name="note">Color picker input</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:RoundedRect" id="config_input1">
+      <p:Property name="box">115,168,400,34</p:Property>
+      <p:Property name="fillColor">#FFFFFF</p:Property>
+      <p:Property name="strokeColor">#D1D5DB</p:Property>
+      <p:Property name="radius">6</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="config_input1_t">
+      <p:Property name="box">125,177,200,16</p:Property>
+      <p:Property name="textContent">Ligar</p:Property>
+      <p:Property name="textFont">13px sans-serif</p:Property>
+      <p:Property name="textColor">#1F2937</p:Property>
+    </p:Shape>
+
+    <p:Shape type="Builtin:RoundedRect" id="config_item2">
+      <p:Property name="box">60,220,660,50</p:Property>
+      <p:Property name="fillColor">#F8FAFC</p:Property>
+      <p:Property name="strokeColor">#E2E8F0</p:Property>
+      <p:Property name="radius">8</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:Ellipse" id="config_color2">
+      <p:Property name="box">75,232,26,26</p:Property>
+      <p:Property name="fillColor">#10B981</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:RoundedRect" id="config_input2">
+      <p:Property name="box">115,228,400,34</p:Property>
+      <p:Property name="fillColor">#FFFFFF</p:Property>
+      <p:Property name="strokeColor">#D1D5DB</p:Property>
+      <p:Property name="radius">6</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="config_input2_t">
+      <p:Property name="box">125,237,200,16</p:Property>
+      <p:Property name="textContent">Contato</p:Property>
+      <p:Property name="textFont">13px sans-serif</p:Property>
+      <p:Property name="textColor">#1F2937</p:Property>
+    </p:Shape>
+
+    <p:Shape type="Builtin:RoundedRect" id="config_item3">
+      <p:Property name="box">60,280,660,50</p:Property>
+      <p:Property name="fillColor">#F8FAFC</p:Property>
+      <p:Property name="strokeColor">#E2E8F0</p:Property>
+      <p:Property name="radius">8</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:Ellipse" id="config_color3">
+      <p:Property name="box">75,292,26,26</p:Property>
+      <p:Property name="fillColor">#F59E0B</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:RoundedRect" id="config_input3">
+      <p:Property name="box">115,288,400,34</p:Property>
+      <p:Property name="fillColor">#FFFFFF</p:Property>
+      <p:Property name="strokeColor">#D1D5DB</p:Property>
+      <p:Property name="radius">6</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="config_input3_t">
+      <p:Property name="box">125,297,200,16</p:Property>
+      <p:Property name="textContent">Agendado</p:Property>
+      <p:Property name="textFont">13px sans-serif</p:Property>
+      <p:Property name="textColor">#1F2937</p:Property>
+    </p:Shape>
+
+    <p:Shape type="Builtin:RoundedRect" id="config_item4">
+      <p:Property name="box">60,340,660,50</p:Property>
+      <p:Property name="fillColor">#F8FAFC</p:Property>
+      <p:Property name="strokeColor">#E2E8F0</p:Property>
+      <p:Property name="radius">8</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:Ellipse" id="config_color4">
+      <p:Property name="box">75,352,26,26</p:Property>
+      <p:Property name="fillColor">#EF4444</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:RoundedRect" id="config_input4">
+      <p:Property name="box">115,348,400,34</p:Property>
+      <p:Property name="fillColor">#FFFFFF</p:Property>
+      <p:Property name="strokeColor">#D1D5DB</p:Property>
+      <p:Property name="radius">6</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="config_input4_t">
+      <p:Property name="box">125,357,200,16</p:Property>
+      <p:Property name="textContent">Final</p:Property>
+      <p:Property name="textFont">13px sans-serif</p:Property>
+      <p:Property name="textColor">#1F2937</p:Property>
+    </p:Shape>
+
+    <!-- Action buttons -->
+    <p:Shape type="Builtin:RoundedRect" id="config_btn_add">
+      <p:Property name="box">60,420,200,40</p:Property>
+      <p:Property name="fillColor">#F8FAFC</p:Property>
+      <p:Property name="strokeColor">#E2E8F0</p:Property>
+      <p:Property name="radius">8</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="config_btn_add_t">
+      <p:Property name="box">60,430,200,20</p:Property>
+      <p:Property name="textContent">[+] Adicionar Coluna</p:Property>
+      <p:Property name="textFont">500 12px sans-serif</p:Property>
+      <p:Property name="textColor">#6B7280</p:Property>
+      <p:Property name="textAlign">center</p:Property>
+    </p:Shape>
+
+    <p:Shape type="Builtin:RoundedRect" id="config_btn_save">
+      <p:Property name="box">60,680,200,44</p:Property>
+      <p:Property name="fillColor">#EC6726</p:Property>
+      <p:Property name="radius">8</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="config_btn_save_t">
+      <p:Property name="box">60,690,200,24</p:Property>
+      <p:Property name="textContent">Salvar Configuracao</p:Property>
+      <p:Property name="textFont">600 13px sans-serif</p:Property>
+      <p:Property name="textColor">#FFFFFF</p:Property>
+      <p:Property name="textAlign">center</p:Property>
+    </p:Shape>
+
+    <p:Shape type="Builtin:RoundedRect" id="config_btn_restore">
+      <p:Property name="box">280,680,200,44</p:Property>
+      <p:Property name="fillColor">#F3F4F6</p:Property>
+      <p:Property name="strokeColor">#D1D5DB</p:Property>
+      <p:Property name="radius">8</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="config_btn_restore_t">
+      <p:Property name="box">280,690,200,24</p:Property>
+      <p:Property name="textContent">Restaurar Padrao</p:Property>
+      <p:Property name="textFont">500 13px sans-serif</p:Property>
+      <p:Property name="textColor">#6B7280</p:Property>
+      <p:Property name="textAlign">center</p:Property>
+    </p:Shape>
+  </Content>
+</Page>
+
+<!-- ============================================================ -->
+<!--  MODALS                                                       -->
+<!-- ============================================================ -->
+
+<!-- MODAL: Add/Edit Lead -->
+<Page id="pg_modal_lead" name="06 - Modal Lead" width="500" height="700" backgroundColor="#00000066"
+      note="Modal fullscreen overlay (.mbg). Adicionar ou editar lead. Campos: nome (required), telefone (required), procedimento, valor, origem (select), temperatura (select), estrategia (select), observacoes (textarea). Max-height 60vh scroll.">
+  <Content>
+    <p:Shape type="Builtin:RoundedRect" id="ml_card">
+      <p:Property name="box">20,30,460,640</p:Property>
+      <p:Property name="fillColor">#FFFFFF</p:Property>
+      <p:Property name="radius">16</p:Property>
+      <p:Property name="shadow">true</p:Property>
+    </p:Shape>
+
+    <!-- Header -->
+    <p:Shape type="Builtin:PlainText" id="ml_icon">
+      <p:Property name="box">40,50,30,24</p:Property>
+      <p:Property name="textContent">[person_add]</p:Property>
+      <p:Property name="textFont">600 18px sans-serif</p:Property>
+      <p:Property name="textColor">#EC6726</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="ml_title">
+      <p:Property name="box">75,50,300,24</p:Property>
+      <p:Property name="textContent">Adicionar Novo Lead</p:Property>
+      <p:Property name="textFont">600 16px sans-serif</p:Property>
+      <p:Property name="textColor">#1F2937</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="ml_subtitle">
+      <p:Property name="box">75,76,300,14</p:Property>
+      <p:Property name="textContent">Preencha os dados do paciente</p:Property>
+      <p:Property name="textFont">12px sans-serif</p:Property>
+      <p:Property name="textColor">#6B7280</p:Property>
+    </p:Shape>
+
+    <!-- Nome -->
+    <p:Shape type="Builtin:PlainText" id="ml_nome_label">
+      <p:Property name="box">40,110,100,14</p:Property>
+      <p:Property name="textContent">Nome *</p:Property>
+      <p:Property name="textFont">600 12px sans-serif</p:Property>
+      <p:Property name="textColor">#374151</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:RoundedRect" id="ml_nome_input">
+      <p:Property name="box">40,128,420,38</p:Property>
+      <p:Property name="fillColor">#F9FAFB</p:Property>
+      <p:Property name="strokeColor">#D1D5DB</p:Property>
+      <p:Property name="radius">6</p:Property>
+    </p:Shape>
+
+    <!-- Telefone -->
+    <p:Shape type="Builtin:PlainText" id="ml_tel_label">
+      <p:Property name="box">40,180,100,14</p:Property>
+      <p:Property name="textContent">Telefone *</p:Property>
+      <p:Property name="textFont">600 12px sans-serif</p:Property>
+      <p:Property name="textColor">#374151</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:RoundedRect" id="ml_tel_input">
+      <p:Property name="box">40,198,420,38</p:Property>
+      <p:Property name="fillColor">#F9FAFB</p:Property>
+      <p:Property name="strokeColor">#D1D5DB</p:Property>
+      <p:Property name="radius">6</p:Property>
+    </p:Shape>
+
+    <!-- Procedimento -->
+    <p:Shape type="Builtin:PlainText" id="ml_proc_label">
+      <p:Property name="box">40,250,200,14</p:Property>
+      <p:Property name="textContent">Procedimento de Interesse</p:Property>
+      <p:Property name="textFont">600 12px sans-serif</p:Property>
+      <p:Property name="textColor">#374151</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:RoundedRect" id="ml_proc_input">
+      <p:Property name="box">40,268,420,38</p:Property>
+      <p:Property name="fillColor">#F9FAFB</p:Property>
+      <p:Property name="strokeColor">#D1D5DB</p:Property>
+      <p:Property name="radius">6</p:Property>
+    </p:Shape>
+
+    <!-- Valor -->
+    <p:Shape type="Builtin:PlainText" id="ml_valor_label">
+      <p:Property name="box">40,320,200,14</p:Property>
+      <p:Property name="textContent">Valor Estimado</p:Property>
+      <p:Property name="textFont">600 12px sans-serif</p:Property>
+      <p:Property name="textColor">#374151</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:RoundedRect" id="ml_valor_input">
+      <p:Property name="box">40,338,420,38</p:Property>
+      <p:Property name="fillColor">#F9FAFB</p:Property>
+      <p:Property name="strokeColor">#D1D5DB</p:Property>
+      <p:Property name="radius">6</p:Property>
+    </p:Shape>
+
+    <!-- Origem + Temperatura (2 columns) -->
+    <p:Shape type="Builtin:PlainText" id="ml_src_label">
+      <p:Property name="box">40,390,100,14</p:Property>
+      <p:Property name="textContent">Origem</p:Property>
+      <p:Property name="textFont">600 12px sans-serif</p:Property>
+      <p:Property name="textColor">#374151</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:RoundedRect" id="ml_src_select">
+      <p:Property name="box">40,408,200,38</p:Property>
+      <p:Property name="fillColor">#F9FAFB</p:Property>
+      <p:Property name="strokeColor">#D1D5DB</p:Property>
+      <p:Property name="radius">6</p:Property>
+      <p:Property name="note">Select: Manual, WhatsApp, Instagram, Google, Indicacao, Trafego Pago, Outro</p:Property>
+    </p:Shape>
+
+    <p:Shape type="Builtin:PlainText" id="ml_temp_label">
+      <p:Property name="box">260,390,120,14</p:Property>
+      <p:Property name="textContent">Temperatura</p:Property>
+      <p:Property name="textFont">600 12px sans-serif</p:Property>
+      <p:Property name="textColor">#374151</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:RoundedRect" id="ml_temp_select">
+      <p:Property name="box">260,408,200,38</p:Property>
+      <p:Property name="fillColor">#F9FAFB</p:Property>
+      <p:Property name="strokeColor">#D1D5DB</p:Property>
+      <p:Property name="radius">6</p:Property>
+      <p:Property name="note">Select: Frio, Morno (default), Quente</p:Property>
+    </p:Shape>
+
+    <!-- Estrategia -->
+    <p:Shape type="Builtin:PlainText" id="ml_strat_label">
+      <p:Property name="box">40,460,200,14</p:Property>
+      <p:Property name="textContent">Estrategia de Abordagem</p:Property>
+      <p:Property name="textFont">600 12px sans-serif</p:Property>
+      <p:Property name="textColor">#374151</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:RoundedRect" id="ml_strat_select">
+      <p:Property name="box">40,478,420,38</p:Property>
+      <p:Property name="fillColor">#F9FAFB</p:Property>
+      <p:Property name="strokeColor">#D1D5DB</p:Property>
+      <p:Property name="radius">6</p:Property>
+      <p:Property name="note">Select: Padrao, Ligacao, WhatsApp, Reativacao, Pos-Op, Preventivo</p:Property>
+    </p:Shape>
+
+    <!-- Observacoes -->
+    <p:Shape type="Builtin:PlainText" id="ml_obs_label">
+      <p:Property name="box">40,530,200,14</p:Property>
+      <p:Property name="textContent">Observacoes</p:Property>
+      <p:Property name="textFont">600 12px sans-serif</p:Property>
+      <p:Property name="textColor">#374151</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:RoundedRect" id="ml_obs_textarea">
+      <p:Property name="box">40,548,420,80</p:Property>
+      <p:Property name="fillColor">#F9FAFB</p:Property>
+      <p:Property name="strokeColor">#D1D5DB</p:Property>
+      <p:Property name="radius">6</p:Property>
+    </p:Shape>
+
+    <!-- Footer buttons -->
+    <p:Shape type="Builtin:RoundedRect" id="ml_btn_cancel">
+      <p:Property name="box">240,640,100,40</p:Property>
+      <p:Property name="fillColor">#F5F5F5</p:Property>
+      <p:Property name="strokeColor">#E0E0E0</p:Property>
+      <p:Property name="radius">6</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="ml_btn_cancel_t">
+      <p:Property name="box">240,650,100,20</p:Property>
+      <p:Property name="textContent">Cancelar</p:Property>
+      <p:Property name="textFont">600 12px sans-serif</p:Property>
+      <p:Property name="textColor">#424242</p:Property>
+      <p:Property name="textAlign">center</p:Property>
+    </p:Shape>
+
+    <p:Shape type="Builtin:RoundedRect" id="ml_btn_save">
+      <p:Property name="box">355,640,120,40</p:Property>
+      <p:Property name="fillColor">#EC6726</p:Property>
+      <p:Property name="radius">6</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="ml_btn_save_t">
+      <p:Property name="box">355,650,120,20</p:Property>
+      <p:Property name="textContent">Salvar</p:Property>
+      <p:Property name="textFont">600 12px sans-serif</p:Property>
+      <p:Property name="textColor">#FFFFFF</p:Property>
+      <p:Property name="textAlign">center</p:Property>
+    </p:Shape>
+  </Content>
+</Page>
+
+<!-- MODAL: Retorno -->
+<Page id="pg_modal_retorno" name="07 - Modal Retorno" width="500" height="520" backgroundColor="#00000066"
+      note="Agendar retorno de ligacao. Presets rapidos (+1h, +2h, Amanha M/T, Seg M). Custom datetime-local. Campo observacao.">
+  <Content>
+    <p:Shape type="Builtin:RoundedRect" id="mr_card">
+      <p:Property name="box">20,20,460,480</p:Property>
+      <p:Property name="fillColor">#FFFFFF</p:Property>
+      <p:Property name="radius">16</p:Property>
+      <p:Property name="shadow">true</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="mr_title">
+      <p:Property name="box">40,40,380,20</p:Property>
+      <p:Property name="textContent">[schedule_send] Agendar Retorno de Ligacao</p:Property>
+      <p:Property name="textFont">600 15px sans-serif</p:Property>
+      <p:Property name="textColor">#1F2937</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="mr_patient">
+      <p:Property name="box">40,68,300,16</p:Property>
+      <p:Property name="textContent">Paciente: Maria Silva</p:Property>
+      <p:Property name="textFont">500 13px sans-serif</p:Property>
+      <p:Property name="textColor">#6B7280</p:Property>
+    </p:Shape>
+
+    <!-- Quick presets -->
+    <p:Shape type="Builtin:PlainText" id="mr_preset_label">
+      <p:Property name="box">40,100,200,14</p:Property>
+      <p:Property name="textContent">Atalhos rapidos:</p:Property>
+      <p:Property name="textFont">600 11px sans-serif</p:Property>
+      <p:Property name="textColor">#374151</p:Property>
+    </p:Shape>
+
+    <p:Shape type="Builtin:RoundedRect" id="mr_preset1">
+      <p:Property name="box">40,120,70,32</p:Property>
+      <p:Property name="fillColor">#F8FAFC</p:Property>
+      <p:Property name="strokeColor">#E2E8F0</p:Property>
+      <p:Property name="radius">6</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="mr_preset1_t">
+      <p:Property name="box">40,128,70,16</p:Property>
+      <p:Property name="textContent">+1h</p:Property>
+      <p:Property name="textFont">600 11px sans-serif</p:Property>
+      <p:Property name="textColor">#374151</p:Property>
+      <p:Property name="textAlign">center</p:Property>
+    </p:Shape>
+
+    <p:Shape type="Builtin:RoundedRect" id="mr_preset2">
+      <p:Property name="box">118,120,70,32</p:Property>
+      <p:Property name="fillColor">#F8FAFC</p:Property>
+      <p:Property name="strokeColor">#E2E8F0</p:Property>
+      <p:Property name="radius">6</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="mr_preset2_t">
+      <p:Property name="box">118,128,70,16</p:Property>
+      <p:Property name="textContent">+2h</p:Property>
+      <p:Property name="textFont">600 11px sans-serif</p:Property>
+      <p:Property name="textColor">#374151</p:Property>
+      <p:Property name="textAlign">center</p:Property>
+    </p:Shape>
+
+    <p:Shape type="Builtin:RoundedRect" id="mr_preset3">
+      <p:Property name="box">196,120,90,32</p:Property>
+      <p:Property name="fillColor">#F8FAFC</p:Property>
+      <p:Property name="strokeColor">#E2E8F0</p:Property>
+      <p:Property name="radius">6</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="mr_preset3_t">
+      <p:Property name="box">196,128,90,16</p:Property>
+      <p:Property name="textContent">Amanha M</p:Property>
+      <p:Property name="textFont">600 11px sans-serif</p:Property>
+      <p:Property name="textColor">#374151</p:Property>
+      <p:Property name="textAlign">center</p:Property>
+    </p:Shape>
+
+    <p:Shape type="Builtin:RoundedRect" id="mr_preset4">
+      <p:Property name="box">294,120,90,32</p:Property>
+      <p:Property name="fillColor">#F8FAFC</p:Property>
+      <p:Property name="strokeColor">#E2E8F0</p:Property>
+      <p:Property name="radius">6</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="mr_preset4_t">
+      <p:Property name="box">294,128,90,16</p:Property>
+      <p:Property name="textContent">Amanha T</p:Property>
+      <p:Property name="textFont">600 11px sans-serif</p:Property>
+      <p:Property name="textColor">#374151</p:Property>
+      <p:Property name="textAlign">center</p:Property>
+    </p:Shape>
+
+    <!-- Custom datetime -->
+    <p:Shape type="Builtin:PlainText" id="mr_custom_label">
+      <p:Property name="box">40,175,200,14</p:Property>
+      <p:Property name="textContent">Ou escolha data/hora:</p:Property>
+      <p:Property name="textFont">600 11px sans-serif</p:Property>
+      <p:Property name="textColor">#374151</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:RoundedRect" id="mr_datetime">
+      <p:Property name="box">40,195,420,38</p:Property>
+      <p:Property name="fillColor">#F9FAFB</p:Property>
+      <p:Property name="strokeColor">#D1D5DB</p:Property>
+      <p:Property name="radius">6</p:Property>
+      <p:Property name="note">Input type=datetime-local</p:Property>
+    </p:Shape>
+
+    <!-- Preview -->
+    <p:Shape type="Builtin:RoundedRect" id="mr_preview">
+      <p:Property name="box">40,248,420,40</p:Property>
+      <p:Property name="fillColor">#FFF7ED</p:Property>
+      <p:Property name="strokeColor">#FED7AA</p:Property>
+      <p:Property name="radius">8</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="mr_preview_t">
+      <p:Property name="box">55,258,390,20</p:Property>
+      <p:Property name="textContent">Retorno agendado: Amanha, 09:00</p:Property>
+      <p:Property name="textFont">500 12px sans-serif</p:Property>
+      <p:Property name="textColor">#92400E</p:Property>
+    </p:Shape>
+
+    <!-- Obs -->
+    <p:Shape type="Builtin:PlainText" id="mr_obs_label">
+      <p:Property name="box">40,305,200,14</p:Property>
+      <p:Property name="textContent">Observacao (opcional)</p:Property>
+      <p:Property name="textFont">600 11px sans-serif</p:Property>
+      <p:Property name="textColor">#374151</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:RoundedRect" id="mr_obs_input">
+      <p:Property name="box">40,325,420,38</p:Property>
+      <p:Property name="fillColor">#F9FAFB</p:Property>
+      <p:Property name="strokeColor">#D1D5DB</p:Property>
+      <p:Property name="radius">6</p:Property>
+    </p:Shape>
+
+    <!-- Footer -->
+    <p:Shape type="Builtin:RoundedRect" id="mr_btn_cancel">
+      <p:Property name="box">240,400,100,40</p:Property>
+      <p:Property name="fillColor">#F5F5F5</p:Property>
+      <p:Property name="strokeColor">#E0E0E0</p:Property>
+      <p:Property name="radius">6</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="mr_btn_cancel_t">
+      <p:Property name="box">240,410,100,20</p:Property>
+      <p:Property name="textContent">Cancelar</p:Property>
+      <p:Property name="textFont">600 12px sans-serif</p:Property>
+      <p:Property name="textColor">#424242</p:Property>
+      <p:Property name="textAlign">center</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:RoundedRect" id="mr_btn_save">
+      <p:Property name="box">355,400,120,40</p:Property>
+      <p:Property name="fillColor">#10B981</p:Property>
+      <p:Property name="radius">6</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="mr_btn_save_t">
+      <p:Property name="box">355,410,120,20</p:Property>
+      <p:Property name="textContent">Confirmar</p:Property>
+      <p:Property name="textFont">600 12px sans-serif</p:Property>
+      <p:Property name="textColor">#FFFFFF</p:Property>
+      <p:Property name="textAlign">center</p:Property>
+    </p:Shape>
+  </Content>
+</Page>
+
+<!-- MODAL: Resultado -->
+<Page id="pg_modal_resultado" name="08 - Modal Resultado" width="420" height="400" backgroundColor="#00000066"
+      note="Finalizar contato. 4 opcoes: Agendou, Ja Realizou, Sem Interesse, Sem Resposta. Cada opcao com icone Material + cor propria.">
+  <Content>
+    <p:Shape type="Builtin:RoundedRect" id="mres_card">
+      <p:Property name="box">20,20,380,360</p:Property>
+      <p:Property name="fillColor">#FFFFFF</p:Property>
+      <p:Property name="radius">16</p:Property>
+      <p:Property name="shadow">true</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="mres_title">
+      <p:Property name="box">40,40,300,20</p:Property>
+      <p:Property name="textContent">Finalizar Contato</p:Property>
+      <p:Property name="textFont">600 16px sans-serif</p:Property>
+      <p:Property name="textColor">#1F2937</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="mres_subtitle">
+      <p:Property name="box">40,65,300,16</p:Property>
+      <p:Property name="textContent">Qual foi o resultado?</p:Property>
+      <p:Property name="textFont">13px sans-serif</p:Property>
+      <p:Property name="textColor">#6B7280</p:Property>
+    </p:Shape>
+
+    <!-- Option 1: Agendou -->
+    <p:Shape type="Builtin:RoundedRect" id="mres_opt1">
+      <p:Property name="box">40,100,320,50</p:Property>
+      <p:Property name="fillColor">#F0FDF4</p:Property>
+      <p:Property name="strokeColor">#BBF7D0</p:Property>
+      <p:Property name="radius">10</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="mres_opt1_t">
+      <p:Property name="box">60,115,280,20</p:Property>
+      <p:Property name="textContent">[event_available] Agendou consulta</p:Property>
+      <p:Property name="textFont">600 13px sans-serif</p:Property>
+      <p:Property name="textColor">#16A34A</p:Property>
+    </p:Shape>
+
+    <!-- Option 2: Ja Realizou -->
+    <p:Shape type="Builtin:RoundedRect" id="mres_opt2">
+      <p:Property name="box">40,162,320,50</p:Property>
+      <p:Property name="fillColor">#EFF6FF</p:Property>
+      <p:Property name="strokeColor">#BFDBFE</p:Property>
+      <p:Property name="radius">10</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="mres_opt2_t">
+      <p:Property name="box">60,177,280,20</p:Property>
+      <p:Property name="textContent">[check_circle] Ja realizou procedimento</p:Property>
+      <p:Property name="textFont">600 13px sans-serif</p:Property>
+      <p:Property name="textColor">#2563EB</p:Property>
+    </p:Shape>
+
+    <!-- Option 3: Sem Interesse -->
+    <p:Shape type="Builtin:RoundedRect" id="mres_opt3">
+      <p:Property name="box">40,224,320,50</p:Property>
+      <p:Property name="fillColor">#FEF2F2</p:Property>
+      <p:Property name="strokeColor">#FECACA</p:Property>
+      <p:Property name="radius">10</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="mres_opt3_t">
+      <p:Property name="box">60,239,280,20</p:Property>
+      <p:Property name="textContent">[cancel] Sem interesse</p:Property>
+      <p:Property name="textFont">600 13px sans-serif</p:Property>
+      <p:Property name="textColor">#DC2626</p:Property>
+    </p:Shape>
+
+    <!-- Option 4: Sem Resposta -->
+    <p:Shape type="Builtin:RoundedRect" id="mres_opt4">
+      <p:Property name="box">40,286,320,50</p:Property>
+      <p:Property name="fillColor">#F9FAFB</p:Property>
+      <p:Property name="strokeColor">#E5E7EB</p:Property>
+      <p:Property name="radius">10</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="mres_opt4_t">
+      <p:Property name="box">60,301,280,20</p:Property>
+      <p:Property name="textContent">[phone_disabled] Sem resposta</p:Property>
+      <p:Property name="textFont">600 13px sans-serif</p:Property>
+      <p:Property name="textColor">#6B7280</p:Property>
+    </p:Shape>
+  </Content>
+</Page>
+
+<!-- MODAL: Procedimento Odonto -->
+<Page id="pg_modal_procedimento" name="09 - Modal Procedimento" width="500" height="440" backgroundColor="#00000066"
+      note="Registrar procedimento clinico no odontograma. Dente (opcional, FDI ou Geral), procedimento (select: avaliacao, limpeza, restauracao, canal, extracao, ortodontia, implante, protese, clareamento, outro), valor (R$).">
+  <Content>
+    <p:Shape type="Builtin:RoundedRect" id="mp_card">
+      <p:Property name="box">20,20,460,400</p:Property>
+      <p:Property name="fillColor">#FFFFFF</p:Property>
+      <p:Property name="radius">16</p:Property>
+      <p:Property name="shadow">true</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="mp_title">
+      <p:Property name="box">40,40,300,20</p:Property>
+      <p:Property name="textContent">[local_hospital] Registrar Procedimento</p:Property>
+      <p:Property name="textFont">600 15px sans-serif</p:Property>
+      <p:Property name="textColor">#1F2937</p:Property>
+    </p:Shape>
+
+    <!-- Dente -->
+    <p:Shape type="Builtin:PlainText" id="mp_dente_label">
+      <p:Property name="box">40,80,100,14</p:Property>
+      <p:Property name="textContent">Dente</p:Property>
+      <p:Property name="textFont">600 12px sans-serif</p:Property>
+      <p:Property name="textColor">#374151</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:RoundedRect" id="mp_dente_input">
+      <p:Property name="box">40,98,420,38</p:Property>
+      <p:Property name="fillColor">#F9FAFB</p:Property>
+      <p:Property name="strokeColor">#D1D5DB</p:Property>
+      <p:Property name="radius">6</p:Property>
+    </p:Shape>
+
+    <!-- Procedimento -->
+    <p:Shape type="Builtin:PlainText" id="mp_proc_label">
+      <p:Property name="box">40,150,200,14</p:Property>
+      <p:Property name="textContent">Procedimento *</p:Property>
+      <p:Property name="textFont">600 12px sans-serif</p:Property>
+      <p:Property name="textColor">#374151</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:RoundedRect" id="mp_proc_select">
+      <p:Property name="box">40,168,420,38</p:Property>
+      <p:Property name="fillColor">#F9FAFB</p:Property>
+      <p:Property name="strokeColor">#D1D5DB</p:Property>
+      <p:Property name="radius">6</p:Property>
+    </p:Shape>
+
+    <!-- Valor -->
+    <p:Shape type="Builtin:PlainText" id="mp_valor_label">
+      <p:Property name="box">40,220,200,14</p:Property>
+      <p:Property name="textContent">Valor</p:Property>
+      <p:Property name="textFont">600 12px sans-serif</p:Property>
+      <p:Property name="textColor">#374151</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:RoundedRect" id="mp_valor_input">
+      <p:Property name="box">40,238,420,38</p:Property>
+      <p:Property name="fillColor">#F9FAFB</p:Property>
+      <p:Property name="strokeColor">#D1D5DB</p:Property>
+      <p:Property name="radius">6</p:Property>
+    </p:Shape>
+
+    <!-- Footer -->
+    <p:Shape type="Builtin:RoundedRect" id="mp_btn_cancel">
+      <p:Property name="box">240,340,100,40</p:Property>
+      <p:Property name="fillColor">#F5F5F5</p:Property>
+      <p:Property name="strokeColor">#E0E0E0</p:Property>
+      <p:Property name="radius">6</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="mp_btn_cancel_t">
+      <p:Property name="box">240,350,100,20</p:Property>
+      <p:Property name="textContent">Cancelar</p:Property>
+      <p:Property name="textFont">600 12px sans-serif</p:Property>
+      <p:Property name="textColor">#424242</p:Property>
+      <p:Property name="textAlign">center</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:RoundedRect" id="mp_btn_save">
+      <p:Property name="box">355,340,120,40</p:Property>
+      <p:Property name="fillColor">#EC6726</p:Property>
+      <p:Property name="radius">6</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="mp_btn_save_t">
+      <p:Property name="box">355,350,120,20</p:Property>
+      <p:Property name="textContent">Confirmar</p:Property>
+      <p:Property name="textFont">600 12px sans-serif</p:Property>
+      <p:Property name="textColor">#FFFFFF</p:Property>
+      <p:Property name="textAlign">center</p:Property>
+    </p:Shape>
+  </Content>
+</Page>
+
+<!-- MODAL: Personalizar (White-label) -->
+<Page id="pg_modal_customizar" name="10 - Modal Personalizar" width="420" height="380" backgroundColor="#00000066"
+      note="White-label: 4 color pickers para cores da barra RGB animada. Preview gradient em tempo real. Salva em clinic_settings.">
+  <Content>
+    <p:Shape type="Builtin:RoundedRect" id="mc_card">
+      <p:Property name="box">20,20,380,340</p:Property>
+      <p:Property name="fillColor">#FFFFFF</p:Property>
+      <p:Property name="radius">16</p:Property>
+      <p:Property name="shadow">true</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="mc_title">
+      <p:Property name="box">40,40,300,20</p:Property>
+      <p:Property name="textContent">[palette] Personalizar</p:Property>
+      <p:Property name="textFont">600 16px sans-serif</p:Property>
+      <p:Property name="textColor">#1F2937</p:Property>
+    </p:Shape>
+
+    <!-- RGB Preview -->
+    <p:Shape type="Builtin:RoundedRect" id="mc_preview">
+      <p:Property name="box">40,75,320,6</p:Property>
+      <p:Property name="fillColor">#EC6726</p:Property>
+      <p:Property name="radius">3</p:Property>
+      <p:Property name="note">Preview animado das 4 cores selecionadas</p:Property>
+    </p:Shape>
+
+    <!-- Color pickers -->
+    <p:Shape type="Builtin:Ellipse" id="mc_color1">
+      <p:Property name="box">60,110,50,50</p:Property>
+      <p:Property name="fillColor">#ff6b35</p:Property>
+      <p:Property name="note">Color picker 1</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="mc_color1_t">
+      <p:Property name="box">60,165,50,14</p:Property>
+      <p:Property name="textContent">COR 1</p:Property>
+      <p:Property name="textFont">700 9px sans-serif</p:Property>
+      <p:Property name="textColor">#6B7280</p:Property>
+      <p:Property name="textAlign">center</p:Property>
+    </p:Shape>
+
+    <p:Shape type="Builtin:Ellipse" id="mc_color2">
+      <p:Property name="box">140,110,50,50</p:Property>
+      <p:Property name="fillColor">#ff9a3c</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="mc_color2_t">
+      <p:Property name="box">140,165,50,14</p:Property>
+      <p:Property name="textContent">COR 2</p:Property>
+      <p:Property name="textFont">700 9px sans-serif</p:Property>
+      <p:Property name="textColor">#6B7280</p:Property>
+      <p:Property name="textAlign">center</p:Property>
+    </p:Shape>
+
+    <p:Shape type="Builtin:Ellipse" id="mc_color3">
+      <p:Property name="box">220,110,50,50</p:Property>
+      <p:Property name="fillColor">#ffc107</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="mc_color3_t">
+      <p:Property name="box">220,165,50,14</p:Property>
+      <p:Property name="textContent">COR 3</p:Property>
+      <p:Property name="textFont">700 9px sans-serif</p:Property>
+      <p:Property name="textColor">#6B7280</p:Property>
+      <p:Property name="textAlign">center</p:Property>
+    </p:Shape>
+
+    <p:Shape type="Builtin:Ellipse" id="mc_color4">
+      <p:Property name="box">300,110,50,50</p:Property>
+      <p:Property name="fillColor">#ff6b35</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="mc_color4_t">
+      <p:Property name="box">300,165,50,14</p:Property>
+      <p:Property name="textContent">COR 4</p:Property>
+      <p:Property name="textFont">700 9px sans-serif</p:Property>
+      <p:Property name="textColor">#6B7280</p:Property>
+      <p:Property name="textAlign">center</p:Property>
+    </p:Shape>
+
+    <!-- Buttons -->
+    <p:Shape type="Builtin:RoundedRect" id="mc_btn_save">
+      <p:Property name="box">40,280,150,40</p:Property>
+      <p:Property name="fillColor">#EC6726</p:Property>
+      <p:Property name="radius">8</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="mc_btn_save_t">
+      <p:Property name="box">40,290,150,20</p:Property>
+      <p:Property name="textContent">Salvar</p:Property>
+      <p:Property name="textFont">600 13px sans-serif</p:Property>
+      <p:Property name="textColor">#FFFFFF</p:Property>
+      <p:Property name="textAlign">center</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:RoundedRect" id="mc_btn_reset">
+      <p:Property name="box">210,280,150,40</p:Property>
+      <p:Property name="fillColor">#F3F4F6</p:Property>
+      <p:Property name="strokeColor">#D1D5DB</p:Property>
+      <p:Property name="radius">8</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="mc_btn_reset_t">
+      <p:Property name="box">210,290,150,20</p:Property>
+      <p:Property name="textContent">Restaurar</p:Property>
+      <p:Property name="textFont">500 13px sans-serif</p:Property>
+      <p:Property name="textColor">#6B7280</p:Property>
+      <p:Property name="textAlign">center</p:Property>
+    </p:Shape>
+  </Content>
+</Page>
+
+<!-- MOBILE: Kanban -->
+<Page id="pg_mobile_kanban" name="11 - Kanban Mobile (375px)" width="375" height="812" backgroundColor="#F3F4F6"
+      note="Responsivo mobile. Header 36px com hamburger. Script panel stacks acima do Kanban (colapsavel). Colunas em scroll horizontal. Cards com botoes empilhados. Filter panel toggleable.">
+  <Content>
+    <!-- Mobile Header -->
+    <p:Shape type="Builtin:RoundedRect" id="mob_header">
+      <p:Property name="box">0,0,375,40</p:Property>
+      <p:Property name="fillColor">#FFFFFF</p:Property>
+      <p:Property name="strokeColor">#E5E7EB</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="mob_hamburger">
+      <p:Property name="box">10,10,24,20</p:Property>
+      <p:Property name="textContent">[menu]</p:Property>
+      <p:Property name="textFont">600 16px sans-serif</p:Property>
+      <p:Property name="textColor">#1F2937</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="mob_clinic_name">
+      <p:Property name="box">45,12,200,16</p:Property>
+      <p:Property name="textContent">Clinica ABC</p:Property>
+      <p:Property name="textFont">600 13px sans-serif</p:Property>
+      <p:Property name="textColor">#1F2937</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:Ellipse" id="mob_bell">
+      <p:Property name="box">320,8,24,24</p:Property>
+      <p:Property name="fillColor">#F3F4F6</p:Property>
+      <p:Property name="strokeColor">#E5E7EB</p:Property>
+    </p:Shape>
+
+    <!-- Search bar -->
+    <p:Shape type="Builtin:RoundedRect" id="mob_search">
+      <p:Property name="box">10,50,355,36</p:Property>
+      <p:Property name="fillColor">#FFFFFF</p:Property>
+      <p:Property name="strokeColor">#D1D5DB</p:Property>
+      <p:Property name="radius">6</p:Property>
+    </p:Shape>
+
+    <!-- Column scroll area -->
+    <p:Shape type="Builtin:RoundedRect" id="mob_col1">
+      <p:Property name="box">10,100,300,700</p:Property>
+      <p:Property name="fillColor">#FFFFFF</p:Property>
+      <p:Property name="strokeColor">#E5E7EB</p:Property>
+      <p:Property name="radius">8</p:Property>
+      <p:Property name="note">Colunas fazem scroll horizontal. Cada coluna full-width (300px). Swipe para navegar.</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:RoundedRect" id="mob_col1_hd">
+      <p:Property name="box">10,100,300,36</p:Property>
+      <p:Property name="fillColor">#FAFAFA</p:Property>
+      <p:Property name="radius">8</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="mob_col1_t">
+      <p:Property name="box">20,108,100,20</p:Property>
+      <p:Property name="textContent">Ligar</p:Property>
+      <p:Property name="textFont">700 13px sans-serif</p:Property>
+      <p:Property name="textColor">#1F2937</p:Property>
+    </p:Shape>
+
+    <!-- Mobile card (stacked buttons) -->
+    <p:Shape type="Builtin:RoundedRect" id="mob_card">
+      <p:Property name="box">18,145,284,360</p:Property>
+      <p:Property name="fillColor">#FFFFFF</p:Property>
+      <p:Property name="strokeColor">#E5E7EB</p:Property>
+      <p:Property name="radius">8</p:Property>
+      <p:Property name="shadow">true</p:Property>
+      <p:Property name="note">Card mobile: botoes empilham verticalmente (flex-direction column). Height 36px cada botao. Mais espaco touch.</p:Property>
+    </p:Shape>
+  </Content>
+</Page>
+
+<!-- Bell Panel -->
+<Page id="pg_bell_panel" name="12 - Painel Retornos" width="380" height="500" backgroundColor="#FFFFFF"
+      note="Slide-in panel lateral direita. Lista de retornos agendados. Cada item: nome, horario, obs. Alerta visual (borda vermelha pulsante) para retornos vencidos.">
+  <Content>
+    <p:Shape type="Builtin:RoundedRect" id="bell_card">
+      <p:Property name="box">0,0,380,500</p:Property>
+      <p:Property name="fillColor">#FFFFFF</p:Property>
+      <p:Property name="strokeColor">#E5E7EB</p:Property>
+      <p:Property name="radius">12</p:Property>
+      <p:Property name="shadow">true</p:Property>
+    </p:Shape>
+
+    <p:Shape type="Builtin:PlainText" id="bell_title">
+      <p:Property name="box">20,20,300,20</p:Property>
+      <p:Property name="textContent">[notifications_active] Retornos Agendados</p:Property>
+      <p:Property name="textFont">600 15px sans-serif</p:Property>
+      <p:Property name="textColor">#1F2937</p:Property>
+    </p:Shape>
+
+    <!-- Bell item 1 (overdue) -->
+    <p:Shape type="Builtin:RoundedRect" id="bell_item1">
+      <p:Property name="box">15,60,350,70</p:Property>
+      <p:Property name="fillColor">#FEF2F2</p:Property>
+      <p:Property name="strokeColor">#EF4444</p:Property>
+      <p:Property name="radius">8</p:Property>
+      <p:Property name="note">Item vencido: borda vermelha, fundo rosa, animacao pulse</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="bell_item1_nome">
+      <p:Property name="box">25,68,200,16</p:Property>
+      <p:Property name="textContent">Joao Pereira</p:Property>
+      <p:Property name="textFont">600 13px sans-serif</p:Property>
+      <p:Property name="textColor">#1F2937</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="bell_item1_time">
+      <p:Property name="box">25,88,200,14</p:Property>
+      <p:Property name="textContent">Hoje, 10:00 (ATRASADO)</p:Property>
+      <p:Property name="textFont">500 11px sans-serif</p:Property>
+      <p:Property name="textColor">#EF4444</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="bell_item1_obs">
+      <p:Property name="box">25,106,300,14</p:Property>
+      <p:Property name="textContent">Confirmar horario do implante</p:Property>
+      <p:Property name="textFont">11px sans-serif</p:Property>
+      <p:Property name="textColor">#6B7280</p:Property>
+    </p:Shape>
+
+    <!-- Bell item 2 (upcoming) -->
+    <p:Shape type="Builtin:RoundedRect" id="bell_item2">
+      <p:Property name="box">15,140,350,70</p:Property>
+      <p:Property name="fillColor">#F8FAFC</p:Property>
+      <p:Property name="strokeColor">#E2E8F0</p:Property>
+      <p:Property name="radius">8</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="bell_item2_nome">
+      <p:Property name="box">25,148,200,16</p:Property>
+      <p:Property name="textContent">Ana Santos</p:Property>
+      <p:Property name="textFont">600 13px sans-serif</p:Property>
+      <p:Property name="textColor">#1F2937</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="bell_item2_time">
+      <p:Property name="box">25,168,200,14</p:Property>
+      <p:Property name="textContent">Hoje, 15:00</p:Property>
+      <p:Property name="textFont">500 11px sans-serif</p:Property>
+      <p:Property name="textColor">#6B7280</p:Property>
+    </p:Shape>
+
+    <!-- Bell item 3 -->
+    <p:Shape type="Builtin:RoundedRect" id="bell_item3">
+      <p:Property name="box">15,220,350,70</p:Property>
+      <p:Property name="fillColor">#F8FAFC</p:Property>
+      <p:Property name="strokeColor">#E2E8F0</p:Property>
+      <p:Property name="radius">8</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="bell_item3_nome">
+      <p:Property name="box">25,228,200,16</p:Property>
+      <p:Property name="textContent">Carlos Lima</p:Property>
+      <p:Property name="textFont">600 13px sans-serif</p:Property>
+      <p:Property name="textColor">#1F2937</p:Property>
+    </p:Shape>
+    <p:Shape type="Builtin:PlainText" id="bell_item3_time">
+      <p:Property name="box">25,248,200,14</p:Property>
+      <p:Property name="textContent">Amanha, 09:00</p:Property>
+      <p:Property name="textFont">500 11px sans-serif</p:Property>
+      <p:Property name="textColor">#6B7280</p:Property>
+    </p:Shape>
+  </Content>
+</Page>
+
+</Document>

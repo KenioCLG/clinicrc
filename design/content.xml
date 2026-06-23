@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="http://www.nicecode.com/Pencil"
+          xmlns:p="http://www.nicecode.com/Pencil"
+          xmlns:pencil="http://www.nicecode.com/Pencil"
+          name="ClinicRC - SaaS Odontologico">
+    <Properties>
+        <Property name="fileName">clinicrc-wireframes.ep</Property>
+        <Property name="activePageId">pg_kanban</Property>
+    </Properties>
+    <Pages>
+        <Page id="pg_login" name="01 - Login">
+            <Properties>
+                <Property name="width">1440</Property>
+                <Property name="height">900</Property>
+                <Property name="backgroundColor">#F3F4F6</Property>
+                <Property name="note">Tela de autenticacao. Supabase Auth com email/senha. Redireciona para pg_kanban apos login.</Property>
+            </Properties>
+        </Page>
+        <Page id="pg_kanban" name="02 - CRM Kanban (pg0)">
+            <Properties>
+                <Property name="width">1440</Property>
+                <Property name="height">900</Property>
+                <Property name="backgroundColor">#F3F4F6</Property>
+                <Property name="note">Tela principal. Layout split: Script Panel (38%) | Resizer | Kanban Panel (62%). Header fixo com tabs. Colunas dinamicas vindas de clinic_settings.kanban_columns.</Property>
+            </Properties>
+        </Page>
+        <Page id="pg_relatorios" name="03 - Relatorios (pg1)">
+            <Properties>
+                <Property name="width">1440</Property>
+                <Property name="height">900</Property>
+                <Property name="backgroundColor">#F3F4F6</Property>
+                <Property name="note">Dashboard com KPIs (cards coloridos), graficos de barras por procedimento, tabela de pacientes detalhada.</Property>
+            </Properties>
+        </Page>
+        <Page id="pg_odontograma" name="04 - Odontograma (pg2)">
+            <Properties>
+                <Property name="width">1440</Property>
+                <Property name="height">900</Property>
+                <Property name="backgroundColor">#F3F4F6</Property>
+                <Property name="note">Grid 1.5fr 1fr. Esquerda: odontograma SVG com 32 dentes (FDI), 5 faces clicaveis, status cycle. Direita: lista de procedimentos em aberto + total financeiro.</Property>
+            </Properties>
+        </Page>
+        <Page id="pg_config" name="05 - Configurar Kanban (pg3)">
+            <Properties>
+                <Property name="width">1440</Property>
+                <Property name="height">900</Property>
+                <Property name="backgroundColor">#F3F4F6</Property>
+                <Property name="note">Formulario de configuracao das colunas do funil. Cada coluna: nome + cor + opcoes. Botoes: adicionar coluna, restaurar padrao, salvar.</Property>
+            </Properties>
+        </Page>
+        <Page id="pg_modal_lead" name="06 - Modal Lead">
+            <Properties>
+                <Property name="width">480</Property>
+                <Property name="height">640</Property>
+                <Property name="backgroundColor">#FFFFFF</Property>
+                <Property name="note">Modal adicionar/editar lead. Campos: nome, telefone, procedimento, valor, origem, temperatura, estrategia, observacoes. Scroll interno max-height 60vh.</Property>
+            </Properties>
+        </Page>
+        <Page id="pg_modal_retorno" name="07 - Modal Retorno">
+            <Properties>
+                <Property name="width">480</Property>
+                <Property name="height">500</Property>
+                <Property name="backgroundColor">#FFFFFF</Property>
+                <Property name="note">Agendar retorno de ligacao. Presets rapidos (+1h, +2h, Amanha M/T, Seg M) + datetime-local customizado + campo obs.</Property>
+            </Properties>
+        </Page>
+        <Page id="pg_modal_resultado" name="08 - Modal Resultado">
+            <Properties>
+                <Property name="width">400</Property>
+                <Property name="height">380</Property>
+                <Property name="backgroundColor">#FFFFFF</Property>
+                <Property name="note">Finalizar contato. 4 opcoes: Agendou (verde), Ja Realizou (azul), Sem Interesse (vermelho), Sem Resposta (cinza).</Property>
+            </Properties>
+        </Page>
+        <Page id="pg_modal_procedimento" name="09 - Modal Procedimento">
+            <Properties>
+                <Property name="width">480</Property>
+                <Property name="height">420</Property>
+                <Property name="backgroundColor">#FFFFFF</Property>
+                <Property name="note">Registrar procedimento no odontograma. Campos: dente (opcional), nome do procedimento (select com Outro), valor (R$).</Property>
+            </Properties>
+        </Page>
+        <Page id="pg_modal_customizar" name="10 - Modal Personalizar">
+            <Properties>
+                <Property name="width">400</Property>
+                <Property name="height">360</Property>
+                <Property name="backgroundColor">#FFFFFF</Property>
+                <Property name="note">White-label: 4 color pickers para personalizar a barra RGB superior animada. Preview em tempo real.</Property>
+            </Properties>
+        </Page>
+        <Page id="pg_modal_info" name="11 - Modal Info Roteiro">
+            <Properties>
+                <Property name="width">560</Property>
+                <Property name="height">600</Property>
+                <Property name="backgroundColor">#FFFFFF</Property>
+                <Property name="note">Help de como escrever roteiros. Variaveis dinamicas (#nome, #procedimento, #valor, #promo). GitHub Alerts (TIP, WARNING, IMPORTANT, CAUTION). Template de prompt IA copiavel.</Property>
+            </Properties>
+        </Page>
+        <Page id="pg_bell_panel" name="12 - Painel Retornos (Bell)">
+            <Properties>
+                <Property name="width">360</Property>
+                <Property name="height">500</Property>
+                <Property name="backgroundColor">#FFFFFF</Property>
+                <Property name="note">Painel lateral de retornos agendados. Lista cronologica com nome, horario, obs e alerta visual para itens vencidos.</Property>
+            </Properties>
+        </Page>
+        <Page id="pg_header" name="13 - Header e Navegacao">
+            <Properties>
+                <Property name="width">1440</Property>
+                <Property name="height">200</Property>
+                <Property name="backgroundColor">#FFFFFF</Property>
+                <Property name="note">Header fixo 56px (36px mobile). Desktop: tabs inline + sidebar info. Mobile: hamburger drawer com overlay. RGB topbar animada 3px.</Property>
+            </Properties>
+        </Page>
+        <Page id="pg_card_kanban" name="14 - Card Kanban (Componente)">
+            <Properties>
+                <Property name="width">320</Property>
+                <Property name="height">480</Property>
+                <Property name="backgroundColor">#FFFFFF</Property>
+                <Property name="note">Componente card do Kanban. Anatomia: nome + edit/delete | telefone | procedimento | valor | badges (temp, source, strategy) | alerta inatividade | tentativas dots | textarea obs | acoes secundarias (odontograma + retornar) | botoes transicao (avancar, voltar, nova tentativa).</Property>
+            </Properties>
+        </Page>
+        <Page id="pg_toast" name="15 - Toast e Feedback">
+            <Properties>
+                <Property name="width">400</Property>
+                <Property name="height">200</Property>
+                <Property name="backgroundColor">#F3F4F6</Property>
+                <Property name="note">Toast notification fixed bottom-center. Variantes: sucesso (verde), erro (vermelho), info (azul). Animacao slide-up com auto-dismiss.</Property>
+            </Properties>
+        </Page>
+        <Page id="pg_mobile_kanban" name="16 - Kanban Mobile">
+            <Properties>
+                <Property name="width">375</Property>
+                <Property name="height">812</Property>
+                <Property name="backgroundColor">#F3F4F6</Property>
+                <Property name="note">Kanban responsivo mobile. Colunas em scroll horizontal. Script panel acima do Kanban (vertical). Drawer lateral para navegacao. Cards com botoes empilhados.</Property>
+            </Properties>
+        </Page>
+        <Page id="pg_mobile_drawer" name="17 - Drawer Mobile">
+            <Properties>
+                <Property name="width">280</Property>
+                <Property name="height">812</Property>
+                <Property name="backgroundColor">#FFFFFF</Property>
+                <Property name="note">Drawer lateral mobile. Contem: botao fechar, tabs de navegacao, badge sync, suporte WhatsApp, botao PWA install, notificacoes, relogio, avatar + logout.</Property>
+            </Properties>
+        </Page>
+    </Pages>
+</Document>
