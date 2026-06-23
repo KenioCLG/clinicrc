@@ -9,6 +9,54 @@ const authMiddleware = require('../middleware/auth.middleware');
 
 router.use(authMiddleware);
 
+// POST /patients — Cadastra um novo Lead/Paciente manual
+router.post('/', async (req, res) => {
+  const clinicId = req.clinic.id;
+  const { id, nome, tel, proc, valor, col, source, lead_temperature, obs, odonto_state, procedimentos_abertos } = req.body;
+
+  if (!nome || !tel) {
+    return res.status(400).json({ error: 'Nome e Telefone são obrigatórios.' });
+  }
+
+  try {
+    // Verifica se já existe um paciente com este telefone na clínica
+    const existing = await queryOne(
+      'SELECT id FROM patients WHERE clinic_id = ? AND tel = ?',
+      [clinicId, tel]
+    );
+
+    if (existing) {
+      return res.status(400).json({ error: 'Já existe um paciente cadastrado com este telefone.' });
+    }
+
+    const newId = id || require('crypto').randomUUID();
+    const finalCol = col || 'ligar';
+    const finalSource = source || 'manual';
+    const finalTemp = lead_temperature || 'warm';
+    const finalValor = valor || 'R$ 0,00';
+    const finalProc = proc || '';
+    const finalObs = obs || '';
+    const finalOdonto = odonto_state || '{}';
+    const finalProcs = procedimentos_abertos || '[]';
+
+    await run(
+      `INSERT INTO patients (id, clinic_id, nome, tel, proc, valor, col, tent, obs, source, lead_temperature, odonto_state, procedimentos_abertos)
+       VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?)`,
+      [newId, clinicId, nome, tel, finalProc, finalValor, finalCol, finalObs, finalSource, finalTemp, finalOdonto, finalProcs]
+    );
+
+    const created = await queryOne(
+      'SELECT id, nome, tel, proc, valor, col, tent, obs, res, dt, source, source_status, profissional, data_orcamento, lead_temperature, odonto_state, procedimentos_abertos, created_at FROM patients WHERE clinic_id = ? AND id = ?',
+      [clinicId, newId]
+    );
+
+    return res.status(201).json(created);
+  } catch (err) {
+    console.error('POST /patients erro:', err);
+    return res.status(500).json({ error: 'Erro ao cadastrar lead.' });
+  }
+});
+
 // GET /patients — Lista pacientes da clínica logada
 router.get('/', async (req, res) => {
   try {
@@ -20,7 +68,7 @@ router.get('/', async (req, res) => {
     const total = totalRow.cnt;
 
     const patients = await queryAll(
-      'SELECT id, nome, tel, proc, valor, col, tent, obs, res, dt, source, source_status, profissional, data_orcamento, created_at FROM patients WHERE clinic_id = ? ORDER BY created_at ASC LIMIT ? OFFSET ?',
+      'SELECT id, nome, tel, proc, valor, col, tent, obs, res, dt, source, source_status, profissional, data_orcamento, lead_temperature, odonto_state, procedimentos_abertos, created_at FROM patients WHERE clinic_id = ? ORDER BY created_at ASC LIMIT ? OFFSET ?',
       [req.clinic.id, limit, offset]
     );
 
@@ -38,12 +86,11 @@ router.get('/', async (req, res) => {
 router.put('/:tel', async (req, res) => {
   const clinicId = req.clinic.id;
   const tel = req.params.tel;
-  const { col, tent, obs, res: resultado, dt } = req.body;
+  const { col, tent, obs, res: resultado, dt, lead_temperature, source, nome, tel: newTel, proc, valor, odonto_state, procedimentos_abertos } = req.body || {};
 
-  // Validação de coluna do Kanban
-  const VALID_COLS = ['ligar', 'contato', 'agendado', 'final'];
-  if (col !== undefined && !VALID_COLS.includes(col)) {
-    return res.status(400).json({ error: `col inválida. Valores aceitos: ${VALID_COLS.join(', ')}` });
+  // Validação flexível de coluna do Kanban (para suportar colunas personalizadas)
+  if (col !== undefined && (typeof col !== 'string' || col.length > 50)) {
+    return res.status(400).json({ error: 'col deve ser uma string de no máximo 50 caracteres.' });
   }
 
   // Validação de tentativa (>= 0)
@@ -61,14 +108,33 @@ router.put('/:tel', async (req, res) => {
       return res.status(404).json({ error: 'Paciente não encontrado.' });
     }
 
+    // Se o telefone foi atualizado, verifica se já existe outro paciente com esse novo telefone
+    if (newTel && newTel !== tel) {
+      const dupe = await queryOne(
+        'SELECT id FROM patients WHERE clinic_id = ? AND tel = ? AND id != ?',
+        [clinicId, newTel, existing.id]
+      );
+      if (dupe) {
+        return res.status(400).json({ error: 'Já existe outro paciente cadastrado com este telefone novo.' });
+      }
+    }
+
     // Monta SET dinamico para evitar COALESCE (que ignora 0 e '')
     const sets = [];
     const params = [];
-    if (col !== undefined)       { sets.push('col = ?');  params.push(col); }
-    if (tent !== undefined)      { sets.push('tent = ?'); params.push(tent); }
-    if (obs !== undefined)       { sets.push('obs = ?');  params.push(obs); }
-    sets.push('res = ?');  params.push(resultado ?? null);
-    sets.push('dt = ?');   params.push(dt ?? null);
+    if (col !== undefined)              { sets.push('col = ?');  params.push(col); }
+    if (tent !== undefined)             { sets.push('tent = ?'); params.push(tent); }
+    if (obs !== undefined)              { sets.push('obs = ?');  params.push(obs); }
+    if (lead_temperature !== undefined) { sets.push('lead_temperature = ?'); params.push(lead_temperature); }
+    if (source !== undefined)           { sets.push('source = ?'); params.push(source); }
+    if (nome !== undefined)             { sets.push('nome = ?'); params.push(nome); }
+    if (newTel !== undefined)           { sets.push('tel = ?'); params.push(newTel); }
+    if (proc !== undefined)             { sets.push('proc = ?'); params.push(proc); }
+    if (valor !== undefined)            { sets.push('valor = ?'); params.push(valor); }
+    if (odonto_state !== undefined)     { sets.push('odonto_state = ?'); params.push(odonto_state); }
+    if (procedimentos_abertos !== undefined) { sets.push('procedimentos_abertos = ?'); params.push(procedimentos_abertos); }
+    if (resultado !== undefined)            { sets.push('res = ?'); params.push(resultado ?? null); }
+    if (dt !== undefined)                   { sets.push('dt = ?');  params.push(dt ?? null); }
     sets.push('updated_at = CURRENT_TIMESTAMP');
     params.push(clinicId, tel);
 
@@ -77,9 +143,10 @@ router.put('/:tel', async (req, res) => {
       params
     );
 
+    const targetTel = newTel || tel;
     const updated = await queryOne(
-      'SELECT id, nome, tel, proc, valor, col, tent, obs, res, dt, source, source_status, profissional, data_orcamento FROM patients WHERE clinic_id = ? AND tel = ?',
-      [clinicId, tel]
+      'SELECT id, nome, tel, proc, valor, col, tent, obs, res, dt, source, source_status, profissional, data_orcamento, lead_temperature, odonto_state, procedimentos_abertos FROM patients WHERE clinic_id = ? AND tel = ?',
+      [clinicId, targetTel]
     );
     return res.json(updated);
   } catch (err) {

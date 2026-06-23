@@ -9,16 +9,18 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { queryOne, run } = require('./db-helpers');
 
-// Chave secreta para assinar os tokens — em produção vem do .env
+// Chave secreta para assinar os tokens — em produção DEVE vir do Dashboard da Vercel
 let JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET) {
-  if (process.env.NODE_ENV === 'production') {
-    console.error('❌ FATAL: JWT_SECRET não está definida. Configure a variável de ambiente.');
+  if (process.env.VERCEL || process.env.NODE_ENV === 'production') {
+    console.error('FATAL: JWT_SECRET nao esta definida. Configure no Dashboard da Vercel.');
     process.exit(1);
   }
-  // Em desenvolvimento, usa secret local (NÃO usar em produção!)
-  console.warn('⚠️  JWT_SECRET não definida — usando secret de desenvolvimento.');
+  console.warn('JWT_SECRET nao definida — usando secret de desenvolvimento.');
   JWT_SECRET = 'dev_only_clinicrc_secret_2024';
+} else if (process.env.VERCEL && JWT_SECRET.length < 32) {
+  console.error('FATAL: JWT_SECRET muito curta para producao (min 32 chars). Gere com: node -e "console.log(require(\'crypto\').randomBytes(48).toString(\'base64\'))"');
+  process.exit(1);
 }
 const WHATSAPP_SUPPORT = process.env.WHATSAPP_SUPPORT || 'https://wa.me/5581999999999';
 

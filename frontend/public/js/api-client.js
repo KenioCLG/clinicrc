@@ -10,7 +10,6 @@
 
 export default class ClinicrcApiClient {
   constructor() {
-    // URL base da API — em produção, vai ser o domínio do Railway
     this.base = window.location.origin;
 
     // Token JWT salvo no login
@@ -67,6 +66,58 @@ export default class ClinicrcApiClient {
       method: 'PUT',
       headers: this.headers,
       body: JSON.stringify(updates),
+      signal: AbortSignal.timeout(15000)
+    });
+
+    if (res.status === 401) {
+      localStorage.clear();
+      window.location.href = 'index.html';
+    }
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `Erro ${res.status}`);
+    }
+
+    return await res.json();
+  }
+
+  /**
+   * Cadastra um novo Lead/Paciente
+   */
+  async createPatient(patientData) {
+    const res = await fetch(`${this.base}/patients`, {
+      method: 'POST',
+      headers: this.headers,
+      body: JSON.stringify(patientData),
+      signal: AbortSignal.timeout(15000)
+    });
+
+    if (res.status === 401) {
+      localStorage.clear();
+      window.location.href = 'index.html';
+    }
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `Erro ${res.status}`);
+    }
+
+    return await res.json();
+  }
+
+  /**
+   * Remove um Lead/Paciente
+   */
+  async deletePatient(id) {
+    const patient = window._E?.find(p => p.id === id);
+    const tel = patient?.tel;
+
+    if (!tel) throw new Error('Telefone não encontrado para ID: ' + id);
+
+    const res = await fetch(`${this.base}/patients/${tel}`, {
+      method: 'DELETE',
+      headers: this.headers,
       signal: AbortSignal.timeout(15000)
     });
 

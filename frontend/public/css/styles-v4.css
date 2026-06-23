@@ -1003,3 +1003,222 @@ tbody tr:hover{background:rgba(var(--cpr),.05);}
   /* Kanban chips hide labels */
   .kchip { padding: 2px 6px !important; font-size: 10px !important; }
 }
+
+/* CRM LEAD TEMPERATURE AND SOURCE BADGES */
+.lead-temp-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 4px;
+  border-width: 1px;
+  border-style: solid;
+  margin-top: 4px;
+}
+.lead-temp-badge.hot {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: #EF4444;
+  color: #B91C1C;
+}
+.lead-temp-badge.warm {
+  background: rgba(245, 158, 11, 0.1);
+  border-color: #F59E0B;
+  color: #B45309;
+}
+.lead-temp-badge.cold {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: #3B82F6;
+  color: #1D4ED8;
+}
+
+.lead-source-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--cts);
+  background: #F1F5F9;
+  border: 1px solid #E2E8F0;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-top: 4px;
+  margin-left: 4px;
+}
+
+.lead-inactive-days {
+  font-size: 11px;
+  color: #EF4444;
+  font-weight: 600;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+/* CONFIGURAÇÃO DO FUNIL KANBAN */
+.config-col-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--cs);
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--cdiv);
+  box-shadow: var(--ssm);
+  transition: all 0.2s;
+}
+.config-col-item:hover {
+  border-color: var(--cp);
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+.config-col-input {
+  padding: 8px 12px;
+  border: 1px solid var(--cdiv);
+  border-radius: 6px;
+  font-size: 14px;
+  color: var(--ct);
+  background: var(--cibg);
+  outline: none;
+  flex: 1;
+}
+.config-col-input:focus {
+  border-color: var(--cp);
+}
+.config-col-color {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: 1px solid var(--cdiv);
+  cursor: pointer;
+  padding: 0;
+  background: none;
+}
+.config-col-check-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--ct);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+/* GRID DO ODONTOGRAMA */
+@media (max-width: 900px) {
+  .odonto-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* LISTA DE PROCEDIMENTOS CLINICOS */
+.proc-clinico-item {
+  background: var(--cibg);
+  border: 1px solid var(--cdiv);
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.2s;
+}
+.proc-clinico-item:hover {
+  border-color: #E2E8F0;
+  background: #FFF;
+}
+.proc-clinico-title {
+  font-weight: 600;
+  color: var(--ct);
+  font-size: 13px;
+}
+.proc-clinico-dente {
+  font-size: 11px;
+  color: var(--cp);
+  font-weight: 700;
+  background: rgba(236, 103, 38, 0.08);
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-left: 6px;
+}
+.proc-clinico-valor {
+  font-weight: 700;
+  color: var(--ct);
+  font-size: 13px;
+}
+.proc-clinico-actions {
+  display: flex;
+  gap: 6px;
+}
+.btn-proc-action {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #FFF;
+  border: 1px solid var(--cdiv);
+  color: var(--cts);
+  transition: all 0.15s;
+}
+.btn-proc-action:hover {
+  background: #F1F5F9;
+}
+.btn-proc-action.done:hover {
+  background: #DCFCE7;
+  color: #10B981;
+  border-color: #10B981;
+}
+.btn-proc-action.delete:hover {
+  background: #FEE2E2;
+  color: #EF4444;
+  border-color: #EF4444;
+}
+
+/* EDIT BUTTON ON CARD */
+.btn-card-edit {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--cts);
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+.btn-card-edit:hover {
+  background: rgba(0,0,0,0.05);
+  color: var(--ct);
+}
+
+.btn-card-delete {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--cts);
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+.btn-card-delete:hover {
+  background: rgba(239, 68, 68, 0.05);
+  color: #EF4444;
+}
+
+.pf-chip.temp-chip.on, .pf-chip.src-chip.on {
+  background: rgba(236, 103, 38, 0.1) !important;
+  border-color: var(--cp) !important;
+  color: var(--cp) !important;
+  font-weight: 700;
+}
+

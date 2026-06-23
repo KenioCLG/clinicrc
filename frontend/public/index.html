@@ -890,13 +890,6 @@ if('serviceWorker' in navigator){navigator.serviceWorker.getRegistrations().then
     }
   }
 </script>
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js').then(reg => console.log('SW registrado', reg.scope)).catch(err => console.log('Erro SW', err));
-      });
-    }
-  </script>
   <!-- Carrega cores personalizadas do white-label -->
   <script>
     (function(){

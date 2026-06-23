@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const authMiddleware = require('../middleware/auth.middleware');
-const db = require('../db-postgres'); // Alterado para usar apenas o PG em prod/dev
+const db = require('../db-helpers');
 
 // ─── Default Scripts (Fallback) ──────────────────────────────────────────────
 const defaultScripts = {

@@ -7,6 +7,35 @@ const { body, validationResult } = require('express-validator');
 const router = express.Router();
 const { login, createUser, getSupportLink } = require('../auth');
 
+// ─── Rate limiter in-memory para registro (max 5 por IP a cada 15min) ────────
+const registerAttempts = new Map();
+const REGISTER_WINDOW_MS = 15 * 60 * 1000;
+const REGISTER_MAX = 5;
+
+function registerRateLimit(req, res, next) {
+  const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip;
+  const now = Date.now();
+  const entry = registerAttempts.get(ip);
+
+  if (entry && now - entry.start < REGISTER_WINDOW_MS) {
+    if (entry.count >= REGISTER_MAX) {
+      return res.status(429).json({ error: 'Muitas tentativas de cadastro. Tente novamente em 15 minutos.' });
+    }
+    entry.count++;
+  } else {
+    registerAttempts.set(ip, { count: 1, start: now });
+  }
+
+  // Limpeza periodica (a cada 100 entries)
+  if (registerAttempts.size > 100) {
+    for (const [key, val] of registerAttempts) {
+      if (now - val.start > REGISTER_WINDOW_MS) registerAttempts.delete(key);
+    }
+  }
+
+  next();
+}
+
 // POST /auth/login
 router.post('/login', [
   body('username')
@@ -48,8 +77,8 @@ router.get('/support', (req, res) => {
   res.json({ whatsapp: getSupportLink() });
 });
 
-// POST /auth/register
-router.post('/register', [
+// POST /auth/register (rate limited: 5 por IP a cada 15min)
+router.post('/register', registerRateLimit, [
   body('clinic_name').trim().notEmpty().withMessage('Nome da clínica é obrigatório.').escape(),
   body('username').trim().notEmpty().withMessage('Usuário é obrigatório.').isLength({ min: 3 }).withMessage('Usuário deve ter no mínimo 3 caracteres.').escape(),
   body('email').trim().isEmail().withMessage('E-mail inválido.').normalizeEmail(),

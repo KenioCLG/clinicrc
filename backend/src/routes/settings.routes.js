@@ -35,8 +35,8 @@ router.put('/', authMiddleware, async (req, res) => {
       `INSERT INTO clinic_settings (clinic_id, settings, updated_at)
        VALUES (?, ?::jsonb, NOW())
        ON CONFLICT (clinic_id)
-       DO UPDATE SET settings = ?::jsonb, updated_at = NOW()`,
-      [req.clinic.id, JSON.stringify(settings), JSON.stringify(settings)]
+       DO UPDATE SET settings = EXCLUDED.settings, updated_at = NOW()`,
+      [req.clinic.id, JSON.stringify(settings)]
     );
 
     return res.json({ ok: true, settings });

@@ -219,8 +219,20 @@ let obsDebounce = {};
 let activeProc = null; // filtro de procedimento ativo
 let searchDebounce = null;
 
+// Novas configurações de Colunas Dinâmicas do Kanban (CRM)
+let kanbanCols = [
+  { id: 'ligar', name: 'Para Ligar', color: '#EC6726', require_odonto: false },
+  { id: 'contato', name: 'Em Contato', color: '#3B82F6', require_odonto: false },
+  { id: 'agendado', name: 'Agendado', color: '#10B981', require_odonto: false },
+  { id: 'final', name: 'Finalizado', color: '#6B7280', require_odonto: false }
+];
+
+// Filtros adicionais do CRM
+let activeTempFilter = null; // 'hot', 'warm', 'cold'
+let activeSourceFilter = null; // 'whatsapp', 'instagram', 'google', etc.
+
 // Cache de contagens por coluna — atualizado incrementalmente
-let colCounts = { ligar: 0, contato: 0, agendado: 0, final: 0 };
+let colCounts = {};
 
 // Cache de categorias de procedimento por paciente id
 const procCatCache = new Map();
@@ -236,8 +248,13 @@ function getCachedProcCategories(p) {
 
 // Recalcula contagens a partir do array E (chamado apenas quando E muda)
 function recalcCounts() {
-  colCounts = { ligar: 0, contato: 0, agendado: 0, final: 0 };
-  E.forEach(p => { if (colCounts[p.col] !== undefined) colCounts[p.col]++; });
+  colCounts = {};
+  kanbanCols.forEach(col => colCounts[col.id] = 0);
+  E.forEach(p => {
+    const colId = p.col || kanbanCols[0].id;
+    if (colCounts[colId] === undefined) colCounts[colId] = 0;
+    colCounts[colId]++;
+  });
 }
 
 // Mostra nome da clínica logada no header e drawer
@@ -1077,24 +1094,54 @@ async function updatePaciente(id, updates) {
  */
 function render() {
   const q = (document.querySelector('.ksrch')?.value || '').toLowerCase();
-  const C = { ligar: [], contato: [], agendado: [], final: [] };
+  
+  // Inicializa listas de pacientes filtrados por coluna
+  const C = {};
+  kanbanCols.forEach(col => C[col.id] = []);
+  
   E.forEach(p => {
-    const matchSearch = !q || p.nome.toLowerCase().includes(q);
+    const matchSearch = !q || p.nome.toLowerCase().includes(q) || p.tel.includes(q);
     const matchProc   = !activeProc || getCachedProcCategories(p).includes(activeProc);
-    if (matchSearch && matchProc) C[p.col]?.push(p);
+    const matchTemp   = !activeTempFilter || p.lead_temperature === activeTempFilter;
+    const matchSource = !activeSourceFilter || p.source === activeSourceFilter;
+    
+    if (matchSearch && matchProc && matchTemp && matchSource) {
+      // Se a coluna do paciente não existir, bota na primeira por segurança
+      const targetCol = C[p.col] ? p.col : kanbanCols[0].id;
+      C[targetCol].push(p);
+    }
   });
-  const ids = { ligar: 'c1', contato: 'c2', agendado: 'c3', final: 'c4' };
 
-  // Usa contagens cacheadas (total real, independente de filtro)
-  ['ligar','contato','agendado','final'].forEach(c => {
-    document.getElementById(ids[c]).textContent = colCounts[c];
-    const el = document.getElementById('col-' + c);
-    el.innerHTML = C[c].length ? C[c].map(p => mkC(p)).join('') : `<div class="empty-c">Nenhum paciente aqui</div>`;
-  });
+  // Renderiza as colunas dinamicamente no container
+  const colsContainer = document.getElementById('kanbanColumnsContainer');
+  if (colsContainer) {
+    colsContainer.innerHTML = kanbanCols.map((col, index) => {
+      const list = C[col.id] || [];
+      const totalReal = colCounts[col.id] || 0;
+      const cardsHtml = list.length ? list.map(p => mkC(p)).join('') : `<div class="empty-c">Nenhum lead aqui</div>`;
+      
+      return `<div class="col" style="border-top: 3px solid ${col.color};">
+        <div class="col-hd">
+          ${col.name}
+          <span class="bg" style="background:${col.color};">${totalReal}</span>
+        </div>
+        <div class="col-cards" id="col-${col.id}">
+          ${cardsHtml}
+        </div>
+      </div>`;
+    }).join('');
+  }
 
-  document.getElementById('ki1').textContent = colCounts.contato;
-  document.getElementById('ki2').textContent = colCounts.agendado;
-  document.getElementById('ki3').textContent = colCounts.final;
+  // Renderiza os contadores do cabeçalho dinamicamente
+  const headerCounters = document.getElementById('kanbanCountersHeader');
+  if (headerCounters) {
+    headerCounters.innerHTML = kanbanCols.map(col => {
+      const count = colCounts[col.id] || 0;
+      return `<span class="kchip" style="background:${col.color}15; color:${col.color}; border: 1px solid ${col.color}33;">
+        <span class="mi" style="font-size:14px">people</span>&nbsp;${count} ${col.name}
+      </span>`;
+    }).join('');
+  }
 
   renderProcFilter();
 }
@@ -1251,20 +1298,73 @@ function mkC(p) {
     retBtn = `<button class="cb cbb cb-retornar" onclick="window.abrirModalRetorno('${p.id}',event)"><span class="mi" style="font-size:12px;vertical-align:middle;margin-right:4px;">event_note</span>Retornar</button>`;
   }
 
+  // ── CRM de Leads: Temperatura, Origem e Inatividade ───────────
+  const temp = p.lead_temperature || 'warm';
+  const tempLabels = { cold: 'Frio', warm: 'Morno', hot: 'Quente' };
+  const tempLabel = tempLabels[temp] || 'Morno';
+  const tempBadgeHtml = `<span class="lead-temp-badge ${temp}" title="Temperatura do Lead: ${tempLabel}">${tempLabel}</span>`;
+
+  const sourceIcons = {
+    whatsapp: { icon: 'chat', label: 'WhatsApp', color: '#10B981' },
+    instagram: { icon: 'photo_camera', label: 'Instagram', color: '#E1306C' },
+    google: { icon: 'search', label: 'Google', color: '#3B82F6' },
+    indicacao: { icon: 'record_voice_over', label: 'Indicação', color: '#8B5CF6' },
+    trafego_pago: { icon: 'campaign', label: 'Anúncios', color: '#F59E0B' },
+    manual: { icon: 'edit_note', label: 'Manual', color: '#6B7280' },
+    outro: { icon: 'open_in_new', label: 'Outro', color: '#6B7280' }
+  };
+  const src = p.source || 'manual';
+  const srcCfg = sourceIcons[src] || sourceIcons.manual;
+  const srcBadgeHtml = `<span class="lead-source-badge" title="Origem: ${srcCfg.label}" style="border-color:${srcCfg.color}; color:${srcCfg.color};"><span class="mi" style="font-size:11px;color:${srcCfg.color};margin-right:2px;">${srcCfg.icon}</span>${srcCfg.label}</span>`;
+
+  // Cálculo de dias inativo (tempo ocioso)
+  const updatedDate = p.updated_at ? new Date(p.updated_at) : (p.created_at ? new Date(p.created_at) : new Date());
+  const diffTime = Math.abs(Date.now() - updatedDate.getTime());
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+  let inactiveHtml = '';
+  if (diffDays >= 3 && p.col !== 'final') {
+    inactiveHtml = `<div class="lead-inactive-days" title="Sem contato há ${diffDays} dias"><span class="mi" style="font-size:12px;">warning</span>Sem contato há ${diffDays} d</div>`;
+  }
+
+  // Botão de abrir odontograma se o lead tiver procedimentos em aberto ou se a coluna exigir
+  const colConfig = kanbanCols.find(c => c.id === p.col);
+  let odontoBtn = '';
+  if (colConfig?.require_odonto || (p.procedimentos_abertos && JSON.parse(p.procedimentos_abertos).length > 0)) {
+    odontoBtn = `<button class="cb" style="background:#EEF2F6;color:#1E293B;border:1px solid #CBD5E1;width:100%;margin-bottom:6px;" onclick="window.abrirOdontogramaPaciente('${p.id}',event)"><span class="mi" style="font-size:13px;vertical-align:middle;margin-right:4px;">dentistry</span>Odontograma</button>`;
+  }
+
+  // Botões dinâmicos de transição de fase do Kanban
   let b = '';
-  if (p.col === 'ligar') b = `<button class="cb cbo" onclick="window._mv('${p.id}','contato',event)">Em Contato</button><button class="cb cbg" onclick="window._mv('${p.id}','agendado',event)">Agendar</button><button class="cb cbgr" onclick="window._oM('${p.id}',event)">Finalizar</button>`;
-  else if (p.col === 'contato') b = `<button class="cb cbg" onclick="window._mv('${p.id}','agendado',event)">Agendar</button><button class="cb cbgr" onclick="window._oM('${p.id}',event)">Finalizar</button><button class="cb" style="background:#FFF7ED;color:#92400E;border:1px solid #FED7AA;" onclick="window._mv('${p.id}','ligar',event)" title="Registrar mais uma tentativa e voltar para fila">Nova Tentativa</button>`;
-  else if (p.col === 'agendado') b = `<button class="cb cbgr" onclick="window._oM('${p.id}',event)">Finalizar</button><button class="cb" style="background:#FFF7ED;color:#92400E;border:1px solid #FED7AA;" onclick="window._mv('${p.id}','ligar',event)" title="Registrar mais uma tentativa e voltar para fila">Nova Tentativa</button>`;
-  else b = `<button class="cb" style="background:#FFF7ED;color:#92400E;border:1px solid #FED7AA;" onclick="window._mv('${p.id}','ligar',event)" title="Registrar mais uma tentativa e voltar para fila">Nova Tentativa</button>`;
+  kanbanCols.forEach(col => {
+    if (col.id !== p.col) {
+      b += `<button class="cb" style="border:1px solid ${col.color}; color:${col.color}; background:transparent;" onclick="window._mv('${p.id}','${col.id}',event)">${col.name}</button>`;
+    }
+  });
 
   return `<div class="card ${sel}" onclick="window._sP('${esc(p.id)}')">
-    <div class="cn">${esc(p.nome)}</div>
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:4px;">
+      <div class="cn" style="flex:1;">${esc(p.nome)}</div>
+      <div style="display:flex; gap:2px; flex-shrink:0;">
+        <button class="btn-card-edit" onclick="window.abrirModalLead('${esc(p.id)}', event)" title="Editar Lead">
+          <span class="mi" style="font-size:13px;">edit</span>
+        </button>
+        <button class="btn-card-delete" onclick="window.excluirLead('${esc(p.id)}', event)" title="Excluir Lead">
+          <span class="mi" style="font-size:13px;">delete</span>
+        </button>
+      </div>
+    </div>
     <div class="ctxt" style="display:flex;align-items:center;gap:4px;"><span class="mi" style="font-size:13px;color:var(--cts);vertical-align:middle;">phone</span>${esc(p.tel)}</div>
     <span class="cp2" title="${esc(procTitle)}">${esc(procLimpo)}</span>
     <div class="cv">${esc(p.valor)}</div>
+    <div style="margin-bottom: 8px; display:flex; flex-wrap:wrap; gap:4px; align-items:center;">
+      ${tempBadgeHtml}
+      ${srcBadgeHtml}
+    </div>
+    ${inactiveHtml}
     ${d}${chip}
     <textarea id="obs-${esc(p.id)}" name="obs-${esc(p.id)}" class="cobs" aria-label="Anotações de ${esc(p.nome)}" placeholder="Anotações..." onclick="event.stopPropagation()" oninput="window._sO('${esc(p.id)}',this.value)">${esc(p.obs || '')}</textarea>
     ${retBtn}
+    ${odontoBtn}
     <div class="cbtns">${b}</div>
   </div>`;
 }
@@ -1658,32 +1758,541 @@ const isIos = () => {
 };
 const isInStandaloneMode = () => ('standalone' in window.navigator) && (window.navigator.standalone);
 
-if (isIos() && !isInStandaloneMode() && installBtn) {
-  // Para iOS, mostramos o botão e, ao clicar, ensinamos a instalar
-  installBtn.style.display = 'flex';
-  installBtn.addEventListener('click', () => {
-    alert('Para instalar no iPhone/iPad:\n1. Toque no ícone de Compartilhar (quadrado com seta para cima) na barra do Safari.\n2. Role para baixo e selecione "Adicionar à Tela de Início".');
-  });
-} else {
-  // Para Android / Chrome Desktop
-  window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-    if (installBtn) {
-      installBtn.style.display = 'flex';
-      
-      // Remove event listeners antigos clonando o botão (para evitar duplicação caso dispare várias vezes)
-      const newBtn = installBtn.cloneNode(true);
-      installBtn.parentNode.replaceChild(newBtn, installBtn);
-      
-      newBtn.addEventListener('click', async () => {
-        newBtn.style.display = 'none';
-        deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
-        console.log(`PWA Install outcome: ${outcome}`);
-        deferredPrompt = null;
-      });
-    }
   });
 }
+
+// ============================================================================
+// CRM & LEAD MANAGEMENT (Novo Lead, Edição e Exclusão)
+// ============================================================================
+
+window.abrirModalLead = (id = null, event = null) => {
+  event?.stopPropagation();
+  const modal = document.getElementById('modalLead');
+  if (!modal) return;
+  
+  if (id) {
+    // Modo Edição
+    const p = E.find(x => x.id === id);
+    if (!p) return;
+    document.getElementById('leadId').value = p.id;
+    document.getElementById('leadNome').value = p.nome;
+    document.getElementById('leadTel').value = p.tel;
+    document.getElementById('leadTel').disabled = true; // Telefone é id no backend, não altera
+    document.getElementById('leadProc').value = p.proc || '';
+    document.getElementById('leadValor').value = p.valor || 'R$ 0,00';
+    document.getElementById('leadSource').value = p.source || 'manual';
+    document.getElementById('leadTemp').value = p.lead_temperature || 'warm';
+    document.getElementById('leadObs').value = p.obs || '';
+    
+    document.getElementById('modalLeadTitleText').textContent = 'Editar Dados do Lead';
+    document.getElementById('modalLeadIcon').textContent = 'edit_note';
+    document.getElementById('modalLeadSubtitle').textContent = 'Ajuste os dados cadastrais do lead:';
+  } else {
+    // Modo Cadastro
+    document.getElementById('leadId').value = '';
+    document.getElementById('leadNome').value = '';
+    document.getElementById('leadTel').value = '';
+    document.getElementById('leadTel').disabled = false;
+    document.getElementById('leadProc').value = '';
+    document.getElementById('leadValor').value = 'R$ 0,00';
+    document.getElementById('leadSource').value = 'manual';
+    document.getElementById('leadTemp').value = 'warm';
+    document.getElementById('leadObs').value = '';
+    
+    document.getElementById('modalLeadTitleText').textContent = 'Adicionar Novo Lead';
+    document.getElementById('modalLeadIcon').textContent = 'person_add';
+    document.getElementById('modalLeadSubtitle').textContent = 'Preencha os dados para iniciar o contato:';
+  }
+  
+  modal.classList.add('on');
+};
+
+window.salvarLead = async () => {
+  const id = document.getElementById('leadId').value;
+  const nome = document.getElementById('leadNome').value.trim();
+  const tel = document.getElementById('leadTel').value.trim();
+  const proc = document.getElementById('leadProc').value.trim();
+  const valor = document.getElementById('leadValor').value.trim();
+  const source = document.getElementById('leadSource').value;
+  const lead_temperature = document.getElementById('leadTemp').value;
+  const obs = document.getElementById('leadObs').value.trim();
+
+  if (!nome || !tel) {
+    alert('Nome e Telefone são obrigatórios.');
+    return;
+  }
+
+  const leadData = { nome, tel, proc, valor, source, lead_temperature, obs };
+
+  try {
+    setSyncStatus('ok', 'Salvando lead...');
+    if (id) {
+      // Atualizar Lead
+      const updated = await api.updatePatient(id, leadData);
+      const idx = E.findIndex(x => x.id === id);
+      if (idx !== -1) {
+        E[idx] = Object.assign(E[idx], updated);
+      }
+      showToast('Lead atualizado com sucesso!', 'ok');
+    } else {
+      // Criar Lead
+      const created = await api.createPatient(leadData);
+      E.push(created);
+      showToast('Lead cadastrado com sucesso!', 'ok');
+    }
+    
+    document.getElementById('modalLead').classList.remove('on');
+    recalcCounts();
+    render();
+    saveLocal();
+    setSyncStatus('ok', `Conectado · ${E.length} pacientes`);
+  } catch (err) {
+    setSyncStatus('err', 'Erro ao salvar');
+    showToast(err.message || 'Erro ao salvar lead no servidor', 'er');
+  }
+};
+
+window.excluirLead = async (id, event = null) => {
+  event?.stopPropagation();
+  const p = E.find(x => x.id === id);
+  if (!p) return;
+
+  if (!confirm(`Tem certeza de que deseja excluir o lead ${p.nome}?`)) {
+    return;
+  }
+
+  try {
+    setSyncStatus('ok', 'Removendo lead...');
+    await api.deletePatient(id);
+    E = E.filter(x => x.id !== id);
+    window._E = E;
+    
+    if (pA?.id === id) {
+      pA = null;
+      updP();
+    }
+    
+    recalcCounts();
+    render();
+    saveLocal();
+    showToast('Lead removido com sucesso!', 'ok');
+    setSyncStatus('ok', `Conectado · ${E.length} pacientes`);
+    if (navigator.vibrate) navigator.vibrate(50);
+  } catch (err) {
+    setSyncStatus('err', 'Erro ao remover');
+    showToast(err.message || 'Erro ao remover lead no servidor', 'er');
+  }
+};
+
+// ============================================================================
+// CONFIGURAÇÃO DE FASES DO KANBAN
+// ============================================================================
+
+function renderConfigKanban() {
+  const container = document.getElementById('configColsList');
+  if (!container) return;
+  
+  container.innerHTML = kanbanCols.map((col, index) => {
+    return `
+      <div class="config-col-item" data-index="${index}">
+        <span class="mi" style="cursor: grab; color: var(--cts);">drag_indicator</span>
+        <input type="text" class="config-col-input" value="${esc(col.name)}" oninput="window.atualizarNomeColunaConfig(${index}, this.value)" placeholder="Nome da Fase" />
+        <input type="color" class="config-col-color" value="${col.color}" onchange="window.atualizarCorColunaConfig(${index}, this.value)" title="Cor da Fase" />
+        <label class="config-col-check-label">
+          <input type="checkbox" ${col.require_odonto ? 'checked' : ''} onchange="window.atualizarOdontoColunaConfig(${index}, this.checked)" />
+          Exigir Odontograma
+        </label>
+        <button class="btn-proc-action delete" onclick="window.removerColunaConfig(${index})" title="Remover Fase" style="width:32px;height:32px;">
+          <span class="mi" style="font-size:16px;">delete</span>
+        </button>
+      </div>
+    `;
+  }).join('');
+}
+
+window.atualizarNomeColunaConfig = (index, val) => {
+  kanbanCols[index].name = val;
+};
+
+window.atualizarCorColunaConfig = (index, val) => {
+  kanbanCols[index].color = val;
+};
+
+window.atualizarOdontoColunaConfig = (index, val) => {
+  kanbanCols[index].require_odonto = val;
+};
+
+window.adicionarColunaConfig = () => {
+  const newId = 'fase_' + Date.now();
+  kanbanCols.push({
+    id: newId,
+    name: 'Nova Fase',
+    color: '#3B82F6',
+    require_odonto: false
+  });
+  renderConfigKanban();
+};
+
+window.removerColunaConfig = (index) => {
+  const col = kanbanCols[index];
+  const count = E.filter(p => p.col === col.id).length;
+  if (count > 0) {
+    alert(`Não é possível remover a fase "${col.name}" porque existem ${count} leads nela. Mova os leads primeiro!`);
+    return;
+  }
+  
+  if (kanbanCols.length <= 1) {
+    alert('O Kanban precisa ter pelo menos 1 fase.');
+    return;
+  }
+  
+  kanbanCols.splice(index, 1);
+  renderConfigKanban();
+};
+
+window.restaurarColunasPadrao = () => {
+  if (confirm('Deseja restaurar as fases originais do Kanban? Os nomes customizados serão perdidos.')) {
+    kanbanCols = [
+      { id: 'ligar', name: 'Para Ligar', color: '#EC6726', require_odonto: false },
+      { id: 'contato', name: 'Em Contato', color: '#3B82F6', require_odonto: false },
+      { id: 'agendado', name: 'Agendado', color: '#10B981', require_odonto: false },
+      { id: 'final', name: 'Finalizado', color: '#6B7280', require_odonto: false }
+    ];
+    renderConfigKanban();
+  }
+};
+
+window.salvarConfiguracaoColunas = async () => {
+  try {
+    setSyncStatus('ok', 'Salvando configurações...');
+    const savedColors = loadCustomColors();
+    const config = Object.assign({}, savedColors, { kanban_columns: kanbanCols });
+    
+    localStorage.setItem(CUSTOM_KEY, JSON.stringify(config));
+    saveColorsToBackend(config);
+    
+    recalcCounts();
+    render();
+    showToast('Fases do Kanban salvas com sucesso!', 'ok');
+  } catch(e) {
+    setSyncStatus('err', 'Erro ao salvar');
+    showToast('Erro ao salvar configurações do Kanban', 'er');
+  }
+};
+
+// ============================================================================
+// INTEGRACAO DO ODONTOGRAMA CLINICO & LISTA DE PROCEDIMENTOS
+// ============================================================================
+
+let odontoInstance = null;
+
+window.abrirOdontogramaPaciente = (id, event = null) => {
+  event?.stopPropagation();
+  const p = E.find(x => x.id === id);
+  if (!p) return;
+  pA = p;
+  sessionStorage.setItem('clinicrc_selectedPac', id);
+  updP();
+  
+  const tabBtn = document.getElementById('tabOdontoBtn');
+  if (tabBtn) tabBtn.style.display = 'flex';
+  window.trocarAba(2, tabBtn);
+};
+
+// Extensão do trocarAba para suportar Odontograma e Configurações de Fases
+const originalTrocarAba = window.trocarAba;
+window.trocarAba = (i, b) => {
+  originalTrocarAba(i, b);
+  
+  if (i === 2) {
+    inicializarOdontogramaAba();
+  } else if (i === 3) {
+    renderConfigKanban();
+  }
+};
+
+function inicializarOdontogramaAba() {
+  const nomeEl = document.getElementById('odontoPacienteNome');
+  const container = document.getElementById('odontograma-container');
+  
+  if (!pA) {
+    nomeEl.textContent = 'Nenhum selecionado';
+    container.innerHTML = '<div class="empty-c" style="padding: 40px 0;">Selecione um lead no Kanban para abrir seu odontograma.</div>';
+    document.getElementById('odontoProcedimentosLista').innerHTML = '';
+    document.getElementById('odontoTotalValor').textContent = 'R$ 0,00';
+    return;
+  }
+  
+  nomeEl.textContent = pA.nome;
+  odontoInstance = new Odontogram('odontograma-container');
+  
+  if (pA.odonto_state) {
+    try {
+      odontoInstance.state = JSON.parse(pA.odonto_state);
+      odontoInstance.render();
+    } catch(e) {
+      console.warn('Erro ao ler estado do odontograma:', e);
+    }
+  }
+  
+  odontoInstance.onStateChange = async (state, toothId, faceId, status) => {
+    if (status === 'carie') {
+      window.abrirModalProcedimento(`Dente ${toothId}`, faceId);
+    } else {
+      pA.odonto_state = JSON.stringify(state);
+      await salvarEstadoOdontoPaciente();
+    }
+  };
+  
+  renderProcedimentosOdonto();
+}
+
+async function salvarEstadoOdontoPaciente() {
+  if (!pA) return;
+  try {
+    setSyncStatus('ok', 'Salvando odontograma...');
+    await api.updatePatient(pA.id, {
+      odonto_state: pA.odonto_state,
+      procedimentos_abertos: pA.procedimentos_abertos
+    });
+    saveLocal();
+    setSyncStatus('ok', `Conectado · ${E.length} pacientes`);
+  } catch(e) {
+    setSyncStatus('err', 'Erro ao salvar odontograma');
+  }
+}
+
+function renderProcedimentosOdonto() {
+  const listContainer = document.getElementById('odontoProcedimentosLista');
+  if (!listContainer) return;
+  
+  let procs = [];
+  try { procs = JSON.parse(pA.procedimentos_abertos || '[]'); } catch(e) {}
+  
+  if (!procs.length) {
+    listContainer.innerHTML = `<div class="empty-c" style="padding: 40px 0; text-align: center; color: var(--cts);">
+      <span class="mi" style="font-size: 40px; color: var(--cdiv); margin-bottom: 10px; display:block;">receipt_long</span>
+      Nenhum procedimento registrado para este paciente.
+    </div>`;
+    document.getElementById('odontoTotalValor').textContent = 'R$ 0,00';
+    return;
+  }
+  
+  let totalNum = 0;
+  
+  listContainer.innerHTML = procs.map((proc, index) => {
+    const rawVal = proc.valor ? parseFloat(proc.valor.replace(/[^\d,.-]/g, '').replace(',', '.')) : 0;
+    if (!isNaN(rawVal)) totalNum += rawVal;
+    
+    const denteHtml = proc.dente ? `<span class="proc-clinico-dente">${proc.dente} ${proc.face ? `(${proc.face})` : ''}</span>` : '';
+    
+    return `
+      <div class="proc-clinico-item" style="${proc.status === 'concluido' ? 'opacity:0.75; background:#F8FAFC;' : ''}">
+        <div>
+          <span class="proc-clinico-title">${esc(proc.procedimento)}</span>
+          ${denteHtml}
+          <div style="font-size:11px; color:var(--cts); margin-top:2px;">Status: ${proc.status === 'concluido' ? 'Realizado' : 'Em Aberto'}</div>
+        </div>
+        <div style="display:flex; align-items:center; gap:12px;">
+          <span class="proc-clinico-valor">${proc.valor || 'R$ 0,00'}</span>
+          <div class="proc-clinico-actions">
+            ${proc.status !== 'concluido' ? `
+              <button class="btn-proc-action done" onclick="window.concluirProcedimentoOdonto(${index})" title="Concluir procedimento">
+                <span class="mi" style="font-size:16px;">check</span>
+              </button>
+            ` : ''}
+            <button class="btn-proc-action delete" onclick="window.removerProcedimentoOdonto(${index})" title="Excluir procedimento">
+              <span class="mi" style="font-size:16px;">delete</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+  
+  const totalFormatado = totalNum.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  document.getElementById('odontoTotalValor').textContent = totalFormatado;
+  
+  if (pA.valor !== totalFormatado) {
+    pA.valor = totalFormatado;
+    api.updatePatient(pA.id, { valor: totalFormatado }).then(() => {
+      saveLocal();
+      render();
+    });
+  }
+}
+
+window.abrirModalProcedimento = (dente = '', face = '') => {
+  const modal = document.getElementById('modalProcedimento');
+  if (!modal) return;
+  
+  document.getElementById('procDente').value = dente ? `${dente}${face ? ` - Face ${face}` : ''}` : '';
+  document.getElementById('procNome').value = '';
+  document.getElementById('procNomeOutro').value = '';
+  document.getElementById('procNomeOutroContainer').style.display = 'none';
+  document.getElementById('procValor').value = 'R$ 0,00';
+  
+  modal.classList.add('on');
+};
+
+window.preencherValorSugeridoProcedimento = () => {
+  const proc = document.getElementById('procNome').value;
+  const outroContainer = document.getElementById('procNomeOutroContainer');
+  
+  if (proc === 'Outro') {
+    outroContainer.style.display = 'block';
+  } else {
+    outroContainer.style.display = 'none';
+  }
+  
+  const valoresSugeridos = {
+    'Avaliação / Consulta': 'R$ 150,00',
+    'Limpeza / Profilaxia': 'R$ 200,00',
+    'Restauração de Resina': 'R$ 250,00',
+    'Tratamento de Canal (Endodontia)': 'R$ 800,00',
+    'Extração Simples / Cirurgia': 'R$ 350,00',
+    'Instalação de Aparelho Ortodôntico': 'R$ 1.200,00',
+    'Implante Dentário': 'R$ 3.500,00',
+    'Prótese Dentária': 'R$ 1.500,00',
+    'Clareamento Dental': 'R$ 600,00'
+  };
+  
+  document.getElementById('procValor').value = valoresSugeridos[proc] || 'R$ 0,00';
+};
+
+window.salvarProcedimentoOdonto = async () => {
+  if (!pA) return;
+  
+  let procSel = document.getElementById('procNome').value;
+  if (procSel === 'Outro') {
+    procSel = document.getElementById('procNomeOutro').value.trim();
+  }
+  
+  const denteText = document.getElementById('procDente').value.trim();
+  const valor = document.getElementById('procValor').value.trim();
+  
+  if (!procSel) {
+    alert('Selecione ou digite um procedimento.');
+    return;
+  }
+  
+  let procs = [];
+  try { procs = JSON.parse(pA.procedimentos_abertos || '[]'); } catch(e) {}
+  
+  let dente = '', face = '';
+  const match = denteText.match(/Dente\s*(\d+)(?:\s*-\s*Face\s*(\w+))?/i);
+  if (match) {
+    dente = match[1];
+    face = match[2] || '';
+  } else {
+    dente = denteText;
+  }
+  
+  procs.push({
+    id: 'proc_' + Date.now(),
+    dente,
+    face,
+    procedimento: procSel,
+    valor,
+    status: 'aberto'
+  });
+  
+  pA.procedimentos_abertos = JSON.stringify(procs);
+  
+  if (dente && odontoInstance) {
+    if (!odontoInstance.state[dente]) {
+      odontoInstance.state[dente] = { T: 'saudavel', B: 'saudavel', L: 'saudavel', R: 'saudavel', C: 'saudavel', ausente: false };
+    }
+    const f = face || 'C';
+    odontoInstance.state[dente][f] = 'carie';
+    odontoInstance.render();
+    pA.odonto_state = JSON.stringify(odontoInstance.state);
+  }
+  
+  document.getElementById('modalProcedimento').classList.remove('on');
+  renderProcedimentosOdonto();
+  await salvarEstadoOdontoPaciente();
+  showToast('Procedimento registrado com sucesso!', 'ok');
+};
+
+window.concluirProcedimentoOdonto = async (index) => {
+  if (!pA) return;
+  
+  let procs = [];
+  try { procs = JSON.parse(pA.procedimentos_abertos || '[]'); } catch(e) {}
+  
+  if (procs[index]) {
+    procs[index].status = 'concluido';
+    
+    const dente = procs[index].dente;
+    const face = procs[index].face || 'C';
+    if (dente && odontoInstance) {
+      if (odontoInstance.state[dente]) {
+        odontoInstance.state[dente][face] = 'restaurado';
+        odontoInstance.render();
+        pA.odonto_state = JSON.stringify(odontoInstance.state);
+      }
+    }
+    
+    pA.procedimentos_abertos = JSON.stringify(procs);
+    renderProcedimentosOdonto();
+    await salvarEstadoOdontoPaciente();
+    showToast('Procedimento concluído com sucesso!', 'ok');
+    if (navigator.vibrate) navigator.vibrate(30);
+  }
+};
+
+window.removerProcedimentoOdonto = async (index) => {
+  if (!pA) return;
+  
+  let procs = [];
+  try { procs = JSON.parse(pA.procedimentos_abertos || '[]'); } catch(e) {}
+  
+  if (procs[index]) {
+    const dente = procs[index].dente;
+    const face = procs[index].face || 'C';
+    
+    procs.splice(index, 1);
+    pA.procedimentos_abertos = JSON.stringify(procs);
+    
+    if (dente && odontoInstance) {
+      if (odontoInstance.state[dente]) {
+        odontoInstance.state[dente][face] = 'saudavel';
+        odontoInstance.render();
+        pA.odonto_state = JSON.stringify(odontoInstance.state);
+      }
+    }
+    
+    renderProcedimentosOdonto();
+    await salvarEstadoOdontoPaciente();
+    showToast('Procedimento removido!', 'ok');
+  }
+};
+
+// ============================================================================
+// FILTROS ADICIONAIS DO CRM (TEMPERATURA E ORIGEM)
+// ============================================================================
+
+window._toggleTempFilter = (temp) => {
+  activeTempFilter = activeTempFilter === temp ? null : temp;
+  
+  document.querySelectorAll('#tempChips .temp-chip').forEach(btn => {
+    const isTarget = btn.getAttribute('data-temp') === activeTempFilter;
+    btn.classList.toggle('on', isTarget);
+  });
+  
+  render();
+};
+
+window._toggleSourceFilter = (source) => {
+  activeSourceFilter = activeSourceFilter === source ? null : source;
+  
+  document.querySelectorAll('#sourceChips .src-chip').forEach(btn => {
+    const isTarget = btn.getAttribute('data-src') === activeSourceFilter;
+    btn.classList.toggle('on', isTarget);
+  });
+  
+  render();
+};
+
 

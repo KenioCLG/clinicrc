@@ -44,7 +44,6 @@ if ('serviceWorker' in navigator && !localStorage.getItem('sw_cleaned')) {
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde@2.18.0/dist/easymde.min.css">
 <script src="https://cdn.jsdelivr.net/npm/easymde@2.18.0/dist/easymde.min.js"></script>
 <link rel="stylesheet" href="css/styles-v4.css?v=7.14"/>
-    <!-- EM DESENVOLVIMENTO: <link rel="stylesheet" href="css/odontograma.css?v=7.10"/> -->
   <link rel="icon" type="image/x-icon" href="favicon.ico">
   <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
   <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
@@ -94,12 +93,14 @@ if ('serviceWorker' in navigator && !localStorage.getItem('sw_cleaned')) {
       <span class="mi" style="font-size:16px;">analytics</span>
       Relatórios
     </button>
-    <!-- EM DESENVOLVIMENTO:
-    <button class="tab-btn tab-odonto" onclick="window.trocarAba(2, this)">
-      <span class="mi">monitoring</span>
+    <button class="tab-btn tab-odonto" id="tabOdontoBtn" onclick="window.trocarAba(2, this)" style="display: none;">
+      <span class="mi" style="font-size:16px;">dentistry</span>
       Odontograma
     </button>
-    -->
+    <button class="tab-btn" onclick="window.trocarAba(3, this)">
+      <span class="mi" style="font-size:16px;">settings_suggest</span>
+      Configurar Kanban
+    </button>
   </div>
   <div class="hdr-r">
     <div class="drawer-section-label">Ferramentas</div>
@@ -195,30 +196,53 @@ if ('serviceWorker' in navigator && !localStorage.getItem('sw_cleaned')) {
           <button id="toggleFilterBtn" class="pf-clear-btn" onclick="window._toggleFilterPanel()" title="Mostrar Filtros" style="height:34px;width:34px;">
             <span class="mi" style="font-size:20px">tune</span>
           </button>
+          <button id="btnAddLead" class="cb cbg" onclick="window.abrirModalLead()" style="height:34px; font-size:13px; font-weight:600; display:flex; align-items:center; gap:6px; background:var(--cp); color:#fff; border:none; border-radius:8px; padding:0 12px; cursor:pointer;" title="Adicionar Lead">
+            <span class="mi" style="font-size:18px;">person_add</span> <span>Novo Lead</span>
+          </button>
         </div>
-        <div class="kmini">
-          <span class="kchip" style="background:var(--cop)"><span class="mi" style="font-size:14px">people</span>&nbsp;<span id="ki1">0</span> em contato</span>
-          <span class="kchip" style="background:var(--cag)"><span class="mi" style="font-size:14px">event_available</span>&nbsp;<span id="ki2">0</span> agendados</span>
-          <span class="kchip" style="background:var(--cp)"><span class="mi" style="font-size:14px">check_circle</span>&nbsp;<span id="ki3">0</span> finalizados</span>
+        <div class="kmini" id="kanbanCountersHeader" style="display:flex; gap:6px; flex-wrap:wrap;">
+          <!-- preenchido dinamicamente no JS -->
         </div>
       </div>
 
-      <!-- FILTRO DE PROCEDIMENTOS -->
+      <!-- FILTRO DE PROCEDIMENTOS & CRM -->
       <div class="proc-filter" id="procFilter" style="display: none;">
-        <span class="pf-label"><span class="mi" style="font-size:15px">filter_list</span> Filtrar:</span>
-        <button class="pf-clear-btn" id="pfClearBtn" onclick="window._clearProcFilter()" title="Limpar filtros">
-          <span class="mi" style="font-size:16px">filter_alt_off</span>
-        </button>
-        <div class="pf-chips" id="pfChips">
-          <!-- preenchido dinamicamente -->
+        <div style="display: flex; flex-direction: column; gap: 10px; width: 100%;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span class="pf-label"><span class="mi" style="font-size:15px">filter_list</span> Procedimento:</span>
+            <button class="pf-clear-btn" id="pfClearBtn" onclick="window._clearProcFilter()" title="Limpar filtros" style="width:24px;height:24px;display:flex;align-items:center;justify-content:center;">
+              <span class="mi" style="font-size:14px">filter_alt_off</span>
+            </button>
+            <div class="pf-chips" id="pfChips" style="display:flex;flex-wrap:wrap;gap:6px;">
+              <!-- preenchido dinamicamente -->
+            </div>
+          </div>
+          <div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: center; border-top: 1px solid var(--cdiv); padding-top: 8px;">
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span class="pf-label" style="font-size:12px;font-weight:600;"><span class="mi" style="font-size:14px">thermostat</span> Temp:</span>
+              <div class="pf-chips" id="tempChips" style="display:flex;gap:4px;">
+                <button class="pf-chip temp-chip" data-temp="hot" onclick="window._toggleTempFilter('hot')" style="border: 1px solid #EF4444; color:#B91C1C; background:transparent; padding:2px 8px; border-radius:12px; font-size:11px; cursor:pointer;">🔥 Quente</button>
+                <button class="pf-chip temp-chip" data-temp="warm" onclick="window._toggleTempFilter('warm')" style="border: 1px solid #F59E0B; color:#B45309; background:transparent; padding:2px 8px; border-radius:12px; font-size:11px; cursor:pointer;">☀️ Morno</button>
+                <button class="pf-chip temp-chip" data-temp="cold" onclick="window._toggleTempFilter('cold')" style="border: 1px solid #3B82F6; color:#1D4ED8; background:transparent; padding:2px 8px; border-radius:12px; font-size:11px; cursor:pointer;">❄️ Frio</button>
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span class="pf-label" style="font-size:12px;font-weight:600;"><span class="mi" style="font-size:14px">campaign</span> Origem:</span>
+              <div class="pf-chips" id="sourceChips" style="display:flex;gap:4px;flex-wrap:wrap;">
+                <button class="pf-chip src-chip" data-src="whatsapp" onclick="window._toggleSourceFilter('whatsapp')" style="border: 1px solid #10B981; color:#047857; background:transparent; padding:2px 8px; border-radius:12px; font-size:11px; cursor:pointer;">WhatsApp</button>
+                <button class="pf-chip src-chip" data-src="instagram" onclick="window._toggleSourceFilter('instagram')" style="border: 1px solid #E1306C; color:#B91C1C; background:transparent; padding:2px 8px; border-radius:12px; font-size:11px; cursor:pointer;">Instagram</button>
+                <button class="pf-chip src-chip" data-src="google" onclick="window._toggleSourceFilter('google')" style="border: 1px solid #3B82F6; color:#1D4ED8; background:transparent; padding:2px 8px; border-radius:12px; font-size:11px; cursor:pointer;">Google</button>
+                <button class="pf-chip src-chip" data-src="indicacao" onclick="window._toggleSourceFilter('indicacao')" style="border: 1px solid #8B5CF6; color:#6D28D9; background:transparent; padding:2px 8px; border-radius:12px; font-size:11px; cursor:pointer;">Indicação</button>
+                <button class="pf-chip src-chip" data-src="trafego_pago" onclick="window._toggleSourceFilter('trafego_pago')" style="border: 1px solid #F59E0B; color:#B45309; background:transparent; padding:2px 8px; border-radius:12px; font-size:11px; cursor:pointer;">Anúncios</button>
+                <button class="pf-chip src-chip" data-src="manual" onclick="window._toggleSourceFilter('manual')" style="border: 1px solid #6B7280; color:#374151; background:transparent; padding:2px 8px; border-radius:12px; font-size:11px; cursor:pointer;">Manual</button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div class="cols">
-        <div class="col cl1"><div class="col-hd">Para Ligar<span class="bg" id="c1">0</span></div><div class="col-cards" id="col-ligar"></div></div>
-        <div class="col cl2"><div class="col-hd">Em Contato<span class="bg" id="c2">0</span></div><div class="col-cards" id="col-contato"></div></div>
-        <div class="col cl3"><div class="col-hd">Agendado<span class="bg" id="c3">0</span></div><div class="col-cards" id="col-agendado"></div></div>
-        <div class="col cl4"><div class="col-hd">Finalizado<span class="bg" id="c4">0</span></div><div class="col-cards" id="col-final"></div></div>
+      <div class="cols" id="kanbanColumnsContainer">
+        <!-- Preenchido dinamicamente pelo JS -->
       </div>
     </div>
   </div>
@@ -229,8 +253,100 @@ if ('serviceWorker' in navigator && !localStorage.getItem('sw_cleaned')) {
   </div>
 
   <!-- ABA 2: ODONTOGRAMA -->
-  <div class="pg" id="pg2" style="flex:1; overflow-y:auto; padding:20px;">
-    <!-- EM DESENVOLVIMENTO: <div id="odontograma-container"></div> -->
+  <div class="pg" id="pg2" style="flex:1; overflow-y:auto; padding: 24px; background: var(--cbg);">
+    <div style="max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px;">
+      <!-- CABEÇALHO DO ODONTOGRAMA -->
+      <div style="background: var(--cs); padding: 20px 24px; border-radius: 12px; box-shadow: var(--ssm); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+        <div>
+          <h2 style="margin: 0; font-size: 20px; color: var(--ct); display: flex; align-items: center; gap: 8px;">
+            <span class="mi" style="color: var(--cp); font-size: 24px;">dentistry</span>
+            Odontograma Clínico
+          </h2>
+          <p style="margin: 4px 0 0 0; color: var(--cts); font-size: 13px;">
+            Paciente Ativo: <strong id="odontoPacienteNome" style="color: var(--ct);">Nenhum selecionado</strong>
+          </p>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button class="cb cbgr" onclick="window.trocarAba(0, document.querySelector('.hdr-tabs button:first-child'))" style="height:36px; padding:0 16px; font-size:13px; font-weight:600; display:flex; align-items:center; gap:6px;">
+            <span class="mi" style="font-size:16px;">arrow_back</span> Voltar ao Kanban
+          </button>
+        </div>
+      </div>
+
+      <!-- GRID PRINCIPAL (ODONTO + PROCEDIMENTOS) -->
+      <div class="odonto-grid" style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 24px;">
+        
+        <!-- CARD DO ODONTOGRAMA -->
+        <div style="background: var(--cs); padding: 24px; border-radius: 12px; box-shadow: var(--ssm); overflow-x: auto;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; border-bottom: 1px solid var(--cdiv); padding-bottom: 12px;">
+            <span style="font-weight: 700; color: var(--ct); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Selecione as faces dos dentes afetados:</span>
+            <div style="display: flex; gap: 12px; font-size: 11px;">
+              <span style="display:flex; align-items:center; gap:4px;"><span style="display:inline-block; width:12px; height:12px; border-radius:2px; background:#EF4444;"></span> Cárie/Alerta</span>
+              <span style="display:flex; align-items:center; gap:4px;"><span style="display:inline-block; width:12px; height:12px; border-radius:2px; background:#3B82F6;"></span> Tratado</span>
+              <span style="display:flex; align-items:center; gap:4px;">❌ Ausente</span>
+            </div>
+          </div>
+          <div id="odontograma-container"></div>
+        </div>
+
+        <!-- CARD DA LISTA DE PROCEDIMENTOS -->
+        <div style="background: var(--cs); padding: 24px; border-radius: 12px; box-shadow: var(--ssm); display: flex; flex-direction: column; gap: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--cdiv); padding-bottom: 12px;">
+            <span style="font-weight: 700; color: var(--ct); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Procedimentos em Aberto</span>
+            <button class="cb cbg" onclick="window.abrirModalProcedimento()" style="height:30px; font-size:12px; padding:0 12px; font-weight:600; display:flex; align-items:center; gap:4px;">
+              <span class="mi" style="font-size:14px;">add</span> Add Procedimento
+            </button>
+          </div>
+
+          <!-- LISTA DE PROCEDIMENTOS -->
+          <div id="odontoProcedimentosLista" style="flex: 1; overflow-y: auto; max-height: 450px; display: flex; flex-direction: column; gap: 10px;">
+            <!-- Preenchido dinamicamente via JS -->
+            <div class="empty-c" style="padding: 40px 0; text-align: center; color: var(--cts);">
+              <span class="mi" style="font-size: 40px; color: var(--cdiv); margin-bottom: 10px; display:block;">receipt_long</span>
+              Nenhum procedimento registrado para este paciente.
+            </div>
+          </div>
+          
+          <!-- RESUMO FINANCEIRO -->
+          <div style="border-top: 1px solid var(--cdiv); padding-top: 16px; display: flex; justify-content: space-between; align-items: center; font-weight: 700;">
+            <span style="color: var(--cts); font-size: 13px;">Orçamento Total Estimado:</span>
+            <span id="odontoTotalValor" style="color: var(--cp); font-size: 18px;">R$ 0,00</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ABA 3: CONFIGURAR KANBAN -->
+  <div class="pg" id="pg3" style="flex:1; overflow-y:auto; padding: 24px; background: var(--cbg);">
+    <div style="max-width: 800px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px;">
+      <div style="background: var(--cs); padding: 24px; border-radius: 12px; box-shadow: var(--ssm);">
+        <h2 style="margin: 0 0 4px 0; font-size: 20px; color: var(--ct); display: flex; align-items: center; gap: 8px;">
+          <span class="mi" style="color: var(--cp); font-size: 24px;">settings_suggest</span>
+          Configurar Funil do Kanban (CRM)
+        </h2>
+        <p style="margin: 0 0 20px 0; color: var(--cts); font-size: 13px;">
+          Crie, ordene ou altere as fases do seu CRM clínico. Defina quais colunas exigem o preenchimento de Odontograma.
+        </p>
+
+        <!-- LISTA DE COLUNAS -->
+        <div id="configColsList" style="display:flex; flex-direction:column; gap:12px; margin-bottom: 24px;">
+          <!-- Preenchido dinamicamente pelo JS -->
+        </div>
+
+        <div style="display:flex; gap:12px; justify-content: space-between; border-top: 1px solid var(--cdiv); padding-top: 20px;">
+          <button class="cb cbgr" onclick="window.adicionarColunaConfig()" style="height:38px; padding:0 16px; display:flex; align-items:center; gap:6px;">
+            <span class="mi" style="font-size:16px;">add_circle</span> Adicionar Nova Fase
+          </button>
+          <div style="display:flex; gap:12px;">
+            <button class="cb cbgr" onclick="window.restaurarColunasPadrao()" style="height:38px; padding:0 16px;">Restaurar Padrão</button>
+            <button class="cb cbg" onclick="window.salvarConfiguracaoColunas()" style="height:38px; padding:0 24px; display:flex; align-items:center; gap:6px;">
+              <span class="mi" style="font-size:16px;">save</span> Salvar Configurações
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -483,6 +599,157 @@ O tom deve ser humano, empático e focado em gerar urgência e agendamento.
   </div>
 </div>
 
+<!-- MODAL CADASTRAR/EDITAR LEAD (CRM) -->
+<div class="mbg" id="modalLead" role="dialog" aria-modal="true" aria-labelledby="leadTitle" onclick="this.classList.remove('on')">
+  <div class="mbox" onclick="event.stopPropagation()" style="max-width: 480px; padding: 0; overflow: hidden; border-radius: 12px; box-shadow: var(--scard);">
+    <!-- HEADER -->
+    <div style="padding: 20px 24px; border-bottom: 1px solid var(--cdiv); background: var(--cs); display: flex; justify-content: space-between; align-items: center;">
+      <div>
+        <h3 id="leadTitle" style="display:flex;align-items:center;gap:8px; margin: 0; font-size: 16px; color: var(--ct);">
+          <span class="mi" style="color:var(--cp)" id="modalLeadIcon">person_add</span>
+          <span id="modalLeadTitleText">Adicionar Novo Lead</span>
+        </h3>
+        <p style="font-size:12px;color:var(--cts); margin: 4px 0 0 0;" id="modalLeadSubtitle">Preencha os dados do potencial paciente:</p>
+      </div>
+      <button class="pf-clear-btn" onclick="document.getElementById('modalLead').classList.remove('on')" style="width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:rgba(0,0,0,0.05);border:none;cursor:pointer;">
+        <span class="mi" style="font-size:16px;">close</span>
+      </button>
+    </div>
+    
+    <!-- BODY -->
+    <div style="padding: 20px 24px; max-height: 60vh; overflow-y: auto;">
+      <input type="hidden" id="leadId" />
+      
+      <!-- NOME -->
+      <div style="margin-bottom: 16px;">
+        <label for="leadNome" style="font-size:11px;font-weight:700;color:var(--cts);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;display:block;">Nome do Lead *</label>
+        <input type="text" id="leadNome" placeholder="Ex: Maria Oliveira" style="width:100%;padding:10px 14px;border:1px solid var(--cdiv);border-radius:8px;font-size:14px;font-family:var(--font);outline:none;color:var(--ct);background:var(--cibg);transition:all .2s;" required />
+      </div>
+
+      <!-- TELEFONE -->
+      <div style="margin-bottom: 16px;">
+        <label for="leadTel" style="font-size:11px;font-weight:700;color:var(--cts);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;display:block;">Telefone / WhatsApp *</label>
+        <input type="tel" id="leadTel" placeholder="Ex: (11) 99999-9999" style="width:100%;padding:10px 14px;border:1px solid var(--cdiv);border-radius:8px;font-size:14px;font-family:var(--font);outline:none;color:var(--ct);background:var(--cibg);transition:all .2s;" required />
+      </div>
+
+      <!-- PROCEDIMENTO DE INTERESSE -->
+      <div style="margin-bottom: 16px;">
+        <label for="leadProc" style="font-size:11px;font-weight:700;color:var(--cts);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;display:block;">Procedimento de Interesse</label>
+        <input type="text" id="leadProc" placeholder="Ex: Implante, Ortodontia" style="width:100%;padding:10px 14px;border:1px solid var(--cdiv);border-radius:8px;font-size:14px;font-family:var(--font);outline:none;color:var(--ct);background:var(--cibg);" />
+      </div>
+
+      <!-- VALOR ESTIMADO -->
+      <div style="margin-bottom: 16px;">
+        <label for="leadValor" style="font-size:11px;font-weight:700;color:var(--cts);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;display:block;">Valor do Orçamento Estimado</label>
+        <input type="text" id="leadValor" placeholder="Ex: R$ 2.500,00" style="width:100%;padding:10px 14px;border:1px solid var(--cdiv);border-radius:8px;font-size:14px;font-family:var(--font);outline:none;color:var(--ct);background:var(--cibg);" />
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+        <!-- CANAL DE ORIGEM -->
+        <div>
+          <label for="leadSource" style="font-size:11px;font-weight:700;color:var(--cts);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;display:block;">Canal de Origem</label>
+          <select id="leadSource" style="width:100%;padding:10px 14px;border:1px solid var(--cdiv);border-radius:8px;font-size:14px;font-family:var(--font);outline:none;color:var(--ct);background:var(--cibg);cursor:pointer;">
+            <option value="manual">Manual</option>
+            <option value="whatsapp">WhatsApp</option>
+            <option value="instagram">Instagram</option>
+            <option value="google">Google/SEO</option>
+            <option value="indicacao">Indicação</option>
+            <option value="trafego_pago">Tráfego Pago</option>
+            <option value="outro">Outro</option>
+          </select>
+        </div>
+
+        <!-- TEMPERATURA -->
+        <div>
+          <label for="leadTemp" style="font-size:11px;font-weight:700;color:var(--cts);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;display:block;">Temperatura do Lead</label>
+          <select id="leadTemp" style="width:100%;padding:10px 14px;border:1px solid var(--cdiv);border-radius:8px;font-size:14px;font-family:var(--font);outline:none;color:var(--ct);background:var(--cibg);cursor:pointer;">
+            <option value="cold">❄️ Frio (Pouco interesse)</option>
+            <option value="warm" selected>☀️ Morno (Interessado)</option>
+            <option value="hot">🔥 Quente (Decidido/Urgente)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- OBSERVAÇÕES INICIAIS -->
+      <div>
+        <label for="leadObs" style="font-size:11px;font-weight:700;color:var(--cts);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;display:block;">Observações do Lead</label>
+        <textarea id="leadObs" placeholder="Ex: Prefere atendimento após às 18h, tem pressa para começar." style="width:100%;height:80px;padding:10px 14px;border:1px solid var(--cdiv);border-radius:8px;font-size:14px;font-family:var(--font);outline:none;color:var(--ct);background:var(--cibg);resize:none;"></textarea>
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div style="padding: 16px 24px; border-top: 1px solid var(--cdiv); background: var(--cs); display:flex;gap:12px; justify-content: flex-end;">
+      <button type="button" class="cb cbgr" style="height:38px; padding: 0 20px;" onclick="document.getElementById('modalLead').classList.remove('on')">Cancelar</button>
+      <button type="button" class="cb cbg" style="height:38px; padding: 0 24px; display:flex;align-items:center;justify-content:center;gap:6px;" onclick="window.salvarLead()">
+        <span class="mi" style="font-size:16px;">save</span> Salvar Lead
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ADICIONAR PROCEDIMENTO NO ODONTOGRAMA -->
+<div class="mbg" id="modalProcedimento" role="dialog" aria-modal="true" aria-labelledby="procTitle" onclick="this.classList.remove('on')">
+  <div class="mbox" onclick="event.stopPropagation()" style="max-width: 400px; padding: 0; overflow: hidden; border-radius: 12px; box-shadow: var(--scard);">
+    <!-- HEADER -->
+    <div style="padding: 16px 20px; border-bottom: 1px solid var(--cdiv); background: var(--cs); display: flex; justify-content: space-between; align-items: center;">
+      <h3 id="procTitle" style="display:flex;align-items:center;gap:6px; margin: 0; font-size: 15px; color: var(--ct);">
+        <span class="mi" style="color:var(--cp)">local_hospital</span>
+        Registrar Procedimento
+      </h3>
+      <button class="pf-clear-btn" onclick="document.getElementById('modalProcedimento').classList.remove('on')" style="width:24px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:50%;border:none;cursor:pointer;background:rgba(0,0,0,0.05);">
+        <span class="mi" style="font-size:14px;">close</span>
+      </button>
+    </div>
+    
+    <!-- BODY -->
+    <div style="padding: 16px 20px;">
+      <!-- DENTE (Preenchido automaticamente se clicar no dente) -->
+      <div style="margin-bottom: 12px;">
+        <label for="procDente" style="font-size:11px;font-weight:700;color:var(--cts);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;display:block;">Dente / Região</label>
+        <input type="text" id="procDente" placeholder="Geral / Nenhum dente específico" style="width:100%;padding:8px 12px;border:1px solid var(--cdiv);border-radius:8px;font-size:13px;font-family:var(--font);outline:none;color:var(--ct);background:var(--cibg);" />
+      </div>
+
+      <!-- SELETOR DE PROCEDIMENTO -->
+      <div style="margin-bottom: 12px;">
+        <label for="procNome" style="font-size:11px;font-weight:700;color:var(--cts);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;display:block;">Procedimento *</label>
+        <select id="procNome" onchange="window.preencherValorSugeridoProcedimento()" style="width:100%;padding:8px 12px;border:1px solid var(--cdiv);border-radius:8px;font-size:13px;font-family:var(--font);outline:none;color:var(--ct);background:var(--cibg);cursor:pointer;">
+          <option value="" disabled selected>Selecione um procedimento...</option>
+          <option value="Avaliação / Consulta">Avaliação / Consulta</option>
+          <option value="Limpeza / Profilaxia">Limpeza / Profilaxia</option>
+          <option value="Restauração de Resina">Restauração de Resina</option>
+          <option value="Tratamento de Canal (Endodontia)">Tratamento de Canal (Endodontia)</option>
+          <option value="Extração Simples / Cirurgia">Extração Simples / Cirurgia</option>
+          <option value="Instalação de Aparelho Ortodôntico">Instalação de Aparelho Ortodôntico</option>
+          <option value="Implante Dentário">Implante Dentário</option>
+          <option value="Prótese Dentária">Prótese Dentária</option>
+          <option value="Clareamento Dental">Clareamento Dental</option>
+          <option value="Outro">Outro Procedimento...</option>
+        </select>
+      </div>
+
+      <!-- SE FOR OUTRO PROCEDIMENTO -->
+      <div style="margin-bottom: 12px; display:none;" id="procNomeOutroContainer">
+        <label for="procNomeOutro" style="font-size:11px;font-weight:700;color:var(--cts);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;display:block;">Nome do Procedimento Customizado *</label>
+        <input type="text" id="procNomeOutro" placeholder="Nome do procedimento" style="width:100%;padding:8px 12px;border:1px solid var(--cdiv);border-radius:8px;font-size:13px;font-family:var(--font);outline:none;color:var(--ct);background:var(--cibg);" />
+      </div>
+
+      <!-- VALOR -->
+      <div>
+        <label for="procValor" style="font-size:11px;font-weight:700;color:var(--cts);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;display:block;">Valor Cobrado</label>
+        <input type="text" id="procValor" placeholder="R$ 0,00" style="width:100%;padding:8px 12px;border:1px solid var(--cdiv);border-radius:8px;font-size:13px;font-family:var(--font);outline:none;color:var(--ct);background:var(--cibg);" />
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div style="padding: 12px 20px; border-top: 1px solid var(--cdiv); background: var(--cs); display:flex;gap:12px; justify-content: flex-end;">
+      <button type="button" class="cb cbgr" style="height:32px; font-size:12px;" onclick="document.getElementById('modalProcedimento').classList.remove('on')">Cancelar</button>
+      <button type="button" class="cb cbg" style="height:32px; font-size:12px; display:flex;align-items:center;justify-content:center;gap:4px;" onclick="window.salvarProcedimentoOdonto()">
+        <span class="mi" style="font-size:14px;">check</span> Confirmar
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- Carrega link de suporte dinamicamente do backend -->
 <script>
   (async function() {
@@ -499,9 +766,9 @@ O tom deve ser humano, empático e focado em gerar urgência e agendamento.
   })();
 </script>
 
+<script src="js/odontogram.js?v=7.14"></script>
 <!-- JS ENTRYPOINT -->
 <script src="js/app.js?v=7.14"></script>
-<!-- EM DESENVOLVIMENTO: <script src="js/odontograma-anat.js?v=7.10" defer></script> -->
 
 <!-- Fechar modais com ESC + fechar drawer ao trocar aba -->
 <script>
@@ -514,6 +781,12 @@ document.addEventListener('keydown', function(e) {
 document.getElementById('modalCustom').addEventListener('click', function(e) {
   if (e.target === this) this.classList.remove('on');
 });
+document.getElementById('modalLead').addEventListener('click', function(e) {
+  if (e.target === this) this.classList.remove('on');
+});
+document.getElementById('modalProcedimento').addEventListener('click', function(e) {
+  if (e.target === this) this.classList.remove('on');
+});
 document.querySelectorAll('.tab-btn').forEach(function(btn) {
   btn.addEventListener('click', function() {
     var nav = document.getElementById('hdrNav');
@@ -522,21 +795,6 @@ document.querySelectorAll('.tab-btn').forEach(function(btn) {
     if (ov) ov.classList.remove('open');
   });
 });
-
-/* EM DESENVOLVIMENTO:
-(function() {
-  var checkOdonto = function() {
-    var tab = document.querySelector('.tab-odonto');
-    if (tab && (window.Odontogram || window.odontogramaInstance)) {
-      tab.classList.add('visible');
-    }
-  };
-  if (document.querySelector('.tab-odonto')) {
-    checkOdonto();
-    setTimeout(checkOdonto, 2000);
-  }
-})();
-*/
 </script>
 
 </body>

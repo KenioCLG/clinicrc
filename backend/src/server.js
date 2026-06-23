@@ -22,7 +22,7 @@ const scriptRoutes = require('./routes/script.routes');
 const settingsRoutes = require('./routes/settings.routes');
 const { createUser } = require('./auth');
 
-// Inicializa o banco (SQLite ou PostgreSQL via db.js)
+// Inicializa o banco (PostgreSQL via Supabase)
 require('./db-postgres');
 
 

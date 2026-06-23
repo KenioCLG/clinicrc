@@ -6,7 +6,6 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const path = require('path');
-const fs = require('fs');
 const crypto = require('crypto');
 
 const { queryOne, queryAll, run, transaction } = require('../db-helpers');
@@ -60,33 +59,56 @@ router.post('/', upload.single('file'), async (req, res) => {
   try {
     // Merge + historico em uma unica transacao (atomico)
     await transaction(async (tx) => {
-      for (const p of patients) {
-        const existing = await tx.queryOne(
-          'SELECT id, proc, valor, source_status FROM patients WHERE clinic_id = ? AND tel = ?',
-          [clinicId, p.tel]
-        );
+      // 1) Busca todos os pacientes existentes desta clinica em UMA query
+      const existingRows = await tx.queryAll(
+        'SELECT tel, proc, valor, source_status FROM patients WHERE clinic_id = ?',
+        [clinicId]
+      );
+      const existingMap = new Map(existingRows.map(r => [r.tel, r]));
 
-        if (!existing) {
-          const newId = crypto.randomUUID();
-          await tx.run(
-            `INSERT INTO patients (id, clinic_id, nome, tel, proc, valor, source, source_status, profissional, data_orcamento)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [newId, clinicId, p.nome, p.tel, p.proc, p.valor, p.source, p.source_status, p.profissional, p.data_orcamento]
-          );
-          newRows++;
+      // 2) Classifica: novos, atualizados, sem mudanca
+      const toInsert = [];
+      const toUpdate = [];
+
+      for (const p of patients) {
+        const ex = existingMap.get(p.tel);
+        if (!ex) {
+          toInsert.push(p);
         } else {
-          const changed = existing.proc !== p.proc || existing.valor !== p.valor || existing.source_status !== p.source_status;
+          const changed = ex.proc !== p.proc || ex.valor !== p.valor || ex.source_status !== p.source_status;
           if (changed) {
-            await tx.run(
-              `UPDATE patients SET proc = ?, valor = ?, source_status = ?, updated_at = CURRENT_TIMESTAMP
-               WHERE clinic_id = ? AND tel = ?`,
-              [p.proc, p.valor, p.source_status, clinicId, p.tel]
-            );
-            updatedRows++;
+            toUpdate.push(p);
           } else {
             skippedRows++;
           }
         }
+      }
+
+      newRows = toInsert.length;
+      updatedRows = toUpdate.length;
+
+      // 3) Batch INSERT em chunks de 500 (10 params por linha)
+      const CHUNK = 500;
+      for (let i = 0; i < toInsert.length; i += CHUNK) {
+        const chunk = toInsert.slice(i, i + CHUNK);
+        const placeholders = chunk.map(() => '(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)').join(', ');
+        const params = [];
+        for (const p of chunk) {
+          params.push(crypto.randomUUID(), clinicId, p.nome, p.tel, p.proc, p.valor, p.source, p.source_status, p.profissional, p.data_orcamento);
+        }
+        await tx.run(
+          `INSERT INTO patients (id, clinic_id, nome, tel, proc, valor, source, source_status, profissional, data_orcamento) VALUES ${placeholders}`,
+          params
+        );
+      }
+
+      // 4) UPDATE individuais (tipicamente poucos comparado aos inserts)
+      for (const p of toUpdate) {
+        await tx.run(
+          `UPDATE patients SET proc = ?, valor = ?, source_status = ?, updated_at = CURRENT_TIMESTAMP
+           WHERE clinic_id = ? AND tel = ?`,
+          [p.proc, p.valor, p.source_status, clinicId, p.tel]
+        );
       }
 
       // Historico dentro da mesma transacao

@@ -7,6 +7,9 @@ class Odontogram {
     // Armazena o status de cada face de cada dente. Status possíveis: saudavel, carie, restaurado, ausente
     this.state = {};
     
+    // Callback externa para notificar mudanças
+    this.onStateChange = null;
+    
     // Configuração dos quadrantes da arcada
     this.teethLayout = {
       adult: {
@@ -51,16 +54,18 @@ class Odontogram {
           this.state[id] = { T: 'saudavel', B: 'saudavel', L: 'saudavel', R: 'saudavel', C: 'saudavel', ausente: false };
         }
         
+        const isAusente = this.state[id].ausente ? 'ausente' : '';
+        
         rowHtml += `
-          <div class="tooth-wrapper" data-id="${id}" id="tooth-wrap-${id}">
+          <div class="tooth-wrapper ${isAusente}" data-id="${id}" id="tooth-wrap-${id}">
             <span class="tooth-label">${id}</span>
             <svg class="tooth-svg" viewBox="0 0 40 40">
               <!-- Instanciando o Molde (Flyweight Pattern) -->
-              <use href="#tooth-face-T" class="face face-T" data-face="T" title="Face Superior (Vestibular/Palatina)"></use>
-              <use href="#tooth-face-B" class="face face-B" data-face="B" title="Face Inferior (Lingual/Vestibular)"></use>
-              <use href="#tooth-face-L" class="face face-L" data-face="L" title="Face Esquerda (Mesial/Distal)"></use>
-              <use href="#tooth-face-R" class="face face-R" data-face="R" title="Face Direita (Distal/Mesial)"></use>
-              <use href="#tooth-face-C" class="face face-C" data-face="C" title="Face Central (Oclusal/Incisal)"></use>
+              <use href="#tooth-face-T" class="face face-T ${this.statusColors[this.state[id].T] || ''}" data-face="T" title="Face Superior"></use>
+              <use href="#tooth-face-B" class="face face-B ${this.statusColors[this.state[id].B] || ''}" data-face="B" title="Face Inferior"></use>
+              <use href="#tooth-face-L" class="face face-L ${this.statusColors[this.state[id].L] || ''}" data-face="L" title="Face Esquerda"></use>
+              <use href="#tooth-face-R" class="face face-R ${this.statusColors[this.state[id].R] || ''}" data-face="R" title="Face Direita"></use>
+              <use href="#tooth-face-C" class="face face-C ${this.statusColors[this.state[id].C] || ''}" data-face="C" title="Face Central"></use>
             </svg>
             <div class="tooth-actions">
               <button class="btn-ausente" title="Marcar como Ausente / Extraído">❌</button>
@@ -130,6 +135,10 @@ class Odontogram {
     if (this.statusColors[nextStatus]) {
       faceEl.classList.add(this.statusColors[nextStatus]);
     }
+
+    if (this.onStateChange) {
+      this.onStateChange(this.state, toothId, faceId, nextStatus);
+    }
   }
 
   toggleToothAbsence(toothId, toothWrapEl) {
@@ -138,14 +147,19 @@ class Odontogram {
     
     if (isAusente) {
       toothWrapEl.classList.add('ausente');
-      // Opcional: Resetar faces se foi extraído
+      // Resetar faces se foi extraído
       ['T', 'B', 'L', 'R', 'C'].forEach(f => this.state[toothId][f] = 'saudavel');
       const faces = toothWrapEl.querySelectorAll('.face');
       faces.forEach(f => f.classList.remove('st-carie', 'st-restaurado'));
     } else {
       toothWrapEl.classList.remove('ausente');
     }
+
+    if (this.onStateChange) {
+      this.onStateChange(this.state, toothId, 'ausente', isAusente);
+    }
   }
+}
 }
 
 // Expõe para uso no app.js
