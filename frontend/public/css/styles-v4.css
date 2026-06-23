@@ -903,6 +903,21 @@ tbody tr:hover{background:rgba(var(--cpr),.05);}
   width: 34px;
 }
 
+/* Anatomical tooth silhouette */
+.tooth-anat {
+  width: 100%;
+  height: 40px;
+  fill: none;
+  stroke: var(--cts);
+  stroke-width: 1;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+.tooth-anat path { fill: var(--cs); stroke: var(--cts); stroke-width: 1.2; }
+.tooth-wrapper:hover .tooth-anat { opacity: 1; }
+.tooth-wrapper.ausente .tooth-anat { opacity: 0.2; }
+.tooth-anat-flip { transform: scaleY(-1); }
+
 .tooth-label {
   font-size: 10px;
   font-weight: 700;

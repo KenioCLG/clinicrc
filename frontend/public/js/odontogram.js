@@ -44,6 +44,11 @@ class Odontogram {
     return this.anteriorTeeth.has(Number(id));
   }
 
+  // Check if a tooth anatomy SVG symbol exists in the defs
+  hasAnatomy(id) {
+    return !!document.getElementById('anat-' + id);
+  }
+
   render() {
     let html = '<div class="odonto-wrapper">';
 
@@ -55,7 +60,7 @@ class Odontogram {
       <span class="odonto-legend-item"><span class="odonto-legend-sw" style="background:#E2E8F0;border:1.5px solid #94A3B8;"></span>Ausente</span>
     </div>`;
 
-    const renderRow = (teethArray, labelsAbove) => {
+    const renderRow = (teethArray, isTopArch) => {
       const mid = Math.floor(teethArray.length / 2);
       let rowHtml = '<div class="odonto-row">';
       rowHtml += '<div class="odonto-quadrant">';
@@ -71,19 +76,24 @@ class Odontogram {
 
         const s = this.state[id];
         const isAnt = this.isAnterior(id);
+        const hasAnat = this.hasAnatomy(id);
         const cls = [
           'tooth-wrapper',
           s.ausente ? 'ausente' : '',
           isAnt ? 'tooth-ant' : ''
         ].filter(Boolean).join(' ');
 
-        const faceType = isAnt ? 'ant' : 'post';
         const centerLabel = isAnt ? 'Incisal' : 'Oclusal';
 
-        rowHtml += `
-          <div class="${cls}" data-id="${id}" id="tooth-wrap-${id}">
-            ${labelsAbove ? `<span class="tooth-label">${id}</span>` : ''}
-            <svg class="tooth-svg" viewBox="0 0 40 40">
+        // Anatomy silhouette (only for permanent teeth with SVG symbols)
+        const anatSvg = hasAnat
+          ? `<svg class="tooth-anat ${isTopArch ? '' : 'tooth-anat-flip'}" viewBox="0 0 1 1" preserveAspectRatio="xMidYMid meet"><use href="#anat-${id}"/></svg>`
+          : '';
+
+        // For top arch: label, anatomy, 5-face grid, absent button
+        // For bottom arch: absent button, 5-face grid, anatomy, label
+        const label = `<span class="tooth-label">${id}</span>`;
+        const faceGrid = `<svg class="tooth-svg" viewBox="0 0 40 40">
               <g clip-path="url(#tooth-clip)">
                 <use href="#tooth-face-T" class="face face-T ${this.statusColors[s.T] || ''}" data-face="T"><title>Vestibular</title></use>
                 <use href="#tooth-face-B" class="face face-B ${this.statusColors[s.B] || ''}" data-face="B"><title>Lingual/Palatina</title></use>
@@ -91,12 +101,20 @@ class Odontogram {
                 <use href="#tooth-face-R" class="face face-R ${this.statusColors[s.R] || ''}" data-face="R"><title>Distal</title></use>
                 <use href="#tooth-face-C" class="face face-C ${this.statusColors[s.C] || ''}" data-face="C"><title>${centerLabel}</title></use>
               </g>
-            </svg>
-            ${!labelsAbove ? `<span class="tooth-label">${id}</span>` : ''}
-            <button class="btn-ausente" data-action="ausente" title="Marcar Ausente / Extraido">
+            </svg>`;
+        const absentBtn = `<button class="btn-ausente" data-action="ausente" title="Marcar Ausente / Extraido">
               <svg width="10" height="10" viewBox="0 0 10 10"><line x1="2" y1="2" x2="8" y2="8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="8" y1="2" x2="2" y2="8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-            </button>
+            </button>`;
+
+        if (isTopArch) {
+          rowHtml += `<div class="${cls}" data-id="${id}" id="tooth-wrap-${id}">
+            ${label}${anatSvg}${faceGrid}${absentBtn}
           </div>`;
+        } else {
+          rowHtml += `<div class="${cls}" data-id="${id}" id="tooth-wrap-${id}">
+            ${absentBtn}${faceGrid}${anatSvg}${label}
+          </div>`;
+        }
       });
 
       rowHtml += '</div></div>';
